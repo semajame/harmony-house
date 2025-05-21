@@ -1,5 +1,5 @@
 {
-  "name": "xav-app",
+  "name": "reservation-system",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,13 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "cookie": "^1.0.2",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.511.0",
     "next": "15.2.4",
     "next-auth": "^4.24.11",
     "react-dom": "^19.0.0",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
+    "tailwind-merge": "^3.3.0",
     "typeorm": "^0.3.21"
   },
   "devDependencies": {
@@ -28,6 +32,7 @@
     "nodemon": "^3.1.9",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.17",
+    "tw-animate-css": "^1.3.0",
     "typescript": "^5"
   }
 }

@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className='flex flex-col items-center justify-center min-h-screen p-4'>
       <h1 className='text-2xl font-bold mb-4'>
-        {isSignUp ? 'Sign Up' : 'Sign In'}
+        {isSignUp ? 'Register' : 'Sign In'}
       </h1>
 
       {isSignUp ? <SignUp /> : <SignIn />}
@@ -22,7 +22,7 @@ export default function Home() {
       >
         {isSignUp
           ? 'Already have an account? Sign In'
-          : "Don't have an account? Sign Up"}
+          : "Don't have an account? Register"}
       </button>
     </div>
   )

@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const db = await getDatabaseConnection()
     const userRepo = db.getRepository(Users)
 
-    // Check if the email already exists
+    //^ Check if the username already exists
     const existingUser = await userRepo.findOne({ where: { username } })
     if (existingUser) {
       return NextResponse.json(
@@ -18,14 +18,11 @@ export async function POST(req: Request) {
       )
     }
 
-    // Hash the password
+    //^ Hash the password to keep it secure
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create a new user
-    const newUser = userRepo.create({
-      username,
-      password: hashedPassword,
-    })
+    //^ Create a new user
+    const newUser = userRepo.create({ username, password: hashedPassword })
     await userRepo.save(newUser)
 
     return NextResponse.json(

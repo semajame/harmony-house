@@ -4,44 +4,48 @@ import bcrypt from 'bcryptjs'
 import { getDatabaseConnection } from '@/app/lib/data-source'
 import { Users } from '@/app/lib/entities/user'
 
-export const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        username: { label: 'Username', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         // Ensure credentials are not undefined
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email and password are required')
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error('Username and password are required')
         }
 
         const db = await getDatabaseConnection()
         const userRepo = db.getRepository(Users)
 
         const user = await userRepo.findOne({
-          where: { email: credentials.email },
+          where: { username: credentials.username },
         })
         if (
           !user ||
           !(await bcrypt.compare(credentials.password, user.password))
         ) {
-          throw new Error('Invalid email or password')
+          throw new Error('Invalid username or password')
         }
 
-        return { id: user.id.toString(), email: user.email, name: user.name }
+        return {
+          id: user.id.toString(),
+          username: user.username,
+          role: user.role,
+        }
       },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  session: { strategy: 'jwt' }, // Explicitly setting type
+  session: { strategy: 'jwt' as 'jwt' }, // Explicitly setting type
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.email = user.email
+        token.username = user.username // ✅ This is missing!
       }
       return token
     },
@@ -50,10 +54,10 @@ export const authOptions: AuthOptions = {
         ...session,
         user: {
           ...session.user,
-          id: token.id,
-          email: token.email,
+          id: token.id as string,
+          username: token.username as string,
         },
-        token: token, // Include token in session
+        token,
       }
     },
   },

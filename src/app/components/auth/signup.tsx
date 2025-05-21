@@ -2,33 +2,42 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 
-export default function SignIn() {
+export default function SignUp() {
   const router = useRouter()
+
   const [form, setForm] = useState({ username: '', password: '' })
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    setSuccess('')
 
-    const res = await signIn('credentials', {
-      username: form.username,
-      password: form.password,
-      redirect: false,
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
     })
 
-    if (res?.error) {
-      alert('Invalid credentials')
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError(data.error)
     } else {
-      alert('Signed in successfully!')
-      router.push('/dashboard') // Redirect to dashboard
+      setSuccess('Account created! You can now log in.')
+      router.push('/') // Redirect to sign-in page
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className='flex flex-col gap-3 w-80'>
+      {error && <p className='text-red-500'>{error}</p>}
+      {success && <p className='text-green-500'>{success}</p>}
+
       <input
-        type='username'
+        type='text'
         placeholder='Username'
         value={form.username}
         onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -47,7 +56,7 @@ export default function SignIn() {
         type='submit'
         className='p-2 bg-blue-500 text-white rounded cursor-pointer'
       >
-        Sign Up
+        Register
       </button>
     </form>
   )
