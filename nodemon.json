@@ -1,0 +1,7 @@
+{
+    "watch": ["lib", "entities", "config", "*.ts"], 
+    "ext": "js,ts,json", 
+    "ignore": ["node_modules", ".next"],
+    "exec": "next dev --turbopack"
+}
+  
