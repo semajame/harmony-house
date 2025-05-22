@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '@/app/lib/data-source'
-import { Users } from '@/app/lib/entities/user'
+import { Users } from '@/app/lib/entities/staff'
 
 export async function getUserRepository() {
   const db = await getDatabaseConnection()

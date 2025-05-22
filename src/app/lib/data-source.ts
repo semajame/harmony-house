@@ -1,7 +1,9 @@
 import 'reflect-metadata'
 import { DataSource } from 'typeorm'
-import mysql from 'mysql2/promise'
-import { Users } from '@/app/lib/entities/user' // Import your entity files
+import { Staff } from '@/app/lib/entities/staff' // Import your entity files
+import { Customer } from './entities/customer'
+import { Reservation } from './entities/reservation'
+import { Room } from './entities/rooms'
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -10,7 +12,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER as string,
   password: process.env.DATABASE_PASSWORD as string,
   database: process.env.DATABASE_NAME as string,
-  entities: [Users], // Add all your entities here
+  entities: [Customer, Room, Reservation, Staff],
   synchronize: true, // Set to false in production
   logging: true, // Set to false in production
 })

@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import LogoutButton from '../components/logout'
+import LogoutButton from '@/components/logout'
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -22,14 +22,17 @@ export default function Dashboard() {
   return (
     <div className='flex flex-col items-center justify-center min-h-screen'>
       <h1 className='text-2xl font-bold'>Welcome to Dashboard</h1>
-      <p className='mt-2'>Hello, {session?.user?.username}!</p>
+      <p className='mt-2'>
+        Hello, {session?.user?.username}
+        {session?.user?.name}!
+      </p>
       <div className='flex gap-2'>
-        <button
+        {/* <button
           onClick={() => router.push('/crud')}
           className='bg-white text-black cursor-pointer p-2 rounded mt-5 text-sm'
         >
           Go to Users
-        </button>
+        </button> */}
         <LogoutButton />
       </div>
     </div>
