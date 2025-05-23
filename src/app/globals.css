@@ -44,6 +44,8 @@
 }
 
 :root {
+  --font-geist-sans: 'Geist Sans', sans-serif;
+  --font-geist-mono: 'Geist Mono', monospace;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -118,6 +120,23 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans), sans-serif;
+
   }
+
+  buttons {
+    cursor: pointer;
+  }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
 }

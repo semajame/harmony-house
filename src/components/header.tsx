@@ -20,7 +20,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className='bg-[#944EA8] px-5 py-3 text-white'>
+    <header className='bg-[#944EA8] px-5 py-3 text-white fixed z-50 top-0 w-full'>
       <div className='flex justify-between items-center'>
         {/* Logo + Title */}
         <Link href='/' className='flex items-center gap-2'>
@@ -30,7 +30,9 @@ const Header = () => {
             width={50}
             height={50}
           />
-          <span className='text-lg font-semibold'>Harmony House</span>
+          <span className='text-lg font-semibold font-serif italic'>
+            Harmony House
+          </span>
         </Link>
 
         {/* Desktop Nav */}
@@ -43,7 +45,7 @@ const Header = () => {
             </li>
             <li>
               <Link href='' className='hover:underline px-2'>
-                Contact Us
+                Contact
               </Link>
             </li>
             <li>
