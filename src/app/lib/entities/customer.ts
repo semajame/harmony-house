@@ -12,6 +12,7 @@ export class Customer {
   @Column()
   phone!: string
 
+  // customer.entity.ts
   @OneToMany(() => Reservation, (reservation) => reservation.customer)
   reservations!: Reservation[]
 }

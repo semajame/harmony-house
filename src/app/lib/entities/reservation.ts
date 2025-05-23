@@ -13,6 +13,7 @@ export class Reservation {
   @PrimaryGeneratedColumn()
   id!: number
 
+  // reservation.entity.ts
   @ManyToOne(() => Customer, (customer) => customer.reservations)
   customer!: Customer
 
