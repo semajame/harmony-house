@@ -1,31 +1,31 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  CreateDateColumn,
-} from 'typeorm'
-import { Customer } from './customer'
-import { Room } from './rooms'
+// import {
+//   Entity,
+//   PrimaryGeneratedColumn,
+//   Column,
+//   ManyToOne,
+//   CreateDateColumn,
+// } from 'typeorm'
+// import { Customer } from './customer'
+// import { Room } from './rooms'
 
-@Entity()
-export class Reservation {
-  @PrimaryGeneratedColumn()
-  id!: number
+// @Entity()
+// export class Reservation {
+//   @PrimaryGeneratedColumn()
+//   id!: number
 
-  // reservation.entity.ts
-  @ManyToOne(() => Customer, (customer) => customer.reservations)
-  customer!: Customer
+//   // reservation.entity.ts
+//   @ManyToOne(() => Customer, (customer) => customer.reservations)
+//   customer!: Customer
 
-  @ManyToOne(() => Room, (room) => room.reservations)
-  room!: Room
+//   @ManyToOne(() => Room, (room) => room.reservations)
+//   room!: Room
 
-  @Column()
-  startTime!: Date
+//   @Column()
+//   startTime!: Date
 
-  @Column()
-  endTime!: Date
+//   @Column()
+//   endTime!: Date
 
-  @CreateDateColumn()
-  createdAt!: Date
-}
+//   @CreateDateColumn()
+//   createdAt!: Date
+// }

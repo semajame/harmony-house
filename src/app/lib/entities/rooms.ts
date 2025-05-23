@@ -1,17 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
-import { Reservation } from './reservation'
+// import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
+// import { Reservation } from './reservation'
 
-@Entity()
-export class Room {
-  @PrimaryGeneratedColumn()
-  id!: number
+// @Entity()
+// export class Room {
+//   @PrimaryGeneratedColumn()
+//   id!: number
 
-  @Column()
-  name!: string // e.g. Room A, Room B
+//   @Column()
+//   name!: string // e.g. Room A, Room B
 
-  @Column()
-  capacity!: number
+//   @Column()
+//   capacity!: number
 
-  @OneToMany(() => Reservation, (reservation) => reservation.room)
-  reservations!: Reservation[]
-}
+//   @OneToMany(() => Reservation, (reservation) => reservation.room)
+//   reservations!: Reservation[]
+// }
