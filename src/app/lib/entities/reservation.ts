@@ -34,4 +34,7 @@ export class Reservation {
   @OneToOne(() => Payment, { cascade: true })
   @JoinColumn()
   payment!: Payment;
+
+  @Column("boolean", { default: true })
+  isActive!: boolean;
 }

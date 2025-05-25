@@ -17,4 +17,7 @@ export class Customer {
 
   @OneToMany(() => Reservation, reservation => reservation.customer)
   reservations!: Reservation[];
+
+  @Column("boolean", { default: true })
+  isActive!: boolean;
 }
