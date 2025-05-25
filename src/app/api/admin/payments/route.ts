@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
 import { Payment } from '../../../lib/entities/payment'
-
+//TODO: just centralize this GETALL to one function later on for more efficieny
 export async function GET(req: NextRequest) {
   const db = await getDatabaseConnection()
   const paymentRepo = db.getRepository(Payment)
