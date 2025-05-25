@@ -28,7 +28,7 @@ export class Reservation {
   @ManyToOne(() => Room, room => room.reservations)
   room!: Room;
 
-  @ManyToOne(() => Customer, customer => customer.reservations)
+  @ManyToOne("Customer", "reservations")
   customer!: Customer;
 
   @OneToOne(() => Payment, { cascade: true })

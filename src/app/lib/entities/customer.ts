@@ -15,7 +15,7 @@ export class Customer {
   @Column("varchar", { length: 20, nullable: true })
   phone?: string;
 
-  @OneToMany(() => Reservation, reservation => reservation.customer)
+  @OneToMany("Reservation", "customer")
   reservations!: Reservation[];
 
   @Column("boolean", { default: true })

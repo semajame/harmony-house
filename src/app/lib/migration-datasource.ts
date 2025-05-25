@@ -9,7 +9,7 @@ import { Room } from './entities/rooms'
 
 dotenv.config()
 
-export const AppDataSource = new DataSource({
+export const MigrationDataSource = new DataSource({
   type: 'mysql',
   host: process.env.DATABASE_HOST || 'localhost',
   port: Number(process.env.DATABASE_PORT) || 3306,
@@ -21,21 +21,11 @@ export const AppDataSource = new DataSource({
     Customer, 
     Payment, 
     Reservation, 
-    Room
-  ],
+    Room],
+  migrations: ['src/migrations/*.ts'],
+  migrationsTableName: 'migrations',
   synchronize: false,
-  logging: process.env.NODE_ENV === 'development',
+  logging: true,
 })
 
-export const getDatabaseConnection = async () => {
-  if (!AppDataSource.isInitialized) {
-    try {
-      await AppDataSource.initialize()
-      console.log("✅ API Database connected successfully")
-    } catch (error) {
-      console.error("❌ API Database connection failed:", error)
-      throw error 
-    }
-  }
-  return AppDataSource
-}
+export default MigrationDataSource

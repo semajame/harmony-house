@@ -12,8 +12,6 @@ export class Staff {
   @PrimaryGeneratedColumn()
   id!: number
 
-
-
   @Column("varchar", { length: 255, unique: true })
   username!: string
 

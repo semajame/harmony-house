@@ -3,8 +3,8 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 
 import bcrypt from 'bcryptjs'
-import { getDatabaseConnection } from '@/app/lib/data-source'
-import { Staff } from '@/app/lib/entities/staff'
+import { getDatabaseConnection } from '../../../lib/data-source'
+import { Staff } from '../../../lib/entities/staff'
 
 const authOptions: AuthOptions = {
   providers: [
