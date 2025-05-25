@@ -23,6 +23,9 @@ export const AppDataSource = new DataSource({
     Reservation, 
     Room
   ],
+  // Uncomment   if you want to use migrations
+  // migrations: ['src/migrations/*.ts'],
+  // migrationsTableName: 'migrations',
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
 })

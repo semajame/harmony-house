@@ -14,6 +14,7 @@ export class Payment {
   @CreateDateColumn()
   paidAt!: Date;
 
-  @Column("boolean", { default: true })
-  isActive!: boolean;
+  //no neeed for isactive, as payments are one time transactions
+  // @Column("boolean", { default: true })
+  // isActive!: boolean;
 }
