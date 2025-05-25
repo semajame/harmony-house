@@ -5,15 +5,15 @@ export class Staff {
   @PrimaryGeneratedColumn()
   id!: number
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column("varchar", { length: 255, unique: true })
   username!: string
 
-  @Column({ unique: true, nullable: true })
+  @Column("varchar", { length: 255, unique: true, nullable: true })
   email!: string
 
-  @Column({ type: 'varchar', length: 255 }) // You can increase this length if needed
+  @Column("varchar", { length: 255 })
   password!: string
 
-  @Column({ nullable: true })
+  @Column("varchar", { length: 20, nullable: true })
   phone!: string
 }

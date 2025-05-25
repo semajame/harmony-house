@@ -1,31 +1,37 @@
-// import {
-//   Entity,
-//   PrimaryGeneratedColumn,
-//   Column,
-//   ManyToOne,
-//   CreateDateColumn,
-// } from 'typeorm'
-// import { Customer } from './customer'
-// import { Room } from './rooms'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToOne,
+  JoinColumn,
+  CreateDateColumn
+} from "typeorm";
+import { Room } from "./rooms";
+import { Customer } from "./customer";
+import { Payment } from "./payment";
 
-// @Entity()
-// export class Reservation {
-//   @PrimaryGeneratedColumn()
-//   id!: number
+@Entity()
+export class Reservation {
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-//   // reservation.entity.ts
-//   @ManyToOne(() => Customer, (customer) => customer.reservations)
-//   customer!: Customer
+  @CreateDateColumn()
+  createdAt!: Date;
 
-//   @ManyToOne(() => Room, (room) => room.reservations)
-//   room!: Room
+  @Column("datetime")
+  startTime!: Date;
 
-//   @Column()
-//   startTime!: Date
+  @Column("datetime")
+  endTime!: Date;
 
-//   @Column()
-//   endTime!: Date
+  @ManyToOne(() => Room, room => room.reservations)
+  room!: Room;
 
-//   @CreateDateColumn()
-//   createdAt!: Date
-// }
+  @ManyToOne(() => Customer, customer => customer.reservations)
+  customer!: Customer;
+
+  @OneToOne(() => Payment, { cascade: true })
+  @JoinColumn()
+  payment!: Payment;
+}
