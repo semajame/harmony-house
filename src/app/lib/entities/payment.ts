@@ -1,5 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 
+
+//TODO: add transaction fields later for online transactions
 @Entity()
 export class Payment {
   @PrimaryGeneratedColumn()

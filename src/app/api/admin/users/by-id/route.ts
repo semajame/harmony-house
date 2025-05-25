@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../../lib/data-source'
 import { Staff } from '../../../../lib/entities/staff'
+import { requireAdmin } from '@/app/lib/auth-utils'
 
 export async function GET(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck    
   const db = await getDatabaseConnection()
   const staffRepo = db.getRepository(Staff)
 

@@ -36,6 +36,7 @@ const authOptions: AuthOptions = {
         return {
           id: user.id.toString(),
           username: user.username,
+          role: user.role
         }
       },
     }),
@@ -51,6 +52,7 @@ const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id
         token.username = user.username // ✅ This is missing!
+        token.role = (user as any).role
       }
       return token
     },
@@ -61,6 +63,7 @@ const authOptions: AuthOptions = {
           ...session.user,
           id: token.id as string,
           username: token.username as string,
+           role: token.role as string,
         },
         token,
       }

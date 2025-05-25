@@ -11,6 +11,12 @@ import { Room } from "./rooms";
 import { Customer } from "./customer";
 import { Payment } from "./payment";
 
+export enum Status {
+  PENDING = "pending",
+  CONFIRMED = "confirmed",
+  CANCELLED = "cancelled"
+}
+
 @Entity()
 export class Reservation {
   @PrimaryGeneratedColumn()
@@ -34,6 +40,13 @@ export class Reservation {
   @OneToOne(() => Payment, { cascade: true })
   @JoinColumn()
   payment!: Payment;
+
+  @Column({
+    type: "enum",
+    enum: Status,
+    default: Status.PENDING,
+  })
+  status!: Status
 
   @Column("boolean", { default: true })
   isActive!: boolean;

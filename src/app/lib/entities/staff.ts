@@ -2,8 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
 
 export enum StaffRole {
   ADMIN = 'admin',
-  MANAGER = 'manager',
-  RECEPTIONIST = 'receptionist',
+  STAFF = 'staff'
 }
 
 
@@ -27,7 +26,7 @@ export class Staff {
   @Column({
     type: "enum",
     enum: StaffRole,
-    default: StaffRole.RECEPTIONIST,
+    default: StaffRole.STAFF,
   })
   role!: StaffRole
 

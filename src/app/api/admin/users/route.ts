@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
 import { Staff, StaffRole } from '../../../lib/entities/staff'
+import bcrypt from 'bcryptjs'
+import { requireAdmin } from '@/app/lib/auth-utils'
+
 export async function GET(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   const db = await getDatabaseConnection()
   const staffRepo = db.getRepository(Staff)
   const users = await staffRepo.find()
@@ -11,6 +16,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
     const { username, email, password, phone, role } = body
@@ -31,11 +38,11 @@ export async function POST(req: NextRequest) {
         email ? { email } : undefined
       ].filter(Boolean) as any[],
     })
-
+    const hashedPassword = await bcrypt.hash(password, 10)
     if (existingUser) {
       if (!existingUser.isActive) {
         existingUser.isActive = true
-        existingUser.password = password
+        existingUser.password = hashedPassword
         existingUser.email = email ?? existingUser.email
         existingUser.phone = phone ?? existingUser.phone
         existingUser.role = role ?? existingUser.role
@@ -55,7 +62,7 @@ export async function POST(req: NextRequest) {
     const newUser = staffRepo.create({
       username,
       email,
-      password,
+      password:hashedPassword,
       phone,
       role,
     })
@@ -72,6 +79,8 @@ export async function POST(req: NextRequest) {
 
 
 export async function PUT(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
     const { id, username, email, password, phone, role, isActive } = body
@@ -93,7 +102,10 @@ export async function PUT(req: NextRequest) {
     user.phone = phone ?? user.phone
     user.role = role ?? user.role
     user.isActive = isActive ?? user.isActive
-    if (password) user.password = password
+    if (password){
+      const hashedPassword = await bcrypt.hash(password, 10)
+      user.password = hashedPassword
+    } 
 
     await staffRepo.save(user)
 
@@ -106,6 +118,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
     const { id } = body

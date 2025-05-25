@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
 import { Payment } from '../../../lib/entities/payment'
+import { requireAdmin } from '@/app/lib/auth-utils'
 //TODO: just centralize this GETALL to one function later on for more efficieny
 export async function GET(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+    
   const db = await getDatabaseConnection()
   const paymentRepo = db.getRepository(Payment)
   const payments = await paymentRepo.find()
@@ -11,6 +15,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
     const { amount, method } = body
@@ -36,6 +42,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+
   try {
     const body = await req.json()
     const { id, amount, method } = body

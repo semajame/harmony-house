@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../../lib/data-source'
 import { Payment } from '../../../../lib/entities/payment'
+import { requireAdmin } from '@/app/lib/auth-utils'
 //TODO: just centralize this GETBYID to one function later on for more efficieny
 export async function GET(req: NextRequest) {
+
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+  
   const db = await getDatabaseConnection()
   const paymentRepo = db.getRepository(Payment)
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
 import { Room } from '../../../lib/entities/rooms'
+import { requireAdmin } from '@/app/lib/auth-utils'
+
 export async function GET(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   const db = await getDatabaseConnection()
   const roomRepo = db.getRepository(Room)
 
@@ -10,6 +14,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
     const { name, capacity, isAvailable } = body
@@ -40,6 +46,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
     const { id, name, capacity, isAvailable } = body
@@ -69,6 +77,10 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+
+
   try {
     const body = await req.json()
     const { id, action } = body

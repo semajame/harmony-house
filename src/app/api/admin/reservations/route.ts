@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
-import { Reservation } from '../../../lib/entities/reservation'
+import { Reservation, Status } from '../../../lib/entities/reservation'
 import { Room } from '../../../lib/entities/rooms'
 import { Customer } from '../../../lib/entities/customer'
 import { Payment } from '../../../lib/entities/payment'
-import { Between, LessThan, MoreThan } from 'typeorm'
+import { Between, LessThan, MoreThan, Not } from 'typeorm'
+import { requireAdmin } from '@/app/lib/auth-utils'
 
 
 export async function GET(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   const db = await getDatabaseConnection()
   const reservationRepo = db.getRepository(Reservation)
   const reservations = await reservationRepo.find({
@@ -17,6 +20,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+
   const db = await getDatabaseConnection()
   const body = await req.json()
   const { id, startTime, endTime, roomId, customerId } = body
@@ -56,6 +62,8 @@ export async function PUT(req: NextRequest) {
 
 
 export async function POST(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json();
     const { startTime, endTime, roomId, customerId, paymentId } = body;
@@ -110,6 +118,7 @@ export async function POST(req: NextRequest) {
     const overlapping = await reservationRepo.findOne({
       where: {
         room: { id: roomId },
+        status: Not(Status.CANCELLED),
         isActive: true,
         startTime: LessThan(end),
         endTime: MoreThan(start),
@@ -122,24 +131,6 @@ export async function POST(req: NextRequest) {
         { error: 'Room is already reserved in the selected time range' },
         { status: 409 }
       );
-    }
-
-    const duplicateInactive = await reservationRepo.findOne({
-      where: {
-        startTime: start,
-        endTime: end,
-        room: { id: roomId },
-        customer: { id: customerId },
-        payment: { id: paymentId },
-        isActive: false,
-      },
-      relations: ['room', 'customer', 'payment'],
-    });
-
-    if (duplicateInactive) {
-      duplicateInactive.isActive = true;
-      await reservationRepo.save(duplicateInactive);
-      return NextResponse.json({ message: 'Reactivated existing reservation', reservation: duplicateInactive }, { status: 200 });
     }
 
     const reservation = reservationRepo.create({
@@ -159,11 +150,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-
 export async function PATCH(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
-    const { id } = body
+    const { id, action, status } = body
 
     if (!id) {
       return NextResponse.json({ error: 'Reservation ID required' }, { status: 400 })
@@ -172,15 +164,38 @@ export async function PATCH(req: NextRequest) {
     const db = await getDatabaseConnection()
     const reservationRepo = db.getRepository(Reservation)
 
-    const reservation = await reservationRepo.findOne({ where: { id }, relations: ['room', 'customer'] })
+    const reservation = await reservationRepo.findOne({ 
+      where: { id }, 
+      relations: ['room', 'customer'] 
+    })
+    
     if (!reservation) {
       return NextResponse.json({ error: 'Reservation not found' }, { status: 404 })
     }
 
-    reservation.isActive = !reservation.isActive
-    await reservationRepo.save(reservation)
+    if (action === 'set-status') {
+      if (!status || !Object.values(Status).includes(status)) {
+        return NextResponse.json({ 
+          error: 'Invalid status. Must be one of: pending, confirmed, cancelled' 
+        }, { status: 400 })
+      }
 
-    return NextResponse.json({ message: `Reservation ${reservation.isActive ? 'activated' : 'deactivated'}` })
+      reservation.status = status
+      await reservationRepo.save(reservation)
+      
+      return NextResponse.json({ 
+        message: `Reservation status set to ${reservation.status}`,
+        reservation 
+      })
+    } 
+    else {
+      reservation.isActive = !reservation.isActive
+      await reservationRepo.save(reservation)
+      return NextResponse.json({ 
+        message: `Reservation ${reservation.isActive ? 'activated' : 'deactivated'}`,
+        reservation 
+      })
+    }
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
