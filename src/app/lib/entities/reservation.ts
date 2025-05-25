@@ -5,36 +5,42 @@ import {
   ManyToOne,
   OneToOne,
   JoinColumn,
-  CreateDateColumn
-} from "typeorm";
-import { Room } from "./rooms";
-import { Customer } from "./customer";
-import { Payment } from "./payment";
+  CreateDateColumn,
+} from 'typeorm'
+import { Room } from './rooms'
+import { Customer } from './customer'
+import { Payment } from './payment'
 
 @Entity()
 export class Reservation {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id!: number
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Date
 
-  @Column("datetime")
-  startTime!: Date;
+  @Column('date')
+  date!: Date
 
-  @Column("datetime")
-  endTime!: Date;
+  @Column('datetime')
+  startTime!: Date
 
-  @ManyToOne(() => Room, room => room.reservations)
-  room!: Room;
+  @Column('datetime')
+  endTime!: Date
 
-  @ManyToOne("Customer", "reservations")
-  customer!: Customer;
+  @Column('decimal', { precision: 10, scale: 2 })
+  price!: number
+
+  @ManyToOne(() => Room, (room) => room.reservations)
+  room!: Room
+
+  @ManyToOne('Customer', 'reservations')
+  customer!: Customer
 
   @OneToOne(() => Payment, { cascade: true })
   @JoinColumn()
-  payment!: Payment;
+  payment!: Payment
 
-  @Column("boolean", { default: true })
-  isActive!: boolean;
+  @Column('boolean', { default: true })
+  isActive!: boolean
 }

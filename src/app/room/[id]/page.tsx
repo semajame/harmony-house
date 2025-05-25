@@ -1,9 +1,9 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { rooms } from '@/lib/rooms'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Calendar,
@@ -21,19 +21,28 @@ import {
   ArrowLeft,
   CheckCircle,
   Sparkles,
+  User,
+  Mail,
+  Phone,
 } from 'lucide-react'
 
 export default function RoomPage() {
   const params = useParams()
+  const router = useRouter()
   const roomId = Number(params.id)
   const room = rooms.find((r) => r.id === roomId)
 
+  // Form state
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [checkInDate, setCheckInDate] = useState('')
   const [checkInTime, setCheckInTime] = useState('19:00')
   const [checkOutTime, setCheckOutTime] = useState('23:00')
   const [persons, setPersons] = useState(5)
   const [isLiked, setIsLiked] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [totalPrice, setTotalPrice] = useState(0)
 
   // Mock additional images for the room
   const roomImages = [
@@ -73,6 +82,15 @@ export default function RoomPage() {
   ]
 
   const timeSlots = [
+    '1:00',
+    '2:00',
+    '3:00',
+    '4:00',
+    '5:00',
+    '6:00',
+    '7:00',
+    '8:00',
+    '9:00',
     '10:00',
     '11:00',
     '12:00',
@@ -89,6 +107,81 @@ export default function RoomPage() {
     '23:00',
   ]
 
+  //^ format time to am and pm
+  function formatToAMPM(time24: string): string {
+    const [hour, minute] = time24.split(':').map(Number)
+    const period = hour >= 12 ? 'PM' : 'AM'
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12
+    return `${hour12}:${minute.toString().padStart(2, '0')} ${period}`
+  }
+
+  //^  Calculate total price whenever time changes
+  useEffect(() => {
+    if (checkInTime && checkOutTime && room) {
+      const checkInHour = parseInt(checkInTime.split(':')[0])
+      const checkOutHour = parseInt(checkOutTime.split(':')[0])
+      let hours = checkOutHour - checkInHour
+
+      // Handle overnight bookings
+      if (hours <= 0) {
+        hours = 24 - checkInHour + checkOutHour
+      }
+
+      const priceNumber = parseInt(room.price.replace(/[^\d]/g, ''))
+      setTotalPrice(hours * priceNumber)
+    }
+  }, [checkInTime, checkOutTime, room])
+
+  //^ Handle reservation button
+  // const handleReserve = async () => {
+  //   if (!checkInDate || !room || !fullName || !email || !phone) {
+  //     alert('Please fill in all required fields')
+  //     return
+  //   }
+
+  //   const checkIn = new Date(`${checkInDate}T${checkInTime}:00`)
+  //   const checkOut = new Date(`${checkInDate}T${checkOutTime}:00`)
+
+  //   // If checkout is before checkin, assume next day
+  //   if (checkOut <= checkIn) {
+  //     checkOut.setDate(checkOut.getDate() + 1)
+  //   }
+
+  //   const reservationData = {
+  //     roomId: room.id,
+  //     fullName,
+  //     email,
+  //     phone,
+  //     checkIn: checkIn.toISOString(),
+  //     checkOut: checkOut.toISOString(),
+  //     persons,
+  //     totalPrice,
+  //   }
+
+  //   try {
+  //     const res = await fetch('/api/reservations', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(reservationData),
+  //     })
+
+  //     if (res.ok) {
+  //       const data = await res.json()
+  //       router.push(`/payment/${data.reservationId}`)
+  //     } else {
+  //       console.error('Reservation failed')
+  //       alert('Reservation failed. Please try again.')
+  //     }
+  //   } catch (error) {
+  //     console.error('Error making reservation:', error)
+  //     alert('An error occurred. Please try again.')
+  //   }
+  // }
+
+  const handleBackToRooms = () => {
+    router.push('/rooms') // Adjust this path according to your routing structure
+  }
+
   if (!room) {
     return (
       <div className='min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50'>
@@ -100,7 +193,10 @@ export default function RoomPage() {
           <p className='text-gray-600'>
             The room you're looking for doesn't exist.
           </p>
-          <Button className='bg-purple-600 hover:bg-purple-700'>
+          <Button
+            className='bg-purple-600 hover:bg-purple-700'
+            onClick={handleBackToRooms}
+          >
             <ArrowLeft className='w-4 h-4 mr-2' />
             Back to Rooms
           </Button>
@@ -120,6 +216,7 @@ export default function RoomPage() {
                 variant='ghost'
                 size='sm'
                 className='text-purple-600 hover:bg-purple-50'
+                onClick={handleBackToRooms}
               >
                 <ArrowLeft className='w-4 h-4 mr-2' />
                 Back to Rooms
@@ -336,6 +433,54 @@ export default function RoomPage() {
               </div>
 
               <div className='p-6 space-y-6'>
+                {/* Full Name */}
+                <div>
+                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                    <User className='w-4 h-4' />
+                    Full Name
+                  </label>
+                  <input
+                    type='text'
+                    className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                    placeholder='Full Name'
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Email Address */}
+                <div>
+                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                    <Mail className='w-4 h-4' />
+                    Email
+                  </label>
+                  <input
+                    type='email'
+                    className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                    placeholder='example@mail.com'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                    <Phone className='w-4 h-4' />
+                    Phone Number
+                  </label>
+                  <input
+                    type='tel'
+                    className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                    placeholder='09XXXXXXXXX'
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
+
                 {/* Date Selection */}
                 <div>
                   <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
@@ -348,6 +493,7 @@ export default function RoomPage() {
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
+                    required
                   />
                 </div>
 
@@ -365,7 +511,7 @@ export default function RoomPage() {
                     >
                       {timeSlots.map((time) => (
                         <option key={time} value={time}>
-                          {time}
+                          {formatToAMPM(time)}
                         </option>
                       ))}
                     </select>
@@ -383,7 +529,7 @@ export default function RoomPage() {
                     >
                       {timeSlots.map((time) => (
                         <option key={time} value={time}>
-                          {time}
+                          {formatToAMPM(time)}
                         </option>
                       ))}
                     </select>
@@ -398,6 +544,7 @@ export default function RoomPage() {
                   </label>
                   <div className='flex items-center border border-gray-200 rounded-lg overflow-hidden'>
                     <button
+                      type='button'
                       onClick={() => setPersons(Math.max(1, persons - 1))}
                       className='p-3 hover:bg-gray-50 transition-colors'
                     >
@@ -407,6 +554,7 @@ export default function RoomPage() {
                       {persons} {persons === 1 ? 'guest' : 'guests'}
                     </span>
                     <button
+                      type='button'
                       onClick={() => setPersons(Math.min(12, persons + 1))}
                       className='p-3 hover:bg-gray-50 transition-colors'
                     >
@@ -427,7 +575,9 @@ export default function RoomPage() {
                   </div>
                   <div className='border-t border-gray-200 pt-2 flex justify-between font-semibold'>
                     <span>Total</span>
-                    <span className='text-purple-600'>{room.price}</span>
+                    <span className='text-purple-600'>
+                      ₱{totalPrice.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
@@ -450,8 +600,9 @@ export default function RoomPage() {
 
                 {/* Book Button */}
                 <Button
+                  // onClick={console.log('clickd')}
                   className='w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl'
-                  disabled={!checkInDate}
+                  disabled={!checkInDate || !fullName || !email || !phone}
                 >
                   <Music className='w-5 h-5 mr-2' />
                   Reserve Your Spot
