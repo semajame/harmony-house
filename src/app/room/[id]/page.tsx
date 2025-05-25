@@ -37,8 +37,8 @@ export default function RoomPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [checkInDate, setCheckInDate] = useState('')
-  const [checkInTime, setCheckInTime] = useState('19:00')
-  const [checkOutTime, setCheckOutTime] = useState('23:00')
+  const [checkInTime, setCheckInTime] = useState('')
+  const [checkOutTime, setCheckOutTime] = useState('')
   const [persons, setPersons] = useState(5)
   const [isLiked, setIsLiked] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -276,7 +276,7 @@ export default function RoomPage() {
               </div>
               <div className='flex items-center gap-1'>
                 <Users className='w-4 h-4' />
-                <span>Up to 12 people</span>
+                <span>Up to 6 people</span>
               </div>
             </div>
 
@@ -509,6 +509,7 @@ export default function RoomPage() {
                       value={checkInTime}
                       onChange={(e) => setCheckInTime(e.target.value)}
                     >
+                      <option value=''>Select time</option>
                       {timeSlots.map((time) => (
                         <option key={time} value={time}>
                           {formatToAMPM(time)}
@@ -527,6 +528,7 @@ export default function RoomPage() {
                       value={checkOutTime}
                       onChange={(e) => setCheckOutTime(e.target.value)}
                     >
+                      <option value=''>Select time</option>
                       {timeSlots.map((time) => (
                         <option key={time} value={time}>
                           {formatToAMPM(time)}
@@ -555,7 +557,7 @@ export default function RoomPage() {
                     </span>
                     <button
                       type='button'
-                      onClick={() => setPersons(Math.min(12, persons + 1))}
+                      onClick={() => setPersons(Math.min(6, persons + 1))}
                       className='p-3 hover:bg-gray-50 transition-colors'
                     >
                       +
@@ -584,7 +586,7 @@ export default function RoomPage() {
                 {/* Benefits */}
                 <div className='space-y-2'>
                   {[
-                    'Free cancellation',
+                    '24 hour free cancellation',
                     'Instant confirmation',
                     '24/7 support',
                   ].map((benefit, index) => (
@@ -601,7 +603,7 @@ export default function RoomPage() {
                 {/* Book Button */}
                 <Button
                   // onClick={console.log('clickd')}
-                  className='w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl'
+                  className='w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl cursor-pointer'
                   disabled={!checkInDate || !fullName || !email || !phone}
                 >
                   <Music className='w-5 h-5 mr-2' />

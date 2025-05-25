@@ -1,11 +1,10 @@
+// app/layout.tsx
 import type { Metadata } from 'next'
 import './globals.css'
-
 import { GeistSans } from 'geist/font/sans'
 
-import Header from '@/components/header'
-import Footer from '@/components/footer'
-import Providers from '@/components/provider' // <- Your new wrapper
+import Providers from '@/components/provider'
+import LayoutWrapper from '@/components/layout-wrapper' // <-- use wrapper
 
 export const metadata: Metadata = {
   title: 'Harmony House - KTV and Bar',
@@ -17,16 +16,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang='en'>
-      <body className={`${GeistSans.className} `}>
+      <body className={GeistSans.className}>
         <Providers>
-          <Header />
-          {children}
-          <Footer />
+          <LayoutWrapper>{children}</LayoutWrapper>
         </Providers>
       </body>
     </html>
