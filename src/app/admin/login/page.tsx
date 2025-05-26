@@ -1,12 +1,13 @@
 'use client'
 
 import { GalleryVerticalEnd } from 'lucide-react'
-import { LoginForm } from '@/components/login-form'
+import { LoginForm } from '@/components/admin/login/login-form'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -30,13 +31,25 @@ export default function LoginPage() {
       alert('Invalid credentials')
     } else {
       alert('Signed in successfully!')
-      router.push('/dashboard')
+      router.push('/admin/dashboard')
     }
   }
 
   return (
     <div className='grid min-h-svh lg:grid-cols-2'>
       <div className='flex flex-col gap-4 p-6 md:p-10'>
+        <Link href='/' className='flex items-center gap-2'>
+          <Image
+            src='/images/harmony-house-logo.png'
+            alt='Logo Image'
+            width={50}
+            height={50}
+          />
+          <span className='text-lg font-semibold font-serif italic'>
+            Harmony House
+          </span>
+        </Link>
+
         <div className='flex flex-1 items-center justify-center'>
           <div className='w-full max-w-xs'>
             <LoginForm

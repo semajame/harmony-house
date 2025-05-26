@@ -2,8 +2,8 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import Header from './header'
-import Footer from './footer'
+import Header from './home/header'
+import Footer from './home/footer'
 
 export default function LayoutWrapper({
   children,

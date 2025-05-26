@@ -16,13 +16,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER || 'root',
   password: process.env.DATABASE_PASSWORD || '',
   database: process.env.DATABASE_NAME || 'test',
-  entities: [
-    Staff, 
-    Customer, 
-    Payment, 
-    Reservation, 
-    Room
-  ],
+  entities: [Staff, Customer, Payment, Reservation, Room],
   // Uncomment   if you want to use migrations
   // migrations: ['src/migrations/*.ts'],
   // migrationsTableName: 'migrations',
@@ -34,10 +28,10 @@ export const getDatabaseConnection = async () => {
   if (!AppDataSource.isInitialized) {
     try {
       await AppDataSource.initialize()
-      console.log("✅ API Database connected successfully")
+      console.log('✅ API Database connected successfully')
     } catch (error) {
-      console.error("❌ API Database connection failed:", error)
-      throw error 
+      console.error('❌ API Database connection failed:', error)
+      throw error
     }
   }
   return AppDataSource
