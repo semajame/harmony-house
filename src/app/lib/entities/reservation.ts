@@ -25,8 +25,6 @@ export class Reservation {
   @CreateDateColumn()
   createdAt!: Date
 
-  @Column('date')
-  date!: Date
 
   @Column('datetime')
   startTime!: Date
@@ -34,8 +32,7 @@ export class Reservation {
   @Column('datetime')
   endTime!: Date
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  price!: number
+
 
   @ManyToOne(() => Room, (room) => room.reservations)
   room!: Room

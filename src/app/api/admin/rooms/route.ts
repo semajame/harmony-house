@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
   // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
-    const { name, capacity, isAvailable } = body
+    const { name, capacity, price, isAvailable } = body
 
-    if (!name || capacity == null) {
+    if (!name || !price || !capacity || name == null || capacity == null || price == null) {
       return NextResponse.json(
-        { error: 'Name and capacity are required' },
+        { error: 'Name, capacity, and price are required' },
         { status: 400 }
       )
     }
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     const newRoom = roomRepo.create({
       name,
       capacity,
+      price,
       isAvailable: isAvailable ?? true,
     })
 
@@ -50,7 +51,7 @@ export async function PUT(req: NextRequest) {
   // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
-    const { id, name, capacity, isAvailable } = body
+    const { id, name, capacity, price, isAvailable } = body
 
     if (!id) {
       return NextResponse.json({ error: 'Room ID is required' }, { status: 400 })
@@ -66,6 +67,7 @@ export async function PUT(req: NextRequest) {
 
     room.name = name ?? room.name
     room.capacity = capacity ?? room.capacity
+    room.price = price ?? room.price
     room.isAvailable = isAvailable ?? room.isAvailable
 
     await roomRepo.save(room)

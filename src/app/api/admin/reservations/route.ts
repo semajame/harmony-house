@@ -6,6 +6,7 @@ import { Customer } from '../../../lib/entities/customer'
 import { Payment } from '../../../lib/entities/payment'
 import { Between, LessThan, MoreThan, Not } from 'typeorm'
 import { requireAdmin } from '@/app/lib/auth-utils'
+import { DateTime } from 'luxon'
 
 
 export async function GET(req: NextRequest) {
@@ -75,8 +76,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    const manilaZone = 'Asia/Manila';
+
+    const start = DateTime.fromISO(startTime, { zone: manilaZone }).toJSDate();
+    const end = DateTime.fromISO(endTime, { zone: manilaZone }).toJSDate();
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });

@@ -1,12 +1,14 @@
 import { getDatabaseConnection } from "@/app/lib/data-source";
 import { Customer } from "@/app/lib/entities/customer";
 import { Payment } from "@/app/lib/entities/payment";
-import { Reservation } from "@/app/lib/entities/reservation";
+import { Reservation, Status } from "@/app/lib/entities/reservation";
 import { Room } from "@/app/lib/entities/rooms";
 import { NextRequest, NextResponse } from "next/server";
-import { LessThan, MoreThan } from "typeorm";
-
+import { LessThan, MoreThan, Not } from "typeorm";
+import { DateTime } from 'luxon';
 export async function POST(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json();
     const { startTime, endTime, roomId, customerId, paymentId } = body;
@@ -18,8 +20,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    const manilaZone = 'Asia/Manila';
+
+    const start = DateTime.fromISO(startTime, { zone: manilaZone }).toJSDate();
+    const end = DateTime.fromISO(endTime, { zone: manilaZone }).toJSDate();
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
@@ -61,6 +65,7 @@ export async function POST(req: NextRequest) {
     const overlapping = await reservationRepo.findOne({
       where: {
         room: { id: roomId },
+        status: Not(Status.CANCELLED),
         isActive: true,
         startTime: LessThan(end),
         endTime: MoreThan(start),
@@ -73,24 +78,6 @@ export async function POST(req: NextRequest) {
         { error: 'Room is already reserved in the selected time range' },
         { status: 409 }
       );
-    }
-
-    const duplicateInactive = await reservationRepo.findOne({
-      where: {
-        startTime: start,
-        endTime: end,
-        room: { id: roomId },
-        customer: { id: customerId },
-        payment: { id: paymentId },
-        isActive: false,
-      },
-      relations: ['room', 'customer', 'payment'],
-    });
-
-    if (duplicateInactive) {
-      duplicateInactive.isActive = true;
-      await reservationRepo.save(duplicateInactive);
-      return NextResponse.json({ message: 'Reactivated existing reservation', reservation: duplicateInactive }, { status: 200 });
     }
 
     const reservation = reservationRepo.create({

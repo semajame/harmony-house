@@ -12,6 +12,11 @@ export class Room {
   @Column("int")
   capacity!: number;
 
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  price!: number
+
+
   @Column("boolean", { default: true })
   isAvailable!: boolean;
 

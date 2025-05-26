@@ -14,17 +14,17 @@ INSERT INTO customer (name, email, phone, isActive) VALUES
 ('Julia Roberts', 'julia@example.com', '101-010-1010', 1);
 
 
-INSERT INTO room (name, capacity, isAvailable, isActive) VALUES
-('Room A', 2, 1, 1),
-('Room B', 4, 1, 1),
-('Room C', 6, 1, 1),
-('Room D', 3, 1, 1),
-('Room E', 5, 1, 1),
-('Room F', 10, 1, 1),
-('Room G', 8, 1, 1),
-('Room H', 12, 1, 1),
-('Room I', 1, 1, 1),
-('Room J', 2, 1, 1);
+INSERT INTO room (name, capacity, isAvailable, isActive, price) VALUES
+('Room A', 2, 1, 1, 500.00),
+('Room B', 4, 1, 1, 600.00),
+('Room C', 6, 1, 1, 700.00),
+('Room D', 3, 1, 1, 800.00),
+('Room E', 5, 1, 1, 900.00),
+('Room F', 10, 1, 1, 1000.00),
+('Room G', 8, 1, 1, 1100.00),
+('Room H', 12, 1, 1, 1200.00),
+('Room I', 1, 1, 1, 1300.00),
+('Room J', 2, 1, 1, 1400.00);
 
 
 INSERT INTO payment (amount, method, paidAt) VALUES
