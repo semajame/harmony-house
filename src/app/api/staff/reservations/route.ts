@@ -8,6 +8,15 @@ import { Between, LessThan, MoreThan, Not } from 'typeorm'
 import { requireAdmin } from '@/app/lib/auth-utils'
 import { DateTime } from 'luxon'
 
+function omit<T extends Record<string, any>>(obj: T, keys: string[]): Partial<T> {
+  const result: Partial<T> = {};
+  for (const key in obj) {
+    if (!keys.includes(key)) {
+      result[key] = obj[key];
+    }
+  }
+  return result;
+}
 
 export async function GET(req: NextRequest) {
   // const adminCheck = await requireAdmin(req)
@@ -15,9 +24,32 @@ export async function GET(req: NextRequest) {
   const db = await getDatabaseConnection()
   const reservationRepo = db.getRepository(Reservation)
   const reservations = await reservationRepo.find({
+    where: {
+      isActive: true
+    },
     relations: ['room', 'customer', 'payment'],
   })
-  return NextResponse.json(reservations)
+  const sanitized = reservations.map((reservation) => {
+    const {
+      isActive,
+      room: { isActive: roomIsActive, ...roomWithoutIsActive } = {},
+      customer: { isActive: customerIsActive, ...customerWithoutIsActive } = {},
+      payment: paymentData,
+      ...rest
+    } = reservation;
+
+    // Optionally sanitize payment (if it also has `isActive`)
+
+    return {
+      ...rest,
+      room: roomWithoutIsActive,
+      customer: customerWithoutIsActive,
+      payment : paymentData
+    };
+  });
+
+
+  return NextResponse.json(sanitized)
 }
 
 export async function PUT(req: NextRequest) {
@@ -26,12 +58,11 @@ export async function PUT(req: NextRequest) {
 
   const db = await getDatabaseConnection()
   const body = await req.json()
-  const { id, startTime, endTime, roomId, customerId, paymentId } = body
+  const { id, startTime, endTime, roomId, customerId } = body
 
   const reservationRepo = db.getRepository(Reservation)
   const roomRepo = db.getRepository(Room)
   const customerRepo = db.getRepository(Customer)
-  const paymentRepo = db.getRepository(Payment)
   const reservation = await reservationRepo.findOne({
     where: { id },
     relations: ['room', 'customer', 'payment'],
@@ -40,16 +71,11 @@ export async function PUT(req: NextRequest) {
   if (!reservation) {
     return NextResponse.json({ error: 'Reservation not found' }, { status: 404 })
   }
+
   const manilaZone = 'Asia/Manila';
 
   if (startTime) reservation.startTime = DateTime.fromISO(startTime, { zone: manilaZone }).toJSDate();
   if (endTime) reservation.endTime = DateTime.fromISO(endTime, { zone: manilaZone }).toJSDate();
-
-  if (paymentId && paymentId !== reservation.payment.id) {
-    const newPayment = await paymentRepo.findOne({ where: { id: paymentId } })
-    if (!newPayment) return NextResponse.json({ error: 'New payment not found' }, { status: 404 })
-    reservation.payment = newPayment
-  }
 
   if (roomId && roomId !== reservation.room.id) {
     const newRoom = await roomRepo.findOne({ where: { id: roomId } })
@@ -61,10 +87,11 @@ export async function PUT(req: NextRequest) {
       );
     }
     
-      reservation.room = newRoom
-
-
+    reservation.room = newRoom
   }
+
+
+
 
   let newCustomer = reservation.customer
   if (customerId && customerId !== reservation.customer.id) {
@@ -75,7 +102,22 @@ export async function PUT(req: NextRequest) {
 
   await reservationRepo.save(reservation)
 
-  return NextResponse.json(reservation)
+  const { isActive, room, customer, payment, ...rest } = reservation;
+  
+  const sanitizedReservation = {
+    ...rest,
+    room: room ? (() => {
+      const { isActive: _, ...roomData } = room;
+      return roomData;
+    })() : null,
+    customer: customer ? (() => {
+      const { isActive: _, ...customerData } = customer;
+      return customerData;
+    })() : null,
+    payment
+  };
+
+  return NextResponse.json(sanitizedReservation);
 }
 
 
@@ -163,7 +205,17 @@ export async function POST(req: NextRequest) {
 
     await reservationRepo.save(reservation);
 
-    return NextResponse.json(reservation, { status: 201 });
+  const { isActive, room : _room, customer :_customer, payment :_payment, ...rest } = reservation;
+
+  const sanitizedReservation = {
+    ...rest,
+    room: room ? omit(room, ['isActive']) : null,
+    customer: customer ? omit(customer, ['isActive']) : null,
+    payment, 
+  };
+
+    return NextResponse.json(sanitizedReservation, { status: 201 });
+
   } catch (err) {
     console.error('[RESERVATION_POST_ERROR]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -186,7 +238,7 @@ export async function PATCH(req: NextRequest) {
 
     const reservation = await reservationRepo.findOne({ 
       where: { id }, 
-      relations: ['room', 'customer'] 
+      relations: ['room', 'customer', 'payment'] 
     })
     
     if (!reservation) {
@@ -203,19 +255,26 @@ export async function PATCH(req: NextRequest) {
       reservation.status = status
       await reservationRepo.save(reservation)
       
+      const { isActive, room, customer, payment, ...rest } = reservation;
+
+      const sanitizedReservation = {
+        ...rest,
+        room: room ? (() => {
+          const { isActive: _, ...roomData } = room;
+          return roomData;
+        })() : null,
+        customer: customer ? (() => {
+          const { isActive: _, ...customerData } = customer;
+          return customerData;
+        })() : null,
+        payment
+      };
+
       return NextResponse.json({ 
         message: `Reservation status set to ${reservation.status}`,
-        reservation 
+        reservation: sanitizedReservation 
       })
     } 
-    else {
-      reservation.isActive = !reservation.isActive
-      await reservationRepo.save(reservation)
-      return NextResponse.json({ 
-        message: `Reservation ${reservation.isActive ? 'activated' : 'deactivated'}`,
-        reservation 
-      })
-    }
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

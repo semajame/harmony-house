@@ -1,0 +1,91 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getDatabaseConnection } from '../../../lib/data-source'
+import { Customer } from '../../../lib/entities/customer'
+import { requireAdmin } from '@/app/lib/auth-utils'
+
+export async function GET(req: NextRequest) {
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+
+  const db = await getDatabaseConnection()
+  const customerRepo = db.getRepository(Customer)
+  const customers = await customerRepo.find({
+    where: { isActive: true }
+  })
+  const customersWithoutIsActive = customers.map(customer => {
+    const { isActive, ...customerWithoutIsActive } = customer
+    return customerWithoutIsActive
+  })
+  return NextResponse.json(customersWithoutIsActive)
+}
+
+export async function POST(req: NextRequest) {
+
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+
+  try {
+    const body = await req.json()
+    const { name, email, phone } = body
+
+    if (!name || !email) {
+      return NextResponse.json(
+        { error: 'Name and email are required' },
+        { status: 400 }
+      )
+    }
+
+    const db = await getDatabaseConnection()
+    const customerRepo = db.getRepository(Customer)
+
+    const newCustomer = customerRepo.create({ name, email, phone })
+    await customerRepo.save(newCustomer)
+
+    const { isActive, ...customerWithoutIsActive } = newCustomer
+
+
+    return NextResponse.json(customerWithoutIsActive, { status: 201 })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
+  }
+}
+
+export async function PUT(req: NextRequest) {
+
+  // const adminCheck = await requireAdmin(req)
+  // if (adminCheck) return adminCheck
+
+  try {
+    const body = await req.json()
+    const { id, name, email, phone, isActive } = body
+
+    if (!id) {
+      return NextResponse.json({ error: 'Customer ID is required' }, { status: 400 })
+    }
+
+    const db = await getDatabaseConnection()
+    const customerRepo = db.getRepository(Customer)
+
+    const customer = await customerRepo.findOne({ where: { id } })
+    if (!customer) {
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
+    }
+
+    customer.name = name ?? customer.name
+    customer.email = email ?? customer.email
+    customer.phone = phone ?? customer.phone
+    customer.isActive = isActive ?? customer.isActive
+
+    await customerRepo.save(customer)
+    const { isActive: _isActive, ...customerWithoutIsActive } = customer
+
+    return NextResponse.json(customerWithoutIsActive)
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
+  }
+}
+
+
+
