@@ -7,14 +7,14 @@ export enum UserRole {
 }
 
 @Entity()
-export class Users {
+export class User {
   @PrimaryGeneratedColumn()
   id!: number
 
   @Column('varchar', { length: 255, unique: true })
   username!: string
 
-  @Column('varchar', { length: 255, unique: true, nullable: true })
+  @Column('varchar', { length: 255, unique: true})
   email!: string
 
   @Column('varchar', { length: 255 })

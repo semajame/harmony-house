@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
-import { Users } from '../../../lib/entities/users'
+import { User } from '../../../lib/entities/users'
 import bcrypt from 'bcryptjs'
 
 export async function POST(req: Request) {
   try {
     const { username, password } = await req.json()
     const db = await getDatabaseConnection()
-    const userRepo = db.getRepository(Users)
+    const userRepo = db.getRepository(User)
 
     //^ Check if the username already exists
     const existingUser = await userRepo.findOne({ where: { username } })

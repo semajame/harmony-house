@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import * as dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
-import { Users } from './entities/users'
+import { User } from './entities/users'
 import { Customer } from './entities/customer'
 import { Payment } from './entities/payment'
 import { Reservation } from './entities/reservation'
@@ -16,7 +16,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER || 'root',
   password: process.env.DATABASE_PASSWORD || '',
   database: process.env.DATABASE_NAME || 'test',
-  entities: [Users, Customer, Payment, Reservation, Room],
+  entities: [User, Customer, Payment, Reservation, Room],
   // Uncomment   if you want to use migrations
   // migrations: ['src/migrations/*.ts'],
   // migrationsTableName: 'migrations',

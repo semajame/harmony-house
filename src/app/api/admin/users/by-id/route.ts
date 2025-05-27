@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../../lib/data-source'
-import { Staff } from '../../../../lib/entities/users'
+import { User } from '../../../../lib/entities/users'
 import { requireAdmin } from '@/app/lib/auth-utils'
 
 export async function GET(req: NextRequest) {
   // const adminCheck = await requireAdmin(req)
   // if (adminCheck) return adminCheck
   const db = await getDatabaseConnection()
-  const staffRepo = db.getRepository(Staff)
+  const userRepo = db.getRepository(User)
 
   const { searchParams } = new URL(req.url)
   const idString = searchParams.get('id')
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
   }
 
-  const user = await staffRepo.findOne({ where: { id: Number(id) } })
+  const user = await userRepo.findOne({ where: { id: Number(id) } })
 
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })

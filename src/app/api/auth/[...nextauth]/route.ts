@@ -3,7 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 
 import bcrypt from 'bcryptjs'
 import { getDatabaseConnection } from '../../../lib/data-source'
-import { Users } from '../../../lib/entities/users'
+import { User } from '../../../lib/entities/users'
 
 const authOptions: AuthOptions = {
   providers: [
@@ -20,8 +20,15 @@ const authOptions: AuthOptions = {
         }
 
         const db = await getDatabaseConnection()
-        const userRepo = db.getRepository(Users)
-
+        const userRepo = db.getRepository(User)
+        const blockedUser = await userRepo.findOne({
+          where: { username: credentials.username, isActive: false },
+        })
+        if (blockedUser) {
+          throw new Error(
+            'User is blocked. Please contact support for assistance.'
+          )
+        }
         const user = await userRepo.findOne({
           where: { username: credentials.username },
         })

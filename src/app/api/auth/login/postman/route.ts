@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '@/app/lib/data-source'
-import { Staff } from '@/app/lib/entities/users'
+import { User } from '@/app/lib/entities/users'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 //login for postman(because this will set cookies on postman, normal login wont)
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   }
 
   const db = await getDatabaseConnection()
-  const userRepo = db.getRepository(Staff)
+  const userRepo = db.getRepository(User)
   const user = await userRepo.findOne({ where: { username } })
 
   if (!user || !(await bcrypt.compare(password, user.password))) {

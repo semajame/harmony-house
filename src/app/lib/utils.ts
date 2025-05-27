@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from './data-source'
-import { Staff } from './entities/users'
+import { User } from './entities/users'
 import { getToken } from 'next-auth/jwt'
 
 export async function getUserRepository() {
   const db = await getDatabaseConnection()
-  return db.getRepository(Staff)
+  return db.getRepository(User)
 }
 
 // ✅ Fetch session from api/auth/session folder

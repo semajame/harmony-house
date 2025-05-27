@@ -1,4 +1,4 @@
-INSERT INTO staff (username, email, password, phone, role, isActive) VALUES
+INSERT INTO user (username, email, password, phone, role, isActive) VALUES
 ('admin', 'admin@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '123-456-7890', 'admin', 1);
 
 INSERT INTO customer (name, email, phone, isActive) VALUES
