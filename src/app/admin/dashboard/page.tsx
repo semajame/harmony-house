@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import LogoutButton from '@/components/admin/login/logout'
+import LogoutButton from '@/components/login/logout'
 
 import React, { useState } from 'react'
 import {

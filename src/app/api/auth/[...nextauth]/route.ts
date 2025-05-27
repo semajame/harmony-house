@@ -1,10 +1,9 @@
 import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import GoogleProvider from 'next-auth/providers/google'
 
 import bcrypt from 'bcryptjs'
 import { getDatabaseConnection } from '../../../lib/data-source'
-import { Staff } from '../../../lib/entities/staff'
+import { Users } from '../../../lib/entities/users'
 
 const authOptions: AuthOptions = {
   providers: [
@@ -21,7 +20,7 @@ const authOptions: AuthOptions = {
         }
 
         const db = await getDatabaseConnection()
-        const userRepo = db.getRepository(Staff)
+        const userRepo = db.getRepository(Users)
 
         const user = await userRepo.findOne({
           where: { username: credentials.username },
@@ -36,13 +35,9 @@ const authOptions: AuthOptions = {
         return {
           id: user.id.toString(),
           username: user.username,
-          role: user.role
+          role: user.role,
         }
       },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -63,7 +58,7 @@ const authOptions: AuthOptions = {
           ...session.user,
           id: token.id as string,
           username: token.username as string,
-           role: token.role as string,
+          role: token.role as string,
         },
         token,
       }

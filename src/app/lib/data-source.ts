@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import * as dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
-import { Staff } from './entities/staff'
+import { Staff } from './entities/users'
 import { Customer } from './entities/customer'
 import { Payment } from './entities/payment'
 import { Reservation } from './entities/reservation'

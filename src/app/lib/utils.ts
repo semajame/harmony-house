@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from './data-source'
-import { Staff } from '../lib/entities/staff'
+import { Staff } from './entities/users'
 import { getToken } from 'next-auth/jwt'
 
 export async function getUserRepository() {
@@ -18,4 +18,3 @@ export async function getSession(req: NextRequest) {
   if (!res.ok) return null
   return res.json()
 }
-

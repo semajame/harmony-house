@@ -1,7 +1,7 @@
 'use client'
 
 import { GalleryVerticalEnd } from 'lucide-react'
-import { LoginForm } from '@/components/admin/login/login-form'
+import { LoginForm } from '@/components/login/login-form'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'

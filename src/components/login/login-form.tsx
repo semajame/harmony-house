@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import Link from 'next/link'
 
 interface LoginFormProps extends React.ComponentProps<'form'> {
   form: {
@@ -54,10 +55,16 @@ export function LoginForm({
             onChange={onFormChange}
           />
         </div>
-
-        <Button type='submit' className='w-full mt-2'>
+        <Button type='submit' className='w-full'>
           Login
         </Button>
+      </div>
+
+      <div className='text-center text-sm'>
+        Don&apos;t have an account?{' '}
+        <Link href='/register' className='underline underline-offset-4'>
+          Sign up
+        </Link>
       </div>
     </form>
   )

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../../lib/data-source'
-import { Staff } from '../../../../lib/entities/staff'
+import { Staff } from '../../../../lib/entities/users'
 import { requireAdmin } from '@/app/lib/auth-utils'
 
 export async function GET(req: NextRequest) {
   // const adminCheck = await requireAdmin(req)
-  // if (adminCheck) return adminCheck    
+  // if (adminCheck) return adminCheck
   const db = await getDatabaseConnection()
   const staffRepo = db.getRepository(Staff)
 
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const id = idString ? Number(idString) : NaN
 
   if (!idString || isNaN(id) || !/^\d+$/.test(idString)) {
-  return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 })
   }
 
   if (!id) {

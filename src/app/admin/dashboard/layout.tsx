@@ -5,7 +5,16 @@ import { useSession } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-import { Home, Users, Bell, Search, Menu, X, ChevronDown } from 'lucide-react'
+import {
+  Home,
+  Users,
+  Bell,
+  Search,
+  Menu,
+  X,
+  ChevronDown,
+  User,
+} from 'lucide-react'
 
 import DashboardLayout from '@/components/admin/dashboard/dashboard-layout'
 
@@ -15,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import LogoutButton from '@/components/admin/login/logout'
+import LogoutButton from '@/components/login/logout'
 
 export default function Dashboard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -102,15 +111,6 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className='flex items-center space-x-4'>
-              <div className='relative hidden md:block'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
-                <input
-                  type='text'
-                  placeholder='Search...'
-                  className='pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                />
-              </div>
-
               <button className='relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg'>
                 <Bell className='h-5 w-5' />
                 <span className='absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full'></span>
@@ -120,10 +120,12 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                   <button className='flex items-center space-x-3 focus:outline-none cursor-pointer'>
                     <div className='w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center'>
-                      <span className='text-white text-sm font-medium'>JD</span>
+                      <span className='text-white text-sm font-medium'>
+                        {session?.user.username?.charAt(0).toUpperCase() ?? ''}
+                      </span>
                     </div>
                     <span className='hidden md:block text-sm font-medium text-gray-700'>
-                      John Doe
+                      {session?.user.username}
                     </span>
                     <ChevronDown className='h-4 w-4 text-gray-500' />
                   </button>

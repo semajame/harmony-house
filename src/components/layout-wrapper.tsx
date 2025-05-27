@@ -14,7 +14,8 @@ export default function LayoutWrapper({
 
   const isDashboard =
     pathname.startsWith('/admin/dashboard') ||
-    pathname.startsWith('/admin/login')
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup')
 
   return (
     <>
