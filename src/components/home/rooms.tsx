@@ -14,13 +14,23 @@ import {
 } from 'lucide-react'
 
 import { rooms } from '@/lib/rooms'
+// import BookButton from './book-room'
+import { useSession } from 'next-auth/react'
 
 export default function Rooms() {
   const router = useRouter()
+  const { data: session, status } = useSession()
+
   const [hoveredRoom, setHoveredRoom] = useState<number | null>(null)
 
   const handleBookNow = (id: number) => {
-    router.push(`/room/${id}`)
+    if (status === 'loading') return // or show loading UI
+
+    if (!session) {
+      router.push('/login')
+    } else {
+      router.push(`/room/${id}`)
+    }
   }
 
   return (
@@ -174,7 +184,6 @@ export default function Rooms() {
                         BOOK NOW
                       </span>
 
-                      {/* Button shine effect */}
                       <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700'></div>
                     </button>
                   </div>

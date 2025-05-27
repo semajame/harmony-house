@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GalleryVerticalEnd } from 'lucide-react'
-import { SignUpForm } from '@/components/login/signup-form'
+import { SignUpForm } from '@/components/forms-buttons/signup-form'
 
 import Image from 'next/image'
 
@@ -15,6 +15,7 @@ export default function SignUp() {
     password: '',
     phone: '',
     email: '',
+    name: '',
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -28,7 +29,7 @@ export default function SignUp() {
     setError('')
     setSuccess('')
 
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch('/api/customer/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),

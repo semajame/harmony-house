@@ -9,6 +9,7 @@ interface RegisterFormProps extends React.ComponentProps<'form'> {
     password: string
     phone: string
     email: string
+    name: string
   }
   onFormChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onSubmit: (e: React.FormEvent) => void
@@ -40,9 +41,21 @@ export function SignUpForm({
             id='username'
             name='username'
             type='text'
-            placeholder='username'
+            placeholder='Username'
             required
             value={form.username}
+            onChange={onFormChange}
+          />
+        </div>
+        <div className='grid gap-3'>
+          <Label htmlFor='name'>Full Name</Label>
+          <Input
+            id='name'
+            name='name'
+            type='text'
+            placeholder='Full Name'
+            required
+            value={form.name}
             onChange={onFormChange}
           />
         </div>
@@ -64,6 +77,7 @@ export function SignUpForm({
             id='phone'
             name='phone'
             type='text'
+            placeholder='09XXXXX'
             required
             value={form.phone}
             onChange={onFormChange}
@@ -81,7 +95,7 @@ export function SignUpForm({
           />
         </div>
 
-        <Button type='submit' className='w-full'>
+        <Button type='submit' className='w-full cursor-pointer'>
           Register
         </Button>
       </div>

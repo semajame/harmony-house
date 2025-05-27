@@ -24,7 +24,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import LogoutButton from '@/components/login/logout'
+import LogoutButton from '@/components/forms-buttons/logout-button'
+
+import { getServerSession } from 'next-auth'
 
 export default function Dashboard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -49,8 +51,19 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/')
+    } else if (
+      status === 'authenticated' &&
+      session?.user.role === 'customer'
+    ) {
+      router.push('/') // or redirect to a "not authorized" page
     }
-  }, [status, router])
+  }, [status, session, router])
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      console.log('Session:', session)
+    }
+  }, [session, status])
 
   return (
     <div className='flex h-screen bg-gray-100 overflow-hidden'>

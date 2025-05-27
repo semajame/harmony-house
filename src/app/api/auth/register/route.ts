@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(req: Request) {
   try {
-    const { username, password } = await req.json()
+    const { username, password, email } = await req.json()
     const db = await getDatabaseConnection()
     const userRepo = db.getRepository(User)
 
@@ -22,7 +22,11 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     //^ Create a new user
-    const newUser = userRepo.create({ username, password: hashedPassword })
+    const newUser = userRepo.create({
+      username,
+      password: hashedPassword,
+      email,
+    })
     await userRepo.save(newUser)
 
     return NextResponse.json(

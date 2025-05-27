@@ -1,10 +1,10 @@
 'use client'
 
-import { GalleryVerticalEnd } from 'lucide-react'
-import { LoginForm } from '@/components/login/login-form'
+import { LoginForm } from '@/components/forms-buttons/login-form'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+
+import { getSession, signIn } from 'next-auth/react'
 
 import Image from 'next/image'
 import Link from 'next/link'
@@ -30,6 +30,15 @@ export default function LoginPage() {
     if (res?.error) {
       alert('Invalid credentials')
     } else {
+      const session = await getSession()
+
+      if (session?.user.role === 'customer') {
+        alert(
+          'Access denied. Customers are not allowed to access the dashboard.'
+        )
+        return
+      }
+
       alert('Signed in successfully!')
       router.push('/admin/dashboard')
     }

@@ -55,14 +55,14 @@ export function LoginForm({
             onChange={onFormChange}
           />
         </div>
-        <Button type='submit' className='w-full'>
+        <Button type='submit' className='w-full cursor-pointer'>
           Login
         </Button>
       </div>
 
       <div className='text-center text-sm'>
         Don&apos;t have an account?{' '}
-        <Link href='/register' className='underline underline-offset-4'>
+        <Link href='/signup' className='underline underline-offset-4'>
           Sign up
         </Link>
       </div>

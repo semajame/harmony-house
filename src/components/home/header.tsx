@@ -16,6 +16,9 @@ import {
 
 import { ChevronDown, Menu, X } from 'lucide-react'
 
+import LogoutCustomer from '../forms-buttons/logout-costumer'
+import AuthButtons from '../forms-buttons/auth-buttons'
+
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -66,14 +69,9 @@ const Header = () => {
         </nav>
 
         {/* Desktop Buttons */}
-        {/* <div className='hidden md:flex gap-2'>
-          <Link href='/login'>
-            <Button>Login</Button>
-          </Link>
-          <Link href='/signup'>
-            <Button>Register</Button>
-          </Link>
-        </div> */}
+        <div className='hidden md:flex gap-2'>
+          <AuthButtons />
+        </div>
 
         {/* Mobile Hamburger */}
         <div className='md:hidden'>
@@ -100,14 +98,14 @@ const Header = () => {
               <li>Drinks</li>
             </ul>
           </div>
-          {/* <div className='flex justify-center gap-2 mt-4'>
+          <div className='flex justify-center gap-2 mt-4'>
             <Link href='/login'>
               <Button className='w-24'>Login</Button>
             </Link>
             <Link href='/signup'>
               <Button className='w-24'>Register</Button>
             </Link>
-          </div> */}
+          </div>
         </div>
       )}
     </header>

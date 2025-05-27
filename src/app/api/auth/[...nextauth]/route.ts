@@ -59,16 +59,10 @@ const authOptions: AuthOptions = {
       return token
     },
     async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.id as string,
-          username: token.username as string,
-          role: token.role as string,
-        },
-        token,
-      }
+      session.user.id = token.id
+      session.user.username = token.username
+      session.user.role = token.role
+      return session
     },
   },
 }
