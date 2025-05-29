@@ -33,9 +33,9 @@ export default function RoomPage() {
   const room = rooms.find((r) => r.id === roomId)
 
   // Form state
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
+  // const [fullName, setFullName] = useState('')
+  // const [email, setEmail] = useState('')
+  // const [phone, setPhone] = useState('')
   const [checkInDate, setCheckInDate] = useState('')
   const [checkInTime, setCheckInTime] = useState('')
   const [checkOutTime, setCheckOutTime] = useState('')
@@ -133,50 +133,39 @@ export default function RoomPage() {
   }, [checkInTime, checkOutTime, room])
 
   //^ Handle reservation button
-  // const handleReserve = async () => {
-  //   if (!checkInDate || !room || !fullName || !email || !phone) {
-  //     alert('Please fill in all required fields')
-  //     return
-  //   }
+  const handleReserve = (event: React.FormEvent) => {
+    event.preventDefault() // Prevent page refresh
+    if (!checkInDate || !checkInTime || !checkOutTime) {
+      alert('Please fill in all required fields')
+      return
+    }
 
-  //   const checkIn = new Date(`${checkInDate}T${checkInTime}:00`)
-  //   const checkOut = new Date(`${checkInDate}T${checkOutTime}:00`)
+    const checkIn = new Date(`${checkInDate}T${checkInTime}:00`)
+    const checkOut = new Date(`${checkInDate}T${checkOutTime}:00`)
 
-  //   // If checkout is before checkin, assume next day
-  //   if (checkOut <= checkIn) {
-  //     checkOut.setDate(checkOut.getDate() + 1)
-  //   }
+    // If checkout is before checkin, assume next day
+    if (checkOut <= checkIn) {
+      checkOut.setDate(checkOut.getDate() + 1)
+    }
 
-  //   const reservationData = {
-  //     roomId: room.id,
-  //     fullName,
-  //     email,
-  //     phone,
-  //     checkIn: checkIn.toISOString(),
-  //     checkOut: checkOut.toISOString(),
-  //     persons,
-  //     totalPrice,
-  //   }
+    const reservationData = {
+      roomId: room?.id,
 
-  //   try {
-  //     const res = await fetch('/api/reservations', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(reservationData),
-  //     })
+      checkIn: checkIn.toISOString(),
+      checkOut: checkOut.toISOString(),
+    }
 
-  //     if (res.ok) {
-  //       const data = await res.json()
-  //       router.push(`/payment/${data.reservationId}`)
-  //     } else {
-  //       console.error('Reservation failed')
-  //       alert('Reservation failed. Please try again.')
-  //     }
-  //   } catch (error) {
-  //     console.error('Error making reservation:', error)
-  //     alert('An error occurred. Please try again.')
-  //   }
-  // }
+    try {
+      // Save to localStorage
+      localStorage.setItem('reservation', JSON.stringify(reservationData))
+      console.log(reservationData)
+      // Redirect to payment page
+      router.push('/payment')
+    } catch (error) {
+      console.error('Error saving reservation to localStorage:', error)
+      alert('An error occurred. Please try again.')
+    }
+  }
 
   const handleBackToRooms = () => {
     router.push('/rooms') // Adjust this path according to your routing structure
@@ -419,200 +408,202 @@ export default function RoomPage() {
         </div>
 
         {/* Booking Sidebar */}
-        <div className='lg:col-span-1'>
-          <div className='sticky top-24'>
-            <div className='bg-white rounded-2xl shadow-xl border border-purple-100 overflow-hidden'>
-              <div className='bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6'>
-                <div className='flex items-center gap-2 mb-2'>
-                  <Calendar className='w-5 h-5' />
-                  <h3 className='text-lg font-bold'>Book Your Session</h3>
-                </div>
-                <p className='text-purple-100 text-sm'>
-                  Reserve your perfect karaoke experience
-                </p>
-              </div>
-
-              <div className='p-6 space-y-6'>
-                {/* Full Name */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                    <User className='w-4 h-4' />
-                    Full Name
-                  </label>
-                  <input
-                    type='text'
-                    className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                    placeholder='Full Name'
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
+        <form onSubmit={handleReserve}>
+          <div className='lg:col-span-1'>
+            <div className='sticky top-24'>
+              <div className='bg-white rounded-2xl shadow-xl border border-purple-100 overflow-hidden'>
+                <div className='bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6'>
+                  <div className='flex items-center gap-2 mb-2'>
+                    <Calendar className='w-5 h-5' />
+                    <h3 className='text-lg font-bold'>Book Your Session</h3>
+                  </div>
+                  <p className='text-purple-100 text-sm'>
+                    Reserve your perfect karaoke experience
+                  </p>
                 </div>
 
-                {/* Email Address */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                    <Mail className='w-4 h-4' />
-                    Email
-                  </label>
-                  <input
-                    type='email'
-                    className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                    placeholder='example@mail.com'
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
+                <div className='p-6 space-y-6'>
+                  {/* Full Name */}
+                  {/* <div>
+                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                      <User className='w-4 h-4' />
+                      Full Name
+                    </label>
+                    <input
+                      type='text'
+                      className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                      placeholder='Full Name'
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div> */}
 
-                {/* Phone Number */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                    <Phone className='w-4 h-4' />
-                    Phone Number
-                  </label>
-                  <input
-                    type='tel'
-                    className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                    placeholder='09XXXXXXXXX'
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
+                  {/* Email Address */}
+                  {/* <div>
+                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                      <Mail className='w-4 h-4' />
+                      Email
+                    </label>
+                    <input
+                      type='email'
+                      className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                      placeholder='example@mail.com'
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div> */}
 
-                {/* Date Selection */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                    <Calendar className='w-4 h-4' />
-                    Select Date
-                  </label>
-                  <input
-                    type='date'
-                    className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                    value={checkInDate}
-                    onChange={(e) => setCheckInDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                  />
-                </div>
+                  {/* Phone Number */}
+                  {/* <div>
+                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                      <Phone className='w-4 h-4' />
+                      Phone Number
+                    </label>
+                    <input
+                      type='tel'
+                      className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                      placeholder='09XXXXXXXXX'
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div> */}
 
-                {/* Time Selection */}
-                <div className='grid grid-cols-2 gap-4'>
+                  {/* Date Selection */}
                   <div>
                     <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                      <Clock className='w-4 h-4' />
-                      Check-in
+                      <Calendar className='w-4 h-4' />
+                      Select Date
                     </label>
-                    <select
+                    <input
+                      type='date'
                       className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                      value={checkInTime}
-                      onChange={(e) => setCheckInTime(e.target.value)}
-                    >
-                      <option value=''>Select time</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {formatToAMPM(time)}
-                        </option>
-                      ))}
-                    </select>
+                      value={checkInDate}
+                      onChange={(e) => setCheckInDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                    />
                   </div>
 
-                  <div>
-                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                      <Clock className='w-4 h-4' />
-                      Check-out
-                    </label>
-                    <select
-                      className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                      value={checkOutTime}
-                      onChange={(e) => setCheckOutTime(e.target.value)}
-                    >
-                      <option value=''>Select time</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {formatToAMPM(time)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Guests */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                    <Users className='w-4 h-4' />
-                    Number of Guests
-                  </label>
-                  <div className='flex items-center border border-gray-200 rounded-lg overflow-hidden'>
-                    <button
-                      type='button'
-                      onClick={() => setPersons(Math.max(1, persons - 1))}
-                      className='p-3 hover:bg-gray-50 transition-colors'
-                    >
-                      -
-                    </button>
-                    <span className='flex-1 text-center py-3 border-x border-gray-200'>
-                      {persons} {persons === 1 ? 'guest' : 'guests'}
-                    </span>
-                    <button
-                      type='button'
-                      onClick={() => setPersons(Math.min(6, persons + 1))}
-                      className='p-3 hover:bg-gray-50 transition-colors'
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Pricing Breakdown */}
-                <div className='bg-gray-50 rounded-lg p-4 space-y-2'>
-                  <div className='flex justify-between text-sm'>
-                    <span>Hourly rate</span>
-                    <span>{room.price}</span>
-                  </div>
-                  <div className='flex justify-between text-sm'>
-                    <span>Service fee</span>
-                    <span>Free</span>
-                  </div>
-                  <div className='border-t border-gray-200 pt-2 flex justify-between font-semibold'>
-                    <span>Total</span>
-                    <span className='text-purple-600'>
-                      ₱{totalPrice.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Benefits */}
-                <div className='space-y-2'>
-                  {[
-                    '24 hour free cancellation',
-                    'Instant confirmation',
-                    '24/7 support',
-                  ].map((benefit, index) => (
-                    <div
-                      key={index}
-                      className='flex items-center gap-2 text-sm text-gray-600'
-                    >
-                      <CheckCircle className='w-4 h-4 text-green-500' />
-                      {benefit}
+                  {/* Time Selection */}
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div>
+                      <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                        <Clock className='w-4 h-4' />
+                        Check-in
+                      </label>
+                      <select
+                        className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                        value={checkInTime}
+                        onChange={(e) => setCheckInTime(e.target.value)}
+                      >
+                        <option value=''>Select time</option>
+                        {timeSlots.map((time) => (
+                          <option key={time} value={time}>
+                            {formatToAMPM(time)}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                  ))}
-                </div>
 
-                {/* Book Button */}
-                <Button
-                  // onClick={console.log('clickd')}
-                  className='w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl cursor-pointer'
-                  disabled={!checkInDate || !fullName || !email || !phone}
-                >
-                  <Music className='w-5 h-5 mr-2' />
-                  Reserve Your Spot
-                </Button>
+                    <div>
+                      <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                        <Clock className='w-4 h-4' />
+                        Check-out
+                      </label>
+                      <select
+                        className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                        value={checkOutTime}
+                        onChange={(e) => setCheckOutTime(e.target.value)}
+                      >
+                        <option value=''>Select time</option>
+                        {timeSlots.map((time) => (
+                          <option key={time} value={time}>
+                            {formatToAMPM(time)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Guests */}
+                  <div>
+                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                      <Users className='w-4 h-4' />
+                      Number of Guests
+                    </label>
+                    <div className='flex items-center border border-gray-200 rounded-lg overflow-hidden'>
+                      <button
+                        type='button'
+                        onClick={() => setPersons(Math.max(1, persons - 1))}
+                        className='p-3 hover:bg-gray-50 transition-colors'
+                      >
+                        -
+                      </button>
+                      <span className='flex-1 text-center py-3 border-x border-gray-200'>
+                        {persons} {persons === 1 ? 'guest' : 'guests'}
+                      </span>
+                      <button
+                        type='button'
+                        onClick={() => setPersons(Math.min(6, persons + 1))}
+                        className='p-3 hover:bg-gray-50 transition-colors'
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Pricing Breakdown */}
+                  <div className='bg-gray-50 rounded-lg p-4 space-y-2'>
+                    <div className='flex justify-between text-sm'>
+                      <span>Hourly rate</span>
+                      <span>{room.price}</span>
+                    </div>
+                    <div className='flex justify-between text-sm'>
+                      <span>Service fee</span>
+                      <span>Free</span>
+                    </div>
+                    <div className='border-t border-gray-200 pt-2 flex justify-between font-semibold'>
+                      <span>Total</span>
+                      <span className='text-purple-600'>
+                        ₱{totalPrice.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Benefits */}
+                  <div className='space-y-2'>
+                    {[
+                      '24 hour free cancellation',
+                      'Instant confirmation',
+                      '24/7 support',
+                    ].map((benefit, index) => (
+                      <div
+                        key={index}
+                        className='flex items-center gap-2 text-sm text-gray-600'
+                      >
+                        <CheckCircle className='w-4 h-4 text-green-500' />
+                        {benefit}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Book Button */}
+                  <Button
+                    type='submit'
+                    className='w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl cursor-pointer'
+                    disabled={!checkInDate || !checkInTime || !checkOutTime}
+                  >
+                    <Music className='w-5 h-5 mr-2' />
+                    Reserve Your Spot
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   )

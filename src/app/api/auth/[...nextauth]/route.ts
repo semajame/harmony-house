@@ -43,18 +43,25 @@ const authOptions: AuthOptions = {
           id: user.id.toString(),
           username: user.username,
           role: user.role,
+          email: user.email,
+          phone: user.phone,
         }
       },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' as 'jwt' }, // Explicitly setting type
+  jwt: {
+    maxAge: 60 * 60 * 24, // 1 day in seconds
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
         token.username = user.username // ✅ This is missing!
         token.role = (user as any).role
+        token.email = (user as any).email // ✅ FIX: Add this
+        token.phone = (user as any).phone // ✅ Add this line
       }
       return token
     },
@@ -62,6 +69,8 @@ const authOptions: AuthOptions = {
       session.user.id = token.id
       session.user.username = token.username
       session.user.role = token.role
+      session.user.email = token.email // ✅ Now this will work
+      session.user.phone = token.phone // ✅ This too
       return session
     },
   },

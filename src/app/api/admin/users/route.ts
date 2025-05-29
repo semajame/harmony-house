@@ -34,23 +34,24 @@ export async function POST(req: NextRequest) {
     const userRepo = db.getRepository(User)
     const customerRepo = db.getRepository(Customer)
 
-    if(!role || role === UserRole.COSTUMER) {
+    if (!role || role === UserRole.CUSTOMER) {
       let customerCheck = await customerRepo.findOne({
-        where: { email: email }
+        where: { email: email },
       })
       if (customerCheck) {
         if (!customerCheck.isActive) {
           return NextResponse.json(
-            { error: 'Customer with that email is not active, please activate' },
+            {
+              error: 'Customer with that email is not active, please activate',
+            },
             { status: 409 }
           )
         }
-      }
-      else if (!customerCheck){
-          return NextResponse.json(
-            { error: 'Customer with that email doesnt exist' },
-            { status: 404 }
-          )
+      } else if (!customerCheck) {
+        return NextResponse.json(
+          { error: 'Customer with that email doesnt exist' },
+          { status: 404 }
+        )
       }
     }
     let existingUser = await userRepo.findOne({

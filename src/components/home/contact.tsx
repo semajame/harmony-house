@@ -100,7 +100,10 @@ export default function Contact() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
+    <div
+      className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'
+      id='contact'
+    >
       {/* Header */}
       <div className='bg-[#944EA8] shadow-sm'>
         <div className='max-w-7xl mx-auto px-6 py-8'>

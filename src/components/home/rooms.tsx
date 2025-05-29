@@ -16,11 +16,13 @@ import {
 import { rooms } from '@/lib/rooms'
 // import BookButton from './book-room'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 export default function Rooms() {
   const router = useRouter()
   const { data: session, status } = useSession()
 
+  console.log(session)
   const [hoveredRoom, setHoveredRoom] = useState<number | null>(null)
 
   const handleBookNow = (id: number) => {
@@ -34,7 +36,10 @@ export default function Rooms() {
   }
 
   return (
-    <div className='bg-gradient-to-br from-purple-50 via-white to-pink-50 py-20 relative overflow-hidden'>
+    <div
+      className='bg-gradient-to-br from-purple-50 via-white to-pink-50 py-20 relative overflow-hidden'
+      id='rooms'
+    >
       {/* Background decorative elements */}
       <div className='absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none'>
         <div className='absolute top-20 left-10 w-32 h-32 bg-purple-200/30 rounded-full blur-3xl'></div>
@@ -163,6 +168,9 @@ export default function Rooms() {
                     <span className='bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs font-medium'>
                       AC Climate
                     </span>
+                    <span className='bg-blue-50 text-green-700 px-2 py-1 rounded-full text-xs font-medium'>
+                      Food Inclusions
+                    </span>
                   </div>
 
                   {/* Price */}
@@ -207,12 +215,12 @@ export default function Rooms() {
               and preferences.
             </p>
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-              <button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105'>
+              <Link
+                href='#contact'
+                className='bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 cursor-pointer'
+              >
                 Contact Us
-              </button>
-              <button className='bg-white text-purple-600 border-2 border-purple-600 px-8 py-3 rounded-xl font-semibold hover:bg-purple-600 hover:text-white transition-all duration-300'>
-                View All Packages
-              </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -5,15 +5,6 @@ import { Button } from '../ui/button'
 import Link from 'next/link'
 import { useState } from 'react'
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-
 import { ChevronDown, Menu, X } from 'lucide-react'
 
 import LogoutCustomer from '../forms-buttons/logout-costumer'
@@ -47,23 +38,19 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link href='' className='hover:underline px-2'>
-                Contact
+              <Link href='#rooms' className='hover:underline px-2'>
+                Rooms
               </Link>
             </li>
             <li>
-              <DropdownMenu>
-                <DropdownMenuTrigger className='cursor-pointer flex items-center gap-1 px-2'>
-                  Menu <ChevronDown />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Rooms</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Foods</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Drinks</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link href='#menu' className='hover:underline px-2'>
+                Menu
+              </Link>
+            </li>
+            <li>
+              <Link href='#contact' className='hover:underline px-2'>
+                Contact
+              </Link>
             </li>
           </ul>
         </nav>
@@ -87,17 +74,16 @@ const Header = () => {
           <Link href='/' className='block'>
             Home
           </Link>
-          <Link href='/' className='block'>
-            Contact Us
+          <Link href='#rooms' className='block'>
+            Rooms
           </Link>
-          <div>
-            <p className='font-semibold'>Menu</p>
-            <ul className='space-y-1'>
-              <li>Rooms</li>
-              <li>Foods</li>
-              <li>Drinks</li>
-            </ul>
-          </div>
+          <Link href='#menu' className='block'>
+            Menu
+          </Link>
+          <Link href='#contact' className='block'>
+            Contact
+          </Link>
+
           <div className='flex justify-center gap-2 mt-4'>
             <Link href='/login'>
               <Button className='w-24'>Login</Button>

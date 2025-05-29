@@ -23,7 +23,7 @@ export default function AuthSection() {
       {session?.user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className='flex items-center space-x-3 focus:outline-none cursor-pointer'>
+            <button className='flex items-center space-x-2.5 focus:outline-none cursor-pointer'>
               <div className='w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center'>
                 <span className='text-white text-sm font-medium'>
                   {session.user.username?.charAt(0).toUpperCase() ?? ''}
@@ -32,7 +32,7 @@ export default function AuthSection() {
               <span className='hidden md:block text-sm font-medium text-white'>
                 {session.user.username}
               </span>
-              <ChevronDown className='h-4 w-4 text-gray-500' />
+              <ChevronDown className='h-4 w-4 text-white' />
             </button>
           </DropdownMenuTrigger>
 
@@ -45,10 +45,14 @@ export default function AuthSection() {
       ) : (
         <>
           <Link href='/login'>
-            <Button>Login</Button>
+            <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 cursor-pointer'>
+              Login
+            </Button>
           </Link>
           <Link href='/signup'>
-            <Button>Register</Button>
+            <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 cursor-pointer'>
+              Register
+            </Button>
           </Link>
         </>
       )}

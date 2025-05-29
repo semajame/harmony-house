@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 const FoodAndDrinks = () => {
   return (
-    <div className='bg-white m-auto max-w-7xl py-[5rem] px-4'>
+    <div className='bg-white m-auto max-w-7xl py-[5rem] px-4' id='menu'>
       <h1 className='text-4xl font-bold text-center mb-4 text-gray-800'>
         Food & Drinks
       </h1>

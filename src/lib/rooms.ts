@@ -3,7 +3,7 @@ export const rooms = [
     id: 1,
     name: 'Room no.1',
     person: 'Good for 2-3 persons',
-    price: 'P500',
+    price: '₱500',
 
     description:
       'A stylish room with enhanced decor, amenities and mood lighting.',
