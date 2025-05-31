@@ -23,7 +23,7 @@ interface UserType {
   isActive: boolean
 }
 
-const Staffs = () => {
+const Users = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState('all')
   const [filterActive, setFilterActive] = useState<
@@ -114,12 +114,20 @@ const Staffs = () => {
                 <select
                   value={filterRole}
                   onChange={(e) => setFilterRole(e.target.value)}
-                  className='pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white'
+                  className='pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white cursor-pointer'
                 >
-                  <option value='all'>All Roles</option>
-                  <option value='admin'>Admin</option>
-                  <option value='staff'>Staff</option>
-                  <option value='costumer'>Costumer</option>
+                  <option value='all' className='cursor-pointer'>
+                    All Roles
+                  </option>
+                  <option value='admin' className='cursor-pointer'>
+                    Admin
+                  </option>
+                  <option value='staff' className='cursor-pointer'>
+                    Staff
+                  </option>
+                  <option value='costumer' className='cursor-pointer'>
+                    Costumer
+                  </option>
                 </select>
               </div>
             </div>
@@ -206,4 +214,4 @@ const Staffs = () => {
   )
 }
 
-export default Staffs
+export default Users

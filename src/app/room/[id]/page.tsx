@@ -24,13 +24,22 @@ import {
   User,
   Mail,
   Phone,
+  Utensils,
 } from 'lucide-react'
+
+const foodOptions = [
+  { id: 1, name: 'Chicken Wings', price: 199 },
+  { id: 2, name: 'Nachos & Cheese', price: 149 },
+  { id: 3, name: 'Fries Bucket', price: 99 },
+  { id: 4, name: 'Coke 1.5L', price: 89 },
+]
 
 export default function RoomPage() {
   const params = useParams()
   const router = useRouter()
   const roomId = Number(params.id)
   const room = rooms.find((r) => r.id === roomId)
+  const [selectedFoods, setSelectedFoods] = useState<number[]>([])
 
   // Form state
   // const [fullName, setFullName] = useState('')
@@ -107,6 +116,12 @@ export default function RoomPage() {
     '23:00',
   ]
 
+  const handleFoodToggle = (id: number) => {
+    setSelectedFoods((prev) =>
+      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
+    )
+  }
+
   //^ format time to am and pm
   function formatToAMPM(time24: string): string {
     const [hour, minute] = time24.split(':').map(Number)
@@ -127,10 +142,17 @@ export default function RoomPage() {
         hours = 24 - checkInHour + checkOutHour
       }
 
-      const priceNumber = parseInt(room.price.replace(/[^\d]/g, ''))
-      setTotalPrice(hours * priceNumber)
+      const roomPriceNumber = parseInt(
+        room.price.toString().replace(/[^\d]/g, '')
+      )
+      const foodTotal = selectedFoods.reduce((sum, fid) => {
+        const food = foodOptions.find((f) => f.id === fid)
+        return sum + (food?.price || 0)
+      }, 0)
+
+      setTotalPrice(hours * roomPriceNumber + foodTotal)
     }
-  }, [checkInTime, checkOutTime, room])
+  }, [checkInTime, checkOutTime, room, selectedFoods, foodOptions])
 
   //^ Handle reservation button
   const handleReserve = (event: React.FormEvent) => {
@@ -150,9 +172,9 @@ export default function RoomPage() {
 
     const reservationData = {
       roomId: room?.id,
-
       checkIn: checkIn.toISOString(),
       checkOut: checkOut.toISOString(),
+      totalPrice: totalPrice,
     }
 
     try {
@@ -359,6 +381,8 @@ export default function RoomPage() {
             </div>
           </div>
 
+          {/* Food  */}
+
           {/* Reviews Preview */}
           <div className='bg-white rounded-2xl p-6 shadow-lg border border-purple-100'>
             <div className='flex items-center justify-between mb-6'>
@@ -423,54 +447,6 @@ export default function RoomPage() {
                 </div>
 
                 <div className='p-6 space-y-6'>
-                  {/* Full Name */}
-                  {/* <div>
-                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                      <User className='w-4 h-4' />
-                      Full Name
-                    </label>
-                    <input
-                      type='text'
-                      className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                      placeholder='Full Name'
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                    />
-                  </div> */}
-
-                  {/* Email Address */}
-                  {/* <div>
-                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                      <Mail className='w-4 h-4' />
-                      Email
-                    </label>
-                    <input
-                      type='email'
-                      className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                      placeholder='example@mail.com'
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div> */}
-
-                  {/* Phone Number */}
-                  {/* <div>
-                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
-                      <Phone className='w-4 h-4' />
-                      Phone Number
-                    </label>
-                    <input
-                      type='tel'
-                      className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
-                      placeholder='09XXXXXXXXX'
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                    />
-                  </div> */}
-
                   {/* Date Selection */}
                   <div>
                     <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
@@ -552,6 +528,36 @@ export default function RoomPage() {
                       >
                         +
                       </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className='text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2'>
+                      <Utensils className='w-4 h-4' />
+                      Food Inclusions
+                    </h4>
+                    <div className='space-y-2'>
+                      {foodOptions.map((food) => (
+                        <label
+                          key={food.id}
+                          className='flex items-center justify-between bg-purple-50 px-3 py-2 rounded-lg cursor-pointer'
+                        >
+                          <div className='flex items-center gap-2'>
+                            <input
+                              type='checkbox'
+                              checked={selectedFoods.includes(food.id)}
+                              onChange={() => handleFoodToggle(food.id)}
+                              className='accent-purple-600'
+                            />
+                            <span className='text-sm text-gray-700'>
+                              {food.name}
+                            </span>
+                          </div>
+                          <span className='text-sm font-medium text-purple-600'>
+                            ₱{food.price}
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </div>
 

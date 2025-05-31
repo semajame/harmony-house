@@ -14,6 +14,7 @@ import {
   X,
   ChevronDown,
   User,
+  CakeSlice,
 } from 'lucide-react'
 
 import DashboardLayout from '@/components/admin/dashboard/dashboard-layout'
@@ -33,19 +34,21 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const getTitleFromPath = (path: string) => {
-    if (path.includes('/staffs')) return 'Staffs'
+    if (path.includes('/users')) return 'Users'
     if (path.includes('/dashboard')) return 'Overview'
+    if (path.includes('/foods')) return 'Foods'
+
     return 'Dashboard'
   }
 
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
-
   const sidebarItems = [
     { icon: Home, label: 'Dashboard', link: '/admin/dashboard' },
-    { icon: Users, label: 'Staffs', link: '/admin/dashboard/staffs' },
+    { icon: Users, label: 'Users', link: '/admin/dashboard/users' },
+    { icon: CakeSlice, label: 'Foods', link: '/admin/dashboard/foods' },
   ]
 
   useEffect(() => {

@@ -3,15 +3,19 @@ import { NextResponse } from 'next/server'
 
 export default withAuth(
   function middleware(req) {
-    console.log('Middleware triggered for:', req.nextUrl.pathname)
-
     const token = req.nextauth?.token
-    console.log('Token:', token)
+    const pathname = req.nextUrl.pathname
 
-    if (token?.role === 'costumer') {
-      console.log('Redirecting costumer away from dashboard')
+    // Redirect admin users away from the root path
+    if (token?.role === 'admin' && pathname === '/') {
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url))
+    }
+
+    // Redirect customer users away from the admin dashboard
+    if (token?.role === 'costumer' && pathname.startsWith('/admin/dashboard')) {
       return NextResponse.redirect(new URL('/', req.url))
     }
+
     return NextResponse.next()
   },
   {
@@ -22,5 +26,5 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/admin/dashboard/:path*'],
+  matcher: ['/', '/admin/dashboard/:path*'],
 }
