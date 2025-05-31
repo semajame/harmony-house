@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
 import { User, UserRole } from '../../../lib/entities/users'
-import { Customer } from '../../../lib/entities/customer'
 import bcrypt from 'bcryptjs'
 
 export async function POST(req: NextRequest) {
@@ -26,8 +25,8 @@ export async function POST(req: NextRequest) {
     }
 
     const userRepo = queryRunner.manager.getRepository(User)
-    const customerRepo = queryRunner.manager.getRepository(Customer)
 
+    // Check for blocked user
     let blockedUser = await userRepo.findOne({
       where: { email: email, isActive: false }
     })
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check for existing user
+    // Check for existing user by email
     let existingUser = await userRepo.findOne({
       where: { email: email }
     })
@@ -48,23 +47,12 @@ export async function POST(req: NextRequest) {
     if (existingUser) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'User already exists' },
+        { error: 'User with that email already exists' },
         { status: 409 }
       )
     }
 
-    let existingCustomer = await customerRepo.findOne({
-      where: { email: email }
-    })
-
-    if (existingCustomer) {
-      await queryRunner.rollbackTransaction()
-      return NextResponse.json(
-        { error: 'Customer with that email already exists' },
-        { status: 409 }
-      )
-    }
-
+    // Check for existing username
     let existingUsername = await userRepo.findOne({
       where: { username: username }
     })
@@ -81,31 +69,21 @@ export async function POST(req: NextRequest) {
 
     const newUser = userRepo.create({
       username,
+      name,
       email,
       password: hashedPassword,
       phone,
-      role: UserRole.COSTUMER, 
+      role: UserRole.CUSTOMER, 
     })
 
     await userRepo.save(newUser)
-
-    const newCustomer = customerRepo.create({
-      name,
-      email,
-      phone,
-    })
-
-    await customerRepo.save(newCustomer)
-
     await queryRunner.commitTransaction()
 
-    const { password: _, isActive: __, ...userWithoutPassword } = newUser
-    const { id: customerId, isActive, ...customerWithoutMeta } = newCustomer
+    const { password: _, ...userWithoutPassword } = newUser
 
     return NextResponse.json({
-      message: 'User and customer profile created successfully',
-      user: userWithoutPassword,
-      customer: customerWithoutMeta
+      message: 'User created successfully',
+      user: userWithoutPassword
     }, { status: 201 })
 
   } catch (err) {

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDatabaseConnection } from '../../../lib/data-source'
 import { Reservation, Status } from '../../../lib/entities/reservation'
 import { Room } from '../../../lib/entities/rooms'
-import { Customer } from '../../../lib/entities/customer'
 import { Payment } from '../../../lib/entities/payment'
 import { Between, LessThan, MoreThan, Not } from 'typeorm'
 import { requireAdmin } from '@/app/lib/auth-utils'
 import { DateTime } from 'luxon'
+import { User } from '@/app/lib/entities/users'
 
 
 export async function GET(req: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const db = await getDatabaseConnection()
   const reservationRepo = db.getRepository(Reservation)
   const reservations = await reservationRepo.find({
-    relations: ['room', 'customer', 'payment'],
+    relations: ['room', 'user', 'payment'],
   })
   return NextResponse.json(reservations)
 }
@@ -26,15 +26,15 @@ export async function PUT(req: NextRequest) {
 
   const db = await getDatabaseConnection()
   const body = await req.json()
-  const { id, startTime, endTime, roomId, customerId, paymentId } = body
+  const { id, startTime, endTime, roomId, userId, paymentId } = body
 
   const reservationRepo = db.getRepository(Reservation)
   const roomRepo = db.getRepository(Room)
-  const customerRepo = db.getRepository(Customer)
+  const userRepo = db.getRepository(User)
   const paymentRepo = db.getRepository(Payment)
   const reservation = await reservationRepo.findOne({
     where: { id },
-    relations: ['room', 'customer', 'payment'],
+    relations: ['room', 'user', 'payment'],
   })
 
   if (!reservation) {
@@ -44,6 +44,18 @@ export async function PUT(req: NextRequest) {
 
   if (startTime) reservation.startTime = DateTime.fromISO(startTime, { zone: manilaZone }).toJSDate();
   if (endTime) reservation.endTime = DateTime.fromISO(endTime, { zone: manilaZone }).toJSDate();
+
+    const existingPayment = await reservationRepo.findOne({
+      where: { payment: { id: paymentId } },
+      relations: ['payment'],
+    });
+
+    if (existingPayment) {
+      return NextResponse.json(
+        { error: 'Payment is already associated with a reservation' },
+        { status: 409 }
+      );
+    }
 
   if (paymentId && paymentId !== reservation.payment.id) {
     const newPayment = await paymentRepo.findOne({ where: { id: paymentId } })
@@ -60,17 +72,13 @@ export async function PUT(req: NextRequest) {
         { status: 404 }
       );
     }
-    
       reservation.room = newRoom
-
-
   }
 
-  let newCustomer = reservation.customer
-  if (customerId && customerId !== reservation.customer.id) {
-    const newCustomer = await customerRepo.findOne({ where: { id: customerId } })
-    if (!newCustomer) return NextResponse.json({ error: 'New customer not found' }, { status: 404 })
-    reservation.customer = newCustomer
+  if (userId && userId !== reservation.user.id) {
+    const newUser = await userRepo.findOne({ where: { id: userId, isActive: true } })
+    if (!newUser) return NextResponse.json({ error: 'New user not found' }, { status: 404 })
+    reservation.user = newUser
   }
 
   await reservationRepo.save(reservation)
@@ -82,13 +90,37 @@ export async function PUT(req: NextRequest) {
 export async function POST(req: NextRequest) {
   // const adminCheck = await requireAdmin(req)
   // if (adminCheck) return adminCheck  
+  
+  const db = await getDatabaseConnection()
+  const queryRunner = db.createQueryRunner()
+  
+  await queryRunner.connect()
+  await queryRunner.startTransaction()
+
   try {
     const body = await req.json();
-    const { startTime, endTime, roomId, customerId, paymentId } = body;
+    const { 
+      startTime, 
+      endTime, 
+      roomId, 
+      userId, 
+      amount,
+      paymentMethod = 'cash', 
+      paymentId 
+    } = body;
 
-    if (!startTime || !endTime || !roomId || !customerId || !paymentId) {
+    if (!startTime || !endTime || !roomId || !userId) {
+      await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'All fields (startTime, endTime, roomId, customerId, paymentId) are required' },
+        { error: 'startTime, endTime, roomId, and userId are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!paymentId && !amount) {
+      await queryRunner.rollbackTransaction()
+      return NextResponse.json(
+        { error: 'Either paymentId or amount is required' },
         { status: 400 }
       );
     }
@@ -99,40 +131,62 @@ export async function POST(req: NextRequest) {
     const end = DateTime.fromISO(endTime, { zone: manilaZone }).toJSDate();
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      await queryRunner.rollbackTransaction()
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
     }
 
     if (end <= start) {
+      await queryRunner.rollbackTransaction()
       return NextResponse.json({ error: 'End time must be after start time' }, { status: 400 });
     }
 
-    const db = await getDatabaseConnection();
-    const reservationRepo = db.getRepository(Reservation);
-    const roomRepo = db.getRepository(Room);
-    const customerRepo = db.getRepository(Customer);
-    const paymentRepo = db.getRepository(Payment);
+    const reservationRepo = queryRunner.manager.getRepository(Reservation);
+    const roomRepo = queryRunner.manager.getRepository(Room);
+    const userRepo = queryRunner.manager.getRepository(User)
+    const paymentRepo = queryRunner.manager.getRepository(Payment);
 
     const room = await roomRepo.findOne({ where: { id: roomId, isAvailable: true } });
-    const customer = await customerRepo.findOne({ where: { id: customerId, isActive: true } });
-    const payment = await paymentRepo.findOne({ where: { id: paymentId } });
+    const user = await userRepo.findOne({ where: { id: userId, isActive: true } });
 
-    if (!room || !customer || !payment) {
-      return NextResponse.json(
-        { error: 'Invalid room, customer, or payment' },
-        { status: 404 }
-      );
+    if (!room) {
+      await queryRunner.rollbackTransaction()
+      return NextResponse.json({ error: 'Room not found or not available' }, { status: 404 });
     }
 
-    const existingPayment = await reservationRepo.findOne({
-      where: { payment: { id: paymentId } },
-      relations: ['payment'],
-    });
+    if (!user) {
+      await queryRunner.rollbackTransaction()
+      return NextResponse.json({ error: 'User not found or not active' }, { status: 404 });
+    }
 
-    if (existingPayment) {
-      return NextResponse.json(
-        { error: 'Payment is already associated with a reservation' },
-        { status: 409 }
-      );
+    let payment;
+    
+    if (paymentId) {
+      payment = await paymentRepo.findOne({ where: { id: paymentId } });
+      
+      if (!payment) {
+        await queryRunner.rollbackTransaction()
+        return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
+      }
+
+      const existingReservation = await reservationRepo.findOne({
+        where: { payment: { id: paymentId } },
+        relations: ['payment'],
+      });
+
+      if (existingReservation) {
+        await queryRunner.rollbackTransaction()
+        return NextResponse.json(
+          { error: 'Payment is already associated with a reservation' },
+          { status: 409 }
+        );
+      }
+    } else {
+      payment = paymentRepo.create({
+        amount,
+        method: paymentMethod
+      });
+
+      await paymentRepo.save(payment);
     }
 
     const overlapping = await reservationRepo.findOne({
@@ -147,6 +201,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (overlapping) {
+      await queryRunner.rollbackTransaction()
       return NextResponse.json(
         { error: 'Room is already reserved in the selected time range' },
         { status: 409 }
@@ -157,18 +212,32 @@ export async function POST(req: NextRequest) {
       startTime: start,
       endTime: end,
       room,
-      customer,
+      user,
       payment,
     });
 
     await reservationRepo.save(reservation);
+    await queryRunner.commitTransaction();
 
-    return NextResponse.json(reservation, { status: 201 });
+    const savedReservation = await reservationRepo.findOne({
+      where: { id: reservation.id },
+      relations: ['room', 'user', 'payment']
+    });
+
+    return NextResponse.json({
+      message: 'Reservation created successfully',
+      reservation: savedReservation
+    }, { status: 201 });
+
   } catch (err) {
+    await queryRunner.rollbackTransaction()
     console.error('[RESERVATION_POST_ERROR]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    await queryRunner.release()
   }
 }
+
 
 export async function PATCH(req: NextRequest) {
   // const adminCheck = await requireAdmin(req)
@@ -186,7 +255,7 @@ export async function PATCH(req: NextRequest) {
 
     const reservation = await reservationRepo.findOne({ 
       where: { id }, 
-      relations: ['room', 'customer'] 
+      relations: ['room', 'user'] 
     })
     
     if (!reservation) {

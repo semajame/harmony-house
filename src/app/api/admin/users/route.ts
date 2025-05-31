@@ -3,7 +3,6 @@ import { getDatabaseConnection } from '../../../lib/data-source'
 import { User, UserRole } from '../../../lib/entities/users'
 import bcrypt from 'bcryptjs'
 import { requireAdmin } from '@/app/lib/auth-utils'
-import { Customer } from '@/app/lib/entities/customer'
 
 export async function GET(req: NextRequest) {
   // const adminCheck = await requireAdmin(req)
@@ -21,44 +20,25 @@ export async function POST(req: NextRequest) {
   // if (adminCheck) return adminCheck
   try {
     const body = await req.json()
-    const { username, email, password, phone, role } = body
+    const { username, name, email, password, phone, role } = body
 
-    if (!username || !password || !email) {
+    if (!username || !name || !password || !email) {
       return NextResponse.json(
-        { error: 'Username, email and password are required' },
+        { error: 'Username, name, email and password are required' },
         { status: 400 }
       )
     }
 
     const db = await getDatabaseConnection()
     const userRepo = db.getRepository(User)
-    const customerRepo = db.getRepository(Customer)
 
-    if (!role || role === UserRole.CUSTOMER) {
-      let customerCheck = await customerRepo.findOne({
-        where: { email: email },
-      })
-      if (customerCheck) {
-        if (!customerCheck.isActive) {
-          return NextResponse.json(
-            {
-              error: 'Customer with that email is not active, please activate',
-            },
-            { status: 409 }
-          )
-        }
-      } else if (!customerCheck) {
-        return NextResponse.json(
-          { error: 'Customer with that email doesnt exist' },
-          { status: 404 }
-        )
-      }
-    }
+
     let existingUser = await userRepo.findOne({
       where: [{ username }, email ? { email } : undefined].filter(
         Boolean
       ) as any[],
     })
+
     const hashedPassword = await bcrypt.hash(password, 10)
     if (existingUser) {
       if (!existingUser.isActive) {
@@ -82,6 +62,7 @@ export async function POST(req: NextRequest) {
 
     const newUser = userRepo.create({
       username,
+      name,
       email,
       password: hashedPassword,
       phone,
@@ -103,7 +84,7 @@ export async function PUT(req: NextRequest) {
   // if (adminCheck) return adminCheck
   try {
     const body = await req.json()
-    const { id, username, email, password, phone, role, isActive } = body
+    const { id, username, name, email, password, phone, role, isActive } = body
 
     if (!id) {
       return NextResponse.json(
@@ -121,6 +102,7 @@ export async function PUT(req: NextRequest) {
     }
 
     user.username = username ?? user.username
+    user.name = name ?? user.name
     user.email = email ?? user.email
     user.phone = phone ?? user.phone
     user.role = role ?? user.role

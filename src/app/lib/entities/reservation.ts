@@ -8,8 +8,8 @@ import {
   CreateDateColumn,
 } from 'typeorm'
 import { Room } from './rooms'
-import { Customer } from './customer'
 import { Payment } from './payment'
+import { User } from './users'
 
 export enum Status {
   PENDING = "pending",
@@ -32,13 +32,11 @@ export class Reservation {
   @Column('datetime')
   endTime!: Date
 
-
-
   @ManyToOne(() => Room, (room) => room.reservations)
   room!: Room
 
-  @ManyToOne('Customer', 'reservations')
-  customer!: Customer
+  @ManyToOne('User', 'reservations')
+  user!: User
 
   @OneToOne(() => Payment, { cascade: true })
   @JoinColumn()
