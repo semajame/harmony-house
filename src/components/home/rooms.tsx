@@ -168,9 +168,6 @@ export default function Rooms() {
                     <span className='bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs font-medium'>
                       AC Climate
                     </span>
-                    <span className='bg-blue-50 text-green-700 px-2 py-1 rounded-full text-xs font-medium'>
-                      Food Inclusions
-                    </span>
                   </div>
 
                   {/* Price */}
