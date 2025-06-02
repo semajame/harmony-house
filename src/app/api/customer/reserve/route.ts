@@ -143,6 +143,10 @@ export async function POST(req: NextRequest) {
       where: { id: reservation.id },
       relations: ['room', 'user', 'payment']
     });
+    if (savedReservation && savedReservation.user !== null) {
+      const { password, isActive, ...safeUser } = savedReservation.user;
+      savedReservation.user = safeUser as any;
+    }
 
     return NextResponse.json({
       message: 'Reservation created successfully',

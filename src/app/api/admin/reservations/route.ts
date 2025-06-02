@@ -17,7 +17,15 @@ export async function GET(req: NextRequest) {
   const reservations = await reservationRepo.find({
     relations: ['room', 'user', 'payment'],
   })
-  return NextResponse.json(reservations)
+  const sanitizedReservations = reservations.map(reservation => {
+    if (reservation.user) {
+      const { password, ...safeUser } = reservation.user
+      reservation.user = safeUser as any
+    }
+    return reservation
+  })
+
+  return NextResponse.json(sanitizedReservations)
 }
 
 export async function PUT(req: NextRequest) {
@@ -82,6 +90,10 @@ export async function PUT(req: NextRequest) {
   }
 
   await reservationRepo.save(reservation)
+  if (reservation.user) {
+    const { password, ...safeUser } = reservation.user
+    reservation.user = safeUser as any
+  }
 
   return NextResponse.json(reservation)
 }
@@ -219,15 +231,18 @@ export async function POST(req: NextRequest) {
     await reservationRepo.save(reservation);
     await queryRunner.commitTransaction();
 
-    const savedReservation = await reservationRepo.findOne({
-      where: { id: reservation.id },
-      relations: ['room', 'user', 'payment']
-    });
-
-    return NextResponse.json({
-      message: 'Reservation created successfully',
-      reservation: savedReservation
-    }, { status: 201 });
+  const savedReservation = await reservationRepo.findOne({
+    where: { id: reservation.id },
+    relations: ['room', 'user', 'payment']
+  });
+  if (savedReservation && savedReservation.user !== null) {
+    const { password, ...safeUser } = savedReservation.user;
+    savedReservation.user = safeUser as any;
+  }
+  return NextResponse.json({
+    message: 'Reservation created successfully',
+    reservation: savedReservation
+  }, { status: 201 });
 
   } catch (err) {
     await queryRunner.rollbackTransaction()
@@ -280,6 +295,11 @@ export async function PATCH(req: NextRequest) {
     else {
       reservation.isActive = !reservation.isActive
       await reservationRepo.save(reservation)
+
+        if (reservation.user) {
+          const { password, ...safeUser } = reservation.user
+          reservation.user = safeUser as any
+        }
       return NextResponse.json({ 
         message: `Reservation ${reservation.isActive ? 'activated' : 'deactivated'}`,
         reservation 
