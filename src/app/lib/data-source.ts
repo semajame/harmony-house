@@ -18,9 +18,6 @@ export const AppDataSource = new DataSource({
   password: process.env.DATABASE_PASSWORD || '',
   database: process.env.DATABASE_NAME || 'test',
   entities: [User, Payment, Reservation, Room, Product, Order],
-  // Uncomment   if you want to use migrations
-  // migrations: ['src/migrations/*.ts'],
-  // migrationsTableName: 'migrations',
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
 })
