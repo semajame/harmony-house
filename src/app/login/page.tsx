@@ -33,10 +33,7 @@ export default function LoginPage() {
       const session = await getSession()
 
       if (session?.user.role === 'customer') {
-        alert(
-          'Access denied. Customers are not allowed to access the dashboard.'
-        )
-        return
+        router.push('/')
       }
 
       alert('Signed in successfully!')

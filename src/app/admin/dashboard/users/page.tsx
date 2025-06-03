@@ -93,9 +93,9 @@ const Users = () => {
   }
 
   return (
-    <div className='flex h-screen bg-gray-100'>
-      <div className='flex-1 flex flex-col overflow-hidden'>
-        <main className='flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6'>
+    <div className='flex h-full bg-gray-100'>
+      <div className='flex-1 flex flex-col '>
+        <main className='flex-1 overflow-y-auto bg-gray-100 p-6'>
           <div className='mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
             <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center'>
               <div className='relative'>

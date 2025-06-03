@@ -15,6 +15,8 @@ import {
   ChevronDown,
   User,
   CakeSlice,
+  NotebookText,
+  Calendar,
 } from 'lucide-react'
 
 import DashboardLayout from '@/components/admin/dashboard/dashboard-layout'
@@ -38,9 +40,17 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const getTitleFromPath = (path: string) => {
-    if (path.includes('/users')) return 'Users'
-    if (path.includes('/dashboard')) return 'Overview'
-    if (path.includes('/foods')) return 'Foods'
+    if (path.includes('/admin/dashboard/users')) {
+      return 'Users'
+    } else if (path.includes('/admin/dashboard/foods')) {
+      return 'Foods'
+    } else if (path.includes('/admin/dashboard/reviews')) {
+      return 'Reviews'
+    } else if (path.includes('/admin/dashboard/reservation')) {
+      return 'Reservation'
+    } else if (path.includes('/dashboard')) {
+      return 'Overview'
+    }
 
     return 'Dashboard'
   }
@@ -48,7 +58,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   const sidebarItems = [
     { icon: Home, label: 'Dashboard', link: '/admin/dashboard' },
     { icon: Users, label: 'Users', link: '/admin/dashboard/users' },
+    {
+      icon: Calendar,
+      label: 'Reservation',
+      link: '/admin/dashboard/reservation',
+    },
     { icon: CakeSlice, label: 'Foods', link: '/admin/dashboard/foods' },
+    { icon: NotebookText, label: 'Reviews', link: '/admin/dashboard/reviews' },
   ]
 
   useEffect(() => {
@@ -69,7 +85,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   }, [session, status])
 
   return (
-    <div className='flex h-screen bg-gray-100 overflow-hidden'>
+    <div className='flex h-screen bg-gray-100'>
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${

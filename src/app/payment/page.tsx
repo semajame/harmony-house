@@ -4,11 +4,18 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
-type Reservation = {
+interface Reservation {
   roomId: number
   checkIn: string
   checkOut: string
   totalPrice: number
+  food: {
+    id: number
+    name: string
+    quantity: number
+    price: number
+    total: number
+  }[]
 }
 
 export default function PaymentPage() {
@@ -25,6 +32,8 @@ export default function PaymentPage() {
     if (stored) {
       const res: Reservation = JSON.parse(stored)
       setReservation(res)
+
+      console.log(stored)
 
       const checkInDate = new Date(res.checkIn)
       const checkOutDate = new Date(res.checkOut)
@@ -118,42 +127,59 @@ export default function PaymentPage() {
               </svg>
               Reservation Summary
             </h2>
-            <div className='grid md:grid-cols-2 gap-4'>
-              <div className='space-y-3'>
-                <div>
-                  <p className='text-sm opacity-80'>Guest Name</p>
-                  <p className='font-medium'>
-                    {session?.user?.username || 'N/A'}
-                  </p>
+            <div className=''>
+              <div className='flex gap-4 items-center justify-between'>
+                <div className='space-y-3'>
+                  <div>
+                    <p className='text-sm opacity-80'>Guest Name</p>
+                    <p className='font-medium'>
+                      {session?.user?.username || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className='text-sm opacity-80'>Email</p>
+                    <p className='font-medium'>
+                      {session?.user?.email || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className='text-sm opacity-80'>Phone</p>
+                    <p className='font-medium'>
+                      {session?.user?.phone || 'N/A'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className='text-sm opacity-80'>Email</p>
-                  <p className='font-medium'>{session?.user?.email || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className='text-sm opacity-80'>Phone</p>
-                  <p className='font-medium'>{session?.user?.phone || 'N/A'}</p>
+                <div className='space-y-3'>
+                  <div>
+                    <p className='text-sm opacity-80'>Check-in</p>
+                    <p className='font-medium'>
+                      {formatDate(reservation.checkIn)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className='text-sm opacity-80'>Check-out</p>
+                    <p className='font-medium'>
+                      {formatDate(reservation.checkOut)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className='text-sm opacity-80'>Foods</p>
+                    {reservation.food.map((item: any, index: number) => (
+                      <div key={index} className='mb-2 flex items-center gap-2'>
+                        <p className='font-medium'>{item.name}</p>
+                        <p className='text-sm font-medium'>
+                          {item.quantity} × ₱{item.price} = ₱{item.total}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className='space-y-3'>
-                <div>
-                  <p className='text-sm opacity-80'>Check-in</p>
-                  <p className='font-medium'>
-                    {formatDate(reservation.checkIn)}
-                  </p>
-                </div>
-                <div>
-                  <p className='text-sm opacity-80'>Check-out</p>
-                  <p className='font-medium'>
-                    {formatDate(reservation.checkOut)}
-                  </p>
-                </div>
-                <div>
-                  <p className='text-sm opacity-80'>Total Payment</p>
-                  <p className='font-medium text-lg'>
-                    ₱{reservation.totalPrice.toLocaleString()}
-                  </p>
-                </div>
+              <div className='text-center mt-5'>
+                <p className='text-lg opacity-80'>Total Payment</p>
+                <p className='font-medium text-2xl'>
+                  ₱{reservation.totalPrice.toLocaleString()}
+                </p>
               </div>
             </div>
           </div>

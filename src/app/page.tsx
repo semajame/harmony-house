@@ -1,5 +1,5 @@
 import Carousel from '@/components/home/carousel'
-import CheckInForm from '@/components/checkin-form'
+import CheckInForm from '@/components/forms-buttons/checkin-form'
 import Contact from '@/components/home/contact'
 import FoodDrinks from '@/components/home/food-drink'
 import Footer from '@/components/home/footer'

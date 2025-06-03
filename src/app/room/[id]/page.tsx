@@ -27,12 +27,13 @@ import {
   Utensils,
 } from 'lucide-react'
 
-const foodOptions = [
-  { id: 1, name: 'Chicken Wings', price: 199 },
-  { id: 2, name: 'Nachos & Cheese', price: 149 },
-  { id: 3, name: 'Fries Bucket', price: 99 },
-  { id: 4, name: 'Coke 1.5L', price: 89 },
-]
+type Food = {
+  id: number
+  name: string
+  price: number
+  description: string
+  available: boolean
+}
 
 export default function RoomPage() {
   const params = useParams()
@@ -52,6 +53,19 @@ export default function RoomPage() {
   const [isLiked, setIsLiked] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [totalPrice, setTotalPrice] = useState(0)
+  const [foodQuantities, setFoodQuantities] = useState<Record<number, number>>(
+    {}
+  )
+
+  const [foods, setFoods] = useState<Food[]>([])
+  const [formData, setFormData] = useState<
+    Omit<Food, 'id' | 'price'> & { price: string }
+  >({
+    name: '',
+    price: '',
+    description: '',
+    available: false,
+  })
 
   // Mock additional images for the room
   const roomImages = [
@@ -116,28 +130,41 @@ export default function RoomPage() {
     '23:00',
   ]
 
-  const handleFoodToggle = (id: number) => {
-    setSelectedFoods((prev) =>
-      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
-    )
-  }
+  //^ FETCH FOODS
+  useEffect(() => {
+    const fetchFoods = async () => {
+      try {
+        const res = await fetch('/api/admin/products')
+        if (!res.ok) throw new Error('Failed to fetch products')
 
-  //^ format time to am and pm
-  function formatToAMPM(time24: string): string {
-    const [hour, minute] = time24.split(':').map(Number)
-    const period = hour >= 12 ? 'PM' : 'AM'
-    const hour12 = hour % 12 === 0 ? 12 : hour % 12
-    return `${hour12}:${minute.toString().padStart(2, '0')} ${period}`
-  }
+        const data = await res.json()
 
-  //^  Calculate total price whenever time changes
+        const formattedData: Food[] = data.map((product: any) => ({
+          id: product.id,
+          name: product.name,
+          category: product.category || 'Food',
+          price: parseFloat(product.price),
+          description: product.description || '',
+          image: product.image || '',
+          available: product.is_active ?? true,
+        }))
+
+        setFoods(formattedData)
+      } catch (error) {
+        console.error('Failed to fetch products:', error)
+      }
+    }
+
+    fetchFoods()
+  }, [])
+
+  // ⏱ Calculate total price when times change
   useEffect(() => {
     if (checkInTime && checkOutTime && room) {
       const checkInHour = parseInt(checkInTime.split(':')[0])
       const checkOutHour = parseInt(checkOutTime.split(':')[0])
       let hours = checkOutHour - checkInHour
 
-      // Handle overnight bookings
       if (hours <= 0) {
         hours = 24 - checkInHour + checkOutHour
       }
@@ -145,18 +172,21 @@ export default function RoomPage() {
       const roomPriceNumber = parseInt(
         room.price.toString().replace(/[^\d]/g, '')
       )
-      const foodTotal = selectedFoods.reduce((sum, fid) => {
-        const food = foodOptions.find((f) => f.id === fid)
-        return sum + (food?.price || 0)
+
+      const foodTotal = selectedFoods.reduce((sum, id) => {
+        const food = foods.find((f) => f.id === id)
+        const qty = foodQuantities[id] || 1
+        return sum + (food?.price || 0) * qty
       }, 0)
 
       setTotalPrice(hours * roomPriceNumber + foodTotal)
     }
-  }, [checkInTime, checkOutTime, room, selectedFoods, foodOptions])
+  }, [checkInTime, checkOutTime, room, selectedFoods, foodQuantities, foods])
 
   //^ Handle reservation button
   const handleReserve = (event: React.FormEvent) => {
     event.preventDefault() // Prevent page refresh
+
     if (!checkInDate || !checkInTime || !checkOutTime) {
       alert('Please fill in all required fields')
       return
@@ -170,23 +200,56 @@ export default function RoomPage() {
       checkOut.setDate(checkOut.getDate() + 1)
     }
 
+    // Build food array with name, quantity, and subtotal price
+    const selectedFoodDetails = selectedFoods.map((id) => {
+      const food = foods.find((f) => f.id === id)
+      const qty = foodQuantities[id] || 1
+      return {
+        id: food?.id,
+        name: food?.name,
+        quantity: qty,
+        price: food?.price,
+        total: (food?.price || 0) * qty,
+      }
+    })
+
     const reservationData = {
       roomId: room?.id,
       checkIn: checkIn.toISOString(),
       checkOut: checkOut.toISOString(),
       totalPrice: totalPrice,
+      food: selectedFoodDetails, // <-- Add food array here
     }
 
     try {
-      // Save to localStorage
       localStorage.setItem('reservation', JSON.stringify(reservationData))
       console.log(reservationData)
-      // Redirect to payment page
       router.push('/payment')
     } catch (error) {
       console.error('Error saving reservation to localStorage:', error)
       alert('An error occurred. Please try again.')
     }
+  }
+
+  const handleFoodToggle = (foodId: number) => {
+    if (selectedFoods.includes(foodId)) {
+      setSelectedFoods((prev) => prev.filter((id) => id !== foodId))
+      setFoodQuantities((prev) => {
+        const { [foodId]: _, ...rest } = prev
+        return rest
+      })
+    } else {
+      setSelectedFoods((prev) => [...prev, foodId])
+      setFoodQuantities((prev) => ({ ...prev, [foodId]: 1 }))
+    }
+  }
+
+  //^ format time to am and pm
+  function formatToAMPM(time24: string): string {
+    const [hour, minute] = time24.split(':').map(Number)
+    const period = hour >= 12 ? 'PM' : 'AM'
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12
+    return `${hour12}:${minute.toString().padStart(2, '0')} ${period}`
   }
 
   const handleBackToRooms = () => {
@@ -536,27 +599,53 @@ export default function RoomPage() {
                       <Utensils className='w-4 h-4' />
                       Food Inclusions
                     </h4>
-                    <div className='space-y-2'>
-                      {foodOptions.map((food) => (
-                        <label
+                    <div className='space-x-2 space-y-2 grid grid-cols-2 w-full'>
+                      {foods.map((food) => (
+                        <div
                           key={food.id}
-                          className='flex items-center justify-between bg-purple-50 px-3 py-2 rounded-lg cursor-pointer'
+                          className='flex flex-col bg-purple-50 px-3 py-2 rounded-lg'
                         >
-                          <div className='flex items-center gap-2'>
-                            <input
-                              type='checkbox'
-                              checked={selectedFoods.includes(food.id)}
-                              onChange={() => handleFoodToggle(food.id)}
-                              className='accent-purple-600'
-                            />
-                            <span className='text-sm text-gray-700'>
-                              {food.name}
+                          <div className='flex items-center justify-between'>
+                            <div className='flex items-center gap-2'>
+                              <input
+                                type='checkbox'
+                                checked={selectedFoods.includes(food.id)}
+                                onChange={() => handleFoodToggle(food.id)}
+                                className='accent-purple-600'
+                              />
+                              <span className='text-xs text-gray-700'>
+                                {food.name}
+                              </span>
+                            </div>
+                            <span className='text-sm font-medium text-purple-600'>
+                              ₱{food.price}
                             </span>
                           </div>
-                          <span className='text-sm font-medium text-purple-600'>
-                            ₱{food.price}
-                          </span>
-                        </label>
+
+                          {selectedFoods.includes(food.id) && (
+                            <div className='mt-2 flex items-center gap-2 text-xs'>
+                              <label
+                                htmlFor={`qty-${food.id}`}
+                                className='text-gray-600'
+                              >
+                                Qty:
+                              </label>
+                              <input
+                                id={`qty-${food.id}`}
+                                type='number'
+                                min={1}
+                                value={foodQuantities[food.id] || 1}
+                                onChange={(e) =>
+                                  setFoodQuantities((prev) => ({
+                                    ...prev,
+                                    [food.id]: parseInt(e.target.value) || 1,
+                                  }))
+                                }
+                                className='w-16 px-1 py-0.5 border border-purple-300 rounded text-center'
+                              />
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>

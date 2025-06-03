@@ -12,7 +12,7 @@ export default withAuth(
     }
 
     // Redirect customer users away from the admin dashboard
-    if (token?.role === 'costumer' && pathname.startsWith('/admin/dashboard')) {
+    if (token?.role === 'customer' && pathname.startsWith('/admin/dashboard')) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
