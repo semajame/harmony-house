@@ -49,13 +49,51 @@ export default function PaymentPage() {
   const handleConfirmPayment = async () => {
     setIsLoading(true)
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const rawReservation = localStorage.getItem('reservation')
+      if (!rawReservation) {
+        alert('Reservation data not found')
+        setIsLoading(false)
+        return
+      }
 
-    alert('GCash payment confirmed! (Simulation)')
-    router.push('/confirmation')
+      const parsedReservation = JSON.parse(rawReservation)
 
-    setIsLoading(false)
+      const {
+        food, // still excluding food
+        totalPrice,
+        checkIn,
+        checkOut,
+        ...rest
+      } = parsedReservation
+
+      const reservationPayload = {
+        ...rest,
+        startTime: checkIn,
+        endTime: checkOut,
+        amount: totalPrice, // Include the totalPrice as amount
+      }
+
+      const response = await fetch('/api/customer/reserve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reservationPayload),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reserve')
+      }
+
+      alert('GCash payment confirmed! (Simulation)')
+      router.push('/confirmation')
+    } catch (error) {
+      console.error('Error confirming payment:', error)
+      alert('An error occurred while confirming the payment.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!reservation || totalPayment === null) {
@@ -165,7 +203,7 @@ export default function PaymentPage() {
                   <div>
                     <p className='text-sm opacity-80'>Foods</p>
                     {reservation.food.map((item: any, index: number) => (
-                      <div key={index} className='mb-2 flex items-center gap-2'>
+                      <div key={index} className='flex items-center'>
                         <p className='font-medium'>{item.name}</p>
                         <p className='text-sm font-medium'>
                           {item.quantity} × ₱{item.price} = ₱{item.total}

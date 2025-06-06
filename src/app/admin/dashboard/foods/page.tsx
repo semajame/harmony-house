@@ -51,10 +51,10 @@ const foods = () => {
         const formattedData: Food[] = data.map((product: any) => ({
           id: product.id,
           name: product.name,
-          category: 'Food', // or product.category if you have this
+
           price: parseFloat(product.price),
           description: product.description,
-          image: '', // or use a default icon or product.image if exists
+
           available: product.is_active, // assuming this comes from backend
         }))
 
@@ -69,46 +69,51 @@ const foods = () => {
 
   //^ FOODS
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault() // prevent page reload
+    e.preventDefault()
 
     try {
-      const response = await fetch('/api/admin/products', {
-        method: editingFood ? 'PUT' : 'POST',
+      const method = editingFood ? 'PUT' : 'POST'
+      const url = editingFood
+        ? `/api/admin/products/${editingFood.id}` // assuming RESTful for PUT
+        : '/api/admin/products'
+
+      const payload = {
+        ...formData,
+        price: parseFloat(formData.price),
+        is_active: formData.available,
+      }
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          is_active: formData.available,
-        }),
+        body: JSON.stringify(payload),
       })
 
-      if (!response.ok) throw new Error('Failed to save food')
+      if (!response.ok) {
+        const errText = await response.text()
+        throw new Error(`Failed to save food: ${errText}`)
+      }
 
       const savedFood = await response.json()
 
-      // Update UI
-      if (editingFood) {
-        setFoods((prev) =>
-          prev.map((item) =>
-            item.id === editingFood.id
-              ? { ...savedFood, available: savedFood.is_active }
-              : item
-          )
-        )
-      } else {
-        setFoods((prev) => [
-          ...prev,
-          { ...savedFood, available: savedFood.is_active },
-        ])
-      }
+      // Update state
+      setFoods((prev) =>
+        editingFood
+          ? prev.map((item) =>
+              item.id === editingFood.id
+                ? { ...savedFood, available: savedFood.is_active }
+                : item
+            )
+          : [...prev, { ...savedFood, available: savedFood.is_active }]
+      )
 
-      // Reset and close
       resetForm()
       closeModal()
     } catch (err) {
       console.error('Submission error:', err)
+      alert('There was an error submitting the food. Please try again.')
     }
   }
 
@@ -121,12 +126,11 @@ const foods = () => {
   const categories = ['Food', 'Drinks']
 
   const filteredFoods = foods.filter((food: any) => {
-    const matchesSearch =
-      food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      food.category.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory =
-      filterCategory === 'all' || food.category === filterCategory
-    return matchesSearch && matchesCategory
+    const matchesSearch = food.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+
+    return matchesSearch
   })
 
   const resetForm = () => {
@@ -163,7 +167,7 @@ const foods = () => {
   }
 
   return (
-    <div className='h-full bg-gray-100 p-6'>
+    <div className='h-full bg-gray-100 p-6 overflow-y-auto'>
       {/* Filters */}
       <div className='bg-white rounded-lg shadow p-6 mb-6'>
         <div className='flex flex-col md:flex-row gap-4 items-start md:items-center justify-between'>
@@ -188,23 +192,6 @@ const foods = () => {
                 <Plus className='h-5 w-5' />
                 <span>Add Food</span>
               </button>
-            </div>
-
-            {/* Category Filter */}
-            <div className='relative'>
-              <Filter className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className='pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none bg-white cursor-pointer'
-              >
-                <option value='all'>All Categories</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 

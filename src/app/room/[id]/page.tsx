@@ -26,6 +26,7 @@ import {
   Phone,
   Utensils,
 } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 
 type Food = {
   id: number
@@ -36,6 +37,7 @@ type Food = {
 }
 
 export default function RoomPage() {
+  const { data: session } = useSession()
   const params = useParams()
   const router = useRouter()
   const roomId = Number(params.id)
@@ -214,6 +216,7 @@ export default function RoomPage() {
     })
 
     const reservationData = {
+      userId: session?.user.id,
       roomId: room?.id,
       checkIn: checkIn.toISOString(),
       checkOut: checkOut.toISOString(),
