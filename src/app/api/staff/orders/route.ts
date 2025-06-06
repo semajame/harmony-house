@@ -42,7 +42,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -60,13 +59,11 @@ export async function POST(req: NextRequest) {
     const userRepo = db.getRepository(User)
     const productRepo = db.getRepository(Product)
 
-    // Verify user exists
     const user = await userRepo.findOne({ where: { id: user_id } })
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Verify product exists and is active
     const product = await productRepo.findOne({ where: { id: product_id } })
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
@@ -75,12 +72,9 @@ export async function POST(req: NextRequest) {
     if (!product.is_active) {
       return NextResponse.json({ error: 'Product is not available' }, { status: 400 })
     }
-    if(quantity <= 0) {
+
+    if (quantity <= 0) {
       return NextResponse.json({ error: 'Quantity must be greater than 0' }, { status: 400 })
-    }
-    // Check if enough quantity is available
-    if (product.quantity < quantity) {
-      return NextResponse.json({ error: 'Not enough quantity available' }, { status: 400 })
     }
 
     const unit_price = product.price
@@ -98,19 +92,14 @@ export async function POST(req: NextRequest) {
 
     await orderRepo.save(newOrder)
 
-    // Optionally decrease product quantity
-    product.quantity -= quantity
-    await productRepo.save(product)
-
-    // Fetch the complete order with relations
     const completeOrder = await orderRepo.findOne({
       where: { id: newOrder.id },
       relations: ['user', 'product']
     })
 
     if (completeOrder && completeOrder.user) {
-    const { password, ...safeUser } = completeOrder.user
-    completeOrder.user = safeUser as any
+      const { password, ...safeUser } = completeOrder.user
+      completeOrder.user = safeUser as any
     }
 
     return NextResponse.json(completeOrder, { status: 201 })
@@ -129,7 +118,6 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 })
     }
 
-    // Add quantity validation if quantity is being updated
     if (quantity !== undefined && quantity <= 0) {
       return NextResponse.json(
         { error: 'Quantity must be greater than 0' },
@@ -139,7 +127,6 @@ export async function PUT(req: NextRequest) {
 
     const db = await getDatabaseConnection()
     const orderRepo = db.getRepository(Order)
-    const productRepo = db.getRepository(Product)
 
     const order = await orderRepo.findOne({ 
       where: { id },
@@ -150,19 +137,13 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    // Check if order is already cancelled - prevent modifications
     if (order.status === OrderStatus.CANCELLED) {
       return NextResponse.json({ 
         error: 'Cannot modify cancelled orders' 
       }, { status: 400 })
     }
 
-    // Handle status change to cancelled - restore product quantity
     if (status === OrderStatus.CANCELLED && order.status !== status) {
-      // Add back the quantity to product
-      order.product.quantity += order.quantity
-      await productRepo.save(order.product)
-      
       order.status = OrderStatus.CANCELLED
       await orderRepo.save(order)
 
@@ -170,36 +151,22 @@ export async function PUT(req: NextRequest) {
         where: { id },
         relations: ['user', 'product']
       })
-    if (updatedOrder && updatedOrder.user) {
+      if (updatedOrder && updatedOrder.user) {
         const { password, ...safeUser } = updatedOrder.user
         updatedOrder.user = safeUser as any
-    }
+      }
 
       return NextResponse.json({
         ...updatedOrder,
-        message: `Order cancelled. ${order.quantity} items returned to inventory.`
+        message: 'Order cancelled successfully.'
       })
     }
 
-    // Handle quantity change (only for non-cancelled orders)
     if (quantity && quantity !== order.quantity) {
-      const quantityDiff = quantity - order.quantity
-      
-      // Check if product has enough quantity for increase
-      if (quantityDiff > 0 && order.product.quantity < quantityDiff) {
-        return NextResponse.json({ error: 'Not enough quantity available' }, { status: 400 })
-      }
-      
-      // Update product quantity
-      order.product.quantity -= quantityDiff
-      await productRepo.save(order.product)
-      
-      // Update order
       order.quantity = quantity
       order.total_price = order.unit_price * quantity
     }
 
-    // Update other fields - handle string to enum conversion
     if (status) {
       switch (status) {
         case 'pending':
@@ -220,14 +187,13 @@ export async function PUT(req: NextRequest) {
 
     await orderRepo.save(order)
 
-    // Return updated order with relations
     const updatedOrder = await orderRepo.findOne({
       where: { id },
       relations: ['user', 'product']
     })
     if (updatedOrder && updatedOrder.user) {
-        const { password, ...safeUser } = updatedOrder.user
-        updatedOrder.user = safeUser as any
+      const { password, ...safeUser } = updatedOrder.user
+      updatedOrder.user = safeUser as any
     }
     return NextResponse.json(updatedOrder)
   } catch (err) {
@@ -235,7 +201,6 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }
-
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -248,18 +213,16 @@ export async function PATCH(req: NextRequest) {
 
     const db = await getDatabaseConnection()
     const orderRepo = db.getRepository(Order)
-    const productRepo = db.getRepository(Product)
 
     const order = await orderRepo.findOne({ 
       where: { id },
-      relations: ['product'] // Add relations to get product info
+      relations: ['product']
     })
     
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    // Check if order is already cancelled - prevent modifications
     if (order.status === OrderStatus.CANCELLED) {
       return NextResponse.json({ 
         error: 'Cannot modify cancelled orders' 
@@ -271,19 +234,14 @@ export async function PATCH(req: NextRequest) {
     } else if (action === 'complete') {
       order.status = OrderStatus.COMPLETED
     } else if (action === 'cancel') {
-      // Add back quantity to product when cancelling
-      order.product.quantity += order.quantity
-      await productRepo.save(order.product)
-      
       order.status = OrderStatus.CANCELLED
       await orderRepo.save(order)
 
       return NextResponse.json({ 
-        message: `Order cancelled. ${order.quantity} items returned to inventory.`,
+        message: 'Order cancelled successfully.',
         status: order.status
       })
-    }
-    else {
+    } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
