@@ -2,7 +2,7 @@ export const rooms = [
   {
     id: 1,
     name: 'Room no.1',
-    person: 'Good for 2-3 persons',
+    capacity: 5,
     price: '₱500',
 
     description:
@@ -12,7 +12,7 @@ export const rooms = [
   {
     id: 2,
     name: 'Room no.2',
-    person: 'Good for 2-3 persons',
+    capacity: 5,
     price: '₱500',
     description:
       'A stylish KTV room with basic karaoke equipment, a large screen, mood lighting. Perfect for small gatherings.',
@@ -21,7 +21,7 @@ export const rooms = [
   {
     id: 3,
     name: 'Room no.3',
-    person: 'Good for 3-4 persons',
+    capacity: 5,
     price: '₱500',
     description:
       'A small KTV room with basic equipment, cozy seating and enhanced amenities. Great for intimate celebrations.',
@@ -30,7 +30,7 @@ export const rooms = [
   {
     id: 4,
     name: 'Room no.4',
-    person: 'Good for 2-3 persons',
+    capacity: 5,
     price: '₱500',
     description:
       'A compact KTV room with a basic sound system for karaoke and intimate singing sessions.',

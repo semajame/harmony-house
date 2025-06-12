@@ -117,13 +117,25 @@ const foods = () => {
     }
   }
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this food item?')) {
-      setFoods(foods.filter((food) => food.id !== id))
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errText = await response.text()
+        throw new Error(`Failed to delete food: ${errText}`)
+      }
+
+      // Update local state
+      setFoods((prev) => prev.filter((item) => item.id !== id))
+      alert('Food item deleted successfully.')
+    } catch (err) {
+      console.error('Deletion error:', err)
+      alert('There was an error deleting the food. Please try again.')
     }
   }
-
-  const categories = ['Food', 'Drinks']
 
   const filteredFoods = foods.filter((food: any) => {
     const matchesSearch = food.name
@@ -156,14 +168,6 @@ const foods = () => {
   const closeModal = () => {
     setShowModal(false)
     resetForm()
-  }
-
-  const toggleAvailability = (id: number) => {
-    setFoods(
-      foods.map((food) =>
-        food.id === id ? { ...food, available: !food.available } : food
-      )
-    )
   }
 
   return (
@@ -220,28 +224,22 @@ const foods = () => {
                 </div>
                 <div className='flex space-x-1'>
                   <button
-                    onClick={() => toggleAvailability(food.id)}
-                    className={`p-1 rounded hover:bg-gray-100 ${
-                      food.available ? 'text-green-600' : 'text-gray-400'
-                    }`}
-                    title={food.available ? 'Available' : 'Unavailable'}
-                  >
-                    {food.available ? (
-                      <Eye className='h-4 w-4' />
-                    ) : (
-                      <EyeOff className='h-4 w-4' />
-                    )}
-                  </button>
-                  <button
                     onClick={() => openModal(food)}
-                    className='p-1 hover:bg-gray-100 rounded text-blue-600'
+                    className='p-1 hover:bg-gray-100 rounded text-blue-600 cursor-pointer'
                     title='Edit'
                   >
                     <Edit className='h-4 w-4' />
                   </button>
                   <button
-                    onClick={() => handleDelete(food.id)}
-                    className='p-1 hover:bg-gray-100 rounded text-red-600'
+                    onClick={() => {
+                      const confirmed = window.confirm(
+                        'Are you sure you want to delete this item?'
+                      )
+                      if (confirmed) {
+                        handleDelete(food.id)
+                      }
+                    }}
+                    className='p-1 hover:bg-gray-100 rounded text-red-600 cursor-pointer'
                     title='Delete'
                   >
                     <Trash2 className='h-4 w-4' />
@@ -299,7 +297,7 @@ const foods = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
+        <div className='fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50'>
           <div className='bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto'>
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6'>
@@ -408,7 +406,7 @@ const foods = () => {
                       resetForm()
                       closeModal()
                     }}
-                    className='px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50'
+                    className='px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer'
                   >
                     Cancel
                   </button>

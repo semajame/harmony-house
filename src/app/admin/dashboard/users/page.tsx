@@ -10,6 +10,10 @@ import {
   MoreVertical,
   Search,
   User,
+  Plus,
+  X,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 
 interface UserType {
@@ -19,8 +23,16 @@ interface UserType {
   phone: string
   role: string
   status: string
-
   isActive: boolean
+}
+
+interface CreateUserData {
+  username: string
+  name: string
+  email: string
+  password: string
+  phone: string
+  role: string
 }
 
 const Users = () => {
@@ -32,11 +44,23 @@ const Users = () => {
 
   const [users, setUsers] = useState<UserType[]>([])
   const [loading, setLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+
+  const [formData, setFormData] = useState<CreateUserData>({
+    username: '',
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: 'customer',
+  })
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch('/api/admin/users') // Update path if your API route is different
+        const res = await fetch('/api/admin/users')
         if (!res.ok) throw new Error('Failed to fetch')
         const data = await res.json()
 
@@ -83,13 +107,78 @@ const Users = () => {
     switch (role) {
       case 'admin':
         return 'text-purple-600 bg-purple-100'
-      case 'costumer':
+      case 'customer':
         return 'text-blue-600 bg-blue-100'
       case 'staff':
         return 'text-pink-600 bg-pink-100'
       default:
         return 'text-gray-600 bg-gray-100'
     }
+  }
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsCreating(true)
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create user')
+      }
+
+      const newUser = await response.json()
+
+      // Add the new user to the users list
+      setUsers((prev) => [...prev, newUser])
+
+      // Reset form and close modal
+      setFormData({
+        username: '',
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        role: 'customer',
+      })
+      setIsModalOpen(false)
+
+      console.log('User created successfully:', newUser)
+    } catch (error) {
+      console.error('Error creating user:', error)
+      // You might want to show an error message to the user here
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setFormData({
+      username: '',
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
+      role: 'customer',
+    })
+    setShowPassword(false)
   }
 
   return (
@@ -109,6 +198,16 @@ const Users = () => {
                 />
               </div>
 
+              <div>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className='bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 cursor-pointer'
+                >
+                  <Plus className='h-4 w-4' />
+                  Create User
+                </button>
+              </div>
+
               <div className='relative'>
                 <Filter className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
                 <select
@@ -125,8 +224,8 @@ const Users = () => {
                   <option value='staff' className='cursor-pointer'>
                     Staff
                   </option>
-                  <option value='costumer' className='cursor-pointer'>
-                    Costumer
+                  <option value='customer' className='cursor-pointer'>
+                    Customer
                   </option>
                 </select>
               </div>
@@ -210,6 +309,180 @@ const Users = () => {
           )}
         </main>
       </div>
+
+      {/* Create User Modal */}
+      {isModalOpen && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto'>
+            <div className='flex items-center justify-between p-6 border-b border-gray-200'>
+              <h2 className='text-xl font-semibold text-gray-900'>
+                Create New User
+              </h2>
+              <button
+                onClick={closeModal}
+                className='p-1 hover:bg-gray-100 rounded-full cursor-pointer'
+              >
+                <X className='h-5 w-5 text-gray-400' />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className='p-6 space-y-4 '>
+              {/* Username */}
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label
+                    htmlFor='username'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Username *
+                  </label>
+                  <input
+                    type='text'
+                    id='username'
+                    name='username'
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    required
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    placeholder='Enter username'
+                  />
+                </div>
+                {/* Name */}
+                <div>
+                  <label
+                    htmlFor='name'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Full Name *
+                  </label>
+                  <input
+                    type='text'
+                    id='name'
+                    name='name'
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    placeholder='Enter full name'
+                  />
+                </div>
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor='email'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Email
+                  </label>
+                  <input
+                    type='email'
+                    id='email'
+                    name='email'
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    placeholder='Enter email address'
+                  />
+                </div>
+                {/* Password */}
+                <div>
+                  <label
+                    htmlFor='password'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Password *
+                  </label>
+                  <div className='relative'>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id='password'
+                      name='password'
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                      className='w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                      placeholder='Enter password'
+                    />
+                    <button
+                      type='button'
+                      onClick={() => setShowPassword(!showPassword)}
+                      className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600'
+                    >
+                      {showPassword ? (
+                        <EyeOff className='h-4 w-4' />
+                      ) : (
+                        <Eye className='h-4 w-4' />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                {/* Phone */}
+                <div>
+                  <label
+                    htmlFor='phone'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Phone
+                  </label>
+                  <input
+                    type='tel'
+                    id='phone'
+                    name='phone'
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    placeholder='123-456-7890'
+                  />
+                </div>
+                {/* Role */}
+                <div>
+                  <label
+                    htmlFor='role'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Role
+                  </label>
+                  <select
+                    id='role'
+                    name='role'
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white'
+                  >
+                    <option value='customer' className='cursor-pointer'>
+                      Customer
+                    </option>
+                    <option value='staff' className='cursor-pointer'>
+                      Staff
+                    </option>
+                    <option value='admin' className='cursor-pointer'>
+                      Admin
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Form Actions */}
+              <div className='flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 w-full'>
+                <button
+                  type='button'
+                  onClick={closeModal}
+                  className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 cursor-pointer'
+                >
+                  Cancel
+                </button>
+                <button
+                  type='submit'
+                  disabled={isCreating}
+                  className='px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200 cursor-pointer'
+                >
+                  {isCreating ? 'Creating...' : 'Create User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

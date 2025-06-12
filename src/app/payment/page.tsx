@@ -58,23 +58,24 @@ export default function PaymentPage() {
       }
 
       const parsedReservation = JSON.parse(rawReservation)
+      console.log('Parsed Reservation:', parsedReservation)
 
-      const {
-        food, // still excluding food
-        totalPrice,
-        checkIn,
-        checkOut,
-        ...rest
-      } = parsedReservation
+      const { roomId, food, totalPrice, checkIn, checkOut, ...rest } =
+        parsedReservation
 
       const reservationPayload = {
         ...rest,
+        roomId: Number(roomId),
+        userId: Number(rest.userId),
+        food,
         startTime: checkIn,
         endTime: checkOut,
-        amount: totalPrice, // Include the totalPrice as amount
+        amount: totalPrice,
       }
 
-      const response = await fetch('/api/customer/reserve', {
+      console.log('Sending payload:', reservationPayload)
+
+      const response = await fetch('/api/customer/reservations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +84,8 @@ export default function PaymentPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to reserve')
+        const errorText = await response.text()
+        throw new Error(`Failed to reserve: ${errorText}`)
       }
 
       alert('GCash payment confirmed! (Simulation)')
@@ -188,6 +190,10 @@ export default function PaymentPage() {
                   </div>
                 </div>
                 <div className='space-y-3'>
+                  <div>
+                    <p className='text-sm opacity-80'>Room ID</p>
+                    <p className='font-medium'>{reservation.roomId}</p>
+                  </div>
                   <div>
                     <p className='text-sm opacity-80'>Check-in</p>
                     <p className='font-medium'>
