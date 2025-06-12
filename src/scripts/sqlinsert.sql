@@ -27,8 +27,7 @@ INSERT INTO reservation (createdAt, startTime, endTime, roomId, userId, paymentI
 (NOW(), NOW(), DATE_ADD(NOW(), INTERVAL 2 HOUR), 1, 1, 1, 1, 'confirmed'),
 (NOW(), NOW(), DATE_ADD(NOW(), INTERVAL 3 HOUR), 2, 2, 2, 1, 'confirmed'),
 (NOW(), NOW(), DATE_ADD(NOW(), INTERVAL 1 HOUR), 3, 3, 3, 1, 'cancelled'),
-(NOW(), NOW(), DATE_ADD(NOW(), INTERVAL 4 HOUR), 4, 4, 4, 1, 'pending'),
-(NOW(), NOW(), DATE_ADD(NOW(), INTERVAL 2 HOUR), 5, 5, 5, 1, 'confirmed');
+(NOW(), NOW(), DATE_ADD(NOW(), INTERVAL 4 HOUR), 4, 4, 4, 1, 'pending');
 
 
 
