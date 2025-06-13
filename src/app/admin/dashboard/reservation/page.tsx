@@ -45,6 +45,13 @@ type ReservationData = {
     method: string
     paidAt: string
   }
+  food: {
+    id: number
+    name: string
+    quantity: number
+    price: number
+    total: number
+  }[]
 }
 
 const Reservation = () => {
@@ -52,50 +59,68 @@ const Reservation = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<string>('all')
+  const [selectedStatus, setSelectedStatus] = useState<string>('all')
 
-  useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        const res = await fetch('/api/admin/reservations', {
-          method: 'GET',
-        })
+  const fetchReservations = async () => {
+    try {
+      const res = await fetch('/api/admin/reservations', {
+        method: 'GET',
+      })
 
-        if (!res.ok) throw new Error('Failed to fetch reservations')
+      if (!res.ok) throw new Error('Failed to fetch reservations')
 
-        const data = await res.json()
-        setReservations(data)
-      } catch (err: any) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchReservations()
-  }, [])
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return <CheckCircle className='w-4 h-4 text-green-600' />
-      case 'cancelled':
-        return <XCircle className='w-4 h-4 text-red-600' />
-      default:
-        return <AlertCircle className='w-4 h-4 text-yellow-600' />
+      const data = await res.json()
+      setReservations(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    const baseClasses =
-      'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium'
+  useEffect(() => {
+    fetchReservations()
+  }, [])
 
-    switch (status) {
-      case 'confirmed':
-        return `${baseClasses} bg-green-100 text-green-800 border border-green-200`
-      case 'cancelled':
-        return `${baseClasses} bg-red-100 text-red-800 border border-red-200`
-      default:
-        return `${baseClasses} bg-yellow-100 text-yellow-800 border border-yellow-200`
+  //^ delete the reservation
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this reservation?')) return
+    try {
+      const res = await fetch(`/api/admin/reservations/${id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error('Failed to delete reservation')
+      await fetchReservations()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  //^ Edit the status
+  const handleStatusUpdate = async (id: number, newStatus: string) => {
+    try {
+      const url = `/api/admin/reservations/${id}`
+
+      const requestBody = { status: newStatus }
+
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      })
+
+      if (!res.ok) {
+        const errorText = await res.text()
+
+        throw new Error(
+          `Failed to update reservation status: ${res.status} ${errorText}`
+        )
+      }
+
+      // Refresh the reservations list to show updated status
+      await fetchReservations()
+    } catch (err) {
+      console.error('Error updating status:', err)
     }
   }
 
@@ -115,29 +140,32 @@ const Reservation = () => {
     })
   }
 
-  const calculateNights = (start: string, end: string) => {
-    const startDate = new Date(start)
-    const endDate = new Date(end)
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
-    const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return nights
-  }
-
   const getActiveReservations = () =>
     reservations.filter((res) => res.isActive).length
   const getConfirmedReservations = () =>
     reservations.filter((res) => res.status === 'confirmed').length
+  const getPendingReservations = () =>
+    reservations.filter((res) => res.status === 'pending').length
+  const getCancelledReservations = () =>
+    reservations.filter((res) => res.status === 'cancelled').length
 
-  // Filter reservations by selected month
-  const filteredReservations =
-    selectedMonth === 'all'
-      ? reservations
-      : reservations.filter((res) => {
-          const reservationMonth = new Date(res.startTime)
-            .toISOString()
-            .slice(0, 7) // YYYY-MM format
-          return reservationMonth === selectedMonth
-        })
+  // Filter reservations by selected month and status
+  const filteredReservations = reservations.filter((res) => {
+    // Month filter
+    const monthMatch =
+      selectedMonth === 'all' ||
+      new Date(res.startTime).toISOString().slice(0, 7) === selectedMonth
+
+    // Status filter
+    let statusMatch = true
+    if (selectedStatus === 'active') {
+      statusMatch = res.isActive
+    } else if (selectedStatus !== 'all') {
+      statusMatch = res.status === selectedStatus
+    }
+
+    return monthMatch && statusMatch
+  })
 
   // Get available months from reservations
   const getAvailableMonths = () => {
@@ -189,7 +217,7 @@ const Reservation = () => {
       <div className='max-w-7xl mx-auto space-y-6'>
         {/* Header with Stats */}
         <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
-          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+          <div className='flex flex-col lg:flex-row lg:items-center justify-between gap-4'>
             <div>
               <h1 className='text-3xl font-bold text-gray-900'>Reservations</h1>
               <p className='text-gray-600 mt-1'>
@@ -197,14 +225,14 @@ const Reservation = () => {
               </p>
             </div>
 
-            <div className='flex flex-col sm:flex-row gap-4 items-end'>
+            {/* Filters */}
+            <div className='flex flex-col sm:flex-row gap-3'>
               {/* Month Filter */}
               <div className='flex items-center gap-2'>
-                <Filter className='w-4 h-4 text-gray-500' />
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
-                  className='px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white'
+                  className='px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white min-w-36'
                 >
                   <option value='all'>All Months</option>
                   {getAvailableMonths().map((month) => (
@@ -214,24 +242,50 @@ const Reservation = () => {
                   ))}
                 </select>
               </div>
+
+              {/* Status Filter */}
+              <div className='flex items-center gap-2'>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className='px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white min-w-32'
+                >
+                  <option value='all'>All Status</option>
+                  <option value='confirmed'>Confirmed</option>
+                  <option value='pending'>Pending</option>
+                  <option value='cancelled'>Cancelled</option>
+                </select>
+              </div>
             </div>
 
             {/* Quick Stats */}
-            <div className='flex gap-4'>
-              <div className='bg-blue-50 rounded-lg p-3 text-center min-w-20'>
-                <div className='text-2xl font-bold text-blue-600'>
+            <div className='flex gap-3 flex-wrap'>
+              <div className='bg-blue-50 rounded-lg p-3 text-center min-w-16'>
+                <div className='text-xl font-bold text-blue-600'>
                   {reservations.length}
                 </div>
                 <div className='text-xs text-blue-600'>Total</div>
               </div>
-              <div className='bg-green-50 rounded-lg p-3 text-center min-w-20'>
-                <div className='text-2xl font-bold text-green-600'>
+              <div className='bg-green-50 rounded-lg p-3 text-center min-w-16'>
+                <div className='text-xl font-bold text-green-600'>
                   {getConfirmedReservations()}
                 </div>
                 <div className='text-xs text-green-600'>Confirmed</div>
               </div>
-              <div className='bg-orange-50 rounded-lg p-3 text-center min-w-20'>
-                <div className='text-2xl font-bold text-orange-600'>
+              <div className='bg-yellow-50 rounded-lg p-3 text-center min-w-16'>
+                <div className='text-xl font-bold text-yellow-600'>
+                  {getPendingReservations()}
+                </div>
+                <div className='text-xs text-yellow-600'>Pending</div>
+              </div>
+              <div className='bg-red-50 rounded-lg p-3 text-center min-w-16'>
+                <div className='text-xl font-bold text-red-600'>
+                  {getCancelledReservations()}
+                </div>
+                <div className='text-xs text-red-600'>Cancelled</div>
+              </div>
+              <div className='bg-orange-50 rounded-lg p-3 text-center min-w-16'>
+                <div className='text-xl font-bold text-orange-600'>
                   {getActiveReservations()}
                 </div>
                 <div className='text-xs text-orange-600'>Active</div>
@@ -240,20 +294,51 @@ const Reservation = () => {
           </div>
         </div>
 
+        {/* Filter Results Info */}
+        {(selectedMonth !== 'all' || selectedStatus !== 'all') && (
+          <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-2'>
+                <Filter className='w-4 h-4 text-blue-600' />
+                <span className='text-sm font-medium text-blue-800'>
+                  Showing {filteredReservations.length} of {reservations.length}{' '}
+                  reservations
+                  {selectedMonth !== 'all' &&
+                    ` for ${formatMonthLabel(selectedMonth)}`}
+                  {selectedStatus !== 'all' && ` with ${selectedStatus} status`}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedMonth('all')
+                  setSelectedStatus('all')
+                }}
+                className='text-sm text-blue-600 hover:text-blue-800 font-medium'
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Reservations Grid */}
-        {reservations.length === 0 ? (
+        {filteredReservations.length === 0 ? (
           <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center'>
             <CalendarDays className='w-16 h-16 text-gray-400 mx-auto mb-4' />
             <h3 className='text-xl font-semibold text-gray-700 mb-2'>
-              No reservations found
+              {reservations.length === 0
+                ? 'No reservations found'
+                : 'No reservations match your filters'}
             </h3>
             <p className='text-gray-500'>
-              Reservations will appear here when customers make bookings.
+              {reservations.length === 0
+                ? 'Reservations will appear here when customers make bookings.'
+                : 'Try adjusting your filters to see more results.'}
             </p>
           </div>
         ) : (
           <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
-            {reservations.map((res) => (
+            {filteredReservations.map((res) => (
               <div
                 key={res.id}
                 className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-1'
@@ -264,10 +349,17 @@ const Reservation = () => {
                     <h3 className='font-semibold text-lg truncate'>
                       {res.room.name}
                     </h3>
-                    <div className={getStatusBadge(res.status)}>
-                      {getStatusIcon(res.status)}
-                      <span className='capitalize'>{res.status}</span>
-                    </div>
+                    <select
+                      className='bg-white text-gray-800 px-3 py-1 rounded-full text-sm font-medium capitalize cursor-pointer border-0 outline-none'
+                      value={res.status}
+                      onChange={(e) =>
+                        handleStatusUpdate(res.id, e.target.value)
+                      }
+                    >
+                      <option value='pending'>🟡 Pending</option>
+                      <option value='confirmed'>🟢 Confirmed</option>
+                      <option value='cancelled'>🔴 Cancelled</option>
+                    </select>
                   </div>
                   <div className='flex items-center gap-2 text-blue-100'>
                     <MapPin className='w-4 h-4' />
@@ -294,6 +386,26 @@ const Reservation = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* foods */}
+                  {res.food && res.food.length > 0 && (
+                    <div>
+                      <p className='text-sm opacity-80'>Foods</p>
+                      <div className='space-y-1'>
+                        {res.food.map((item: any, index: number) => (
+                          <div
+                            key={index}
+                            className='flex items-center justify-between text-sm'
+                          >
+                            <span className='font-medium'>{item.name}</span>
+                            <span>
+                              {item.quantity} × ₱{item.price} = ₱{item.total}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Room Details */}
                   <div className='bg-gray-50 rounded-lg p-3 space-y-2'>
@@ -323,12 +435,6 @@ const Reservation = () => {
                           {formatTime(res.endTime)}
                         </div>
                       </div>
-                    </div>
-                    <div className='text-xs text-gray-500 ml-6'>
-                      {calculateNights(res.startTime, res.endTime)} night
-                      {calculateNights(res.startTime, res.endTime) !== 1
-                        ? 's'
-                        : ''}
                     </div>
                   </div>
 

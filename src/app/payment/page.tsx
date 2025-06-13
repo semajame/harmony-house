@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
+import Image from 'next/image'
+
 interface Reservation {
   roomId: number
   checkIn: string
@@ -123,8 +125,8 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 mt-[5rem]'>
-      <div className='max-w-2xl mx-auto'>
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8 mt-[5rem]'>
+      <div className='max-w-4xl mx-auto'>
         {/* Header */}
         <div className='text-center mb-8'>
           <div className='inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4'>
@@ -167,8 +169,8 @@ export default function PaymentPage() {
               </svg>
               Reservation Summary
             </h2>
-            <div className=''>
-              <div className='flex gap-4 items-center justify-between'>
+            <div>
+              <div className='flex flex-col sm:flex-row flex-wrap gap-6 justify-between'>
                 <div className='space-y-3'>
                   <div>
                     <p className='text-sm opacity-80'>Guest Name</p>
@@ -178,7 +180,7 @@ export default function PaymentPage() {
                   </div>
                   <div>
                     <p className='text-sm opacity-80'>Email</p>
-                    <p className='font-medium'>
+                    <p className='font-medium break-words'>
                       {session?.user?.email || 'N/A'}
                     </p>
                   </div>
@@ -189,6 +191,7 @@ export default function PaymentPage() {
                     </p>
                   </div>
                 </div>
+
                 <div className='space-y-3'>
                   <div>
                     <p className='text-sm opacity-80'>Room ID</p>
@@ -209,7 +212,10 @@ export default function PaymentPage() {
                   <div>
                     <p className='text-sm opacity-80'>Foods</p>
                     {reservation.food.map((item: any, index: number) => (
-                      <div key={index} className='flex items-center'>
+                      <div
+                        key={index}
+                        className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1'
+                      >
                         <p className='font-medium'>{item.name}</p>
                         <p className='text-sm font-medium'>
                           {item.quantity} × ₱{item.price} = ₱{item.total}
@@ -230,7 +236,7 @@ export default function PaymentPage() {
         </div>
 
         {/* Payment Instructions */}
-        <div className='p-8'>
+        <div className='py-4 sm:p-6 lg:p-8'>
           <div className='bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-6'>
             <div className='flex items-center mb-4'>
               <div className='flex-shrink-0 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-4'>
@@ -259,8 +265,18 @@ export default function PaymentPage() {
             </div>
 
             <div className='bg-white rounded-lg p-4 border border-green-200'>
-              <div className='grid md:grid-cols-2 gap-4'>
-                <div className='flex items-center p-3 bg-gray-50 rounded-lg'>
+              <div className='grid place-items-center mb-4'>
+                <Image
+                  src='/images/gcash.jpg'
+                  alt='gcash image'
+                  width={200}
+                  height={200}
+                  className='max-w-full h-auto'
+                />
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4 place-items-center'>
+                <div className='flex items-center p-3 bg-gray-50 rounded-lg w-full'>
                   <svg
                     className='w-5 h-5 text-green-600 mr-3'
                     fill='none'
@@ -281,7 +297,8 @@ export default function PaymentPage() {
                     <p className='font-bold text-gray-900'>0917-123-4567</p>
                   </div>
                 </div>
-                <div className='flex items-center p-3 bg-gray-50 rounded-lg'>
+
+                <div className='flex items-center p-3 bg-gray-50 rounded-lg w-full'>
                   <svg
                     className='w-5 h-5 text-green-600 mr-3'
                     fill='none'
@@ -299,7 +316,7 @@ export default function PaymentPage() {
                     <p className='text-xs text-gray-500 uppercase tracking-wide'>
                       Account Name
                     </p>
-                    <p className='font-bold text-gray-900'>Harmony House</p>
+                    <p className='font-bold text-gray-900'>Mega Mae</p>
                   </div>
                 </div>
               </div>
