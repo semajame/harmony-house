@@ -31,6 +31,12 @@ import LogoutButton from '@/components/forms-buttons/logout-button'
 
 import { getServerSession } from 'next-auth'
 
+type SidebarItem = {
+  icon: React.ElementType
+  label: string
+  link: string
+}
+
 export default function Dashboard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -55,9 +61,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
     return 'Dashboard'
   }
 
-  const sidebarItems = [
+  const sidebarItems: SidebarItem[] = [
     { icon: Home, label: 'Dashboard', link: '/admin/dashboard' },
-    { icon: Users, label: 'Users', link: '/admin/dashboard/users' },
+    session?.user.role === 'admin' && {
+      icon: Users,
+      label: 'Users',
+      link: '/admin/dashboard/users',
+    },
     {
       icon: Calendar,
       label: 'Reservation',
@@ -65,7 +75,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
     },
     { icon: CakeSlice, label: 'Foods', link: '/admin/dashboard/foods' },
     { icon: NotebookText, label: 'Reviews', link: '/admin/dashboard/reviews' },
-  ]
+  ].filter(Boolean) as SidebarItem[]
 
   useEffect(() => {
     if (status === 'unauthenticated') {

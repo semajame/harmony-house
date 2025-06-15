@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
+import { useRouter } from 'next/navigation'
+
 import {
   Filter,
   Mail,
@@ -14,6 +17,8 @@ import {
   X,
   Eye,
   EyeOff,
+  Edit,
+  Trash2,
 } from 'lucide-react'
 
 interface UserType {
@@ -26,13 +31,14 @@ interface UserType {
   isActive: boolean
 }
 
-interface CreateUserData {
+interface UserFormData {
   username: string
   name: string
   email: string
-  password: string
+  password?: string // ✅ optional
   phone: string
   role: string
+  isActive?: boolean
 }
 
 const Users = () => {
@@ -46,18 +52,26 @@ const Users = () => {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [isCreating, setIsCreating] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [editingUser, setEditingUser] = useState<UserType | null>(null)
+  const [showDropdown, setShowDropdown] = useState<number | string | null>(null)
 
-  const [formData, setFormData] = useState<CreateUserData>({
+  const [formData, setFormData] = useState<UserFormData>({
     username: '',
     name: '',
     email: '',
     password: '',
     phone: '',
     role: 'customer',
+    isActive: true,
   })
 
+  const router = useRouter()
+
+  const isEditing = editingUser !== null
+
   useEffect(() => {
+    //^ fetch users
     const fetchUsers = async () => {
       try {
         const res = await fetch('/api/admin/users')
@@ -119,57 +133,125 @@ const Users = () => {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target
+    const { name, value, type } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]:
+        type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }))
   }
 
-  const handleCreateUser = async (e: React.FormEvent) => {
+  //^ submit form data
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsCreating(true)
+    setIsProcessing(true)
 
     try {
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
+      let response
+      let url = '/api/admin/users'
+      let method = 'POST'
+
+      if (isEditing) {
+        url = `/api/admin/users/${editingUser.id}`
+        method = 'PUT'
+      }
+
+      // Prepare the data - don't send empty password for updates
+
+      const submitData = { ...formData }
+      if (isEditing && !submitData.password) {
+        delete submitData.password
+      }
+
+      response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create user')
+        throw new Error(`Failed to ${isEditing ? 'update' : 'create'} user`)
       }
 
-      const newUser = await response.json()
+      const userData = await response.json()
 
-      // Add the new user to the users list
-      setUsers((prev) => [...prev, newUser])
+      if (isEditing) {
+        // Update the user in the list
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.id === editingUser.id ? { ...user, ...userData } : user
+          )
+        )
+      } else {
+        // Add the new user to the list
+        setUsers((prev) => [...prev, userData])
+      }
 
-      // Reset form and close modal
-      setFormData({
-        username: '',
-        name: '',
-        email: '',
-        password: '',
-        phone: '',
-        role: 'customer',
-      })
-      setIsModalOpen(false)
-
-      console.log('User created successfully:', newUser)
+      closeModal()
     } catch (error) {
-      console.error('Error creating user:', error)
+      console.error(`Error ${isEditing ? 'updating' : 'creating'} user:`, error)
       // You might want to show an error message to the user here
     } finally {
-      setIsCreating(false)
+      setIsProcessing(false)
     }
   }
 
-  const closeModal = () => {
-    setIsModalOpen(false)
+  //^ edit from
+  const handleEditUser = (user: UserType) => {
+    setEditingUser(user)
+    setFormData({
+      username: user.username,
+      name: user.username, // Assuming name is same as username, adjust as needed
+      email: user.email,
+      password: '', // Don't pre-fill password for editing
+      phone: user.phone,
+      role: user.role,
+      isActive: user.isActive,
+    })
+    setIsModalOpen(true)
+    setShowDropdown(null)
+  }
+
+  //^ delete user data by id
+  const handleDeleteUser = async (id: number) => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this user? This action cannot be undone.'
+    )
+
+    if (!confirmed) return
+
+    setIsProcessing(true)
+
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error('Failed to delete user:', errorData.error)
+      } else {
+        const contentType = res.headers.get('content-type')
+        const data = contentType?.includes('application/json')
+          ? await res.json()
+          : null
+
+        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id))
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleCreateUser = () => {
+    setEditingUser(null)
     setFormData({
       username: '',
       name: '',
@@ -177,8 +259,28 @@ const Users = () => {
       password: '',
       phone: '',
       role: 'customer',
+      isActive: true,
+    })
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setEditingUser(null)
+    setFormData({
+      username: '',
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
+      role: 'customer',
+      isActive: true,
     })
     setShowPassword(false)
+  }
+
+  const toggleDropdown = (id: number) => {
+    setShowDropdown(showDropdown === id ? null : id)
   }
 
   return (
@@ -200,7 +302,7 @@ const Users = () => {
 
               <div>
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={handleCreateUser}
                   className='bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 cursor-pointer'
                 >
                   <Plus className='h-4 w-4' />
@@ -263,14 +365,44 @@ const Users = () => {
                           <h3 className='text-lg font-semibold text-gray-900'>
                             {user.username}
                           </h3>
-                          <p className='text-sm text-gray-500'>
-                            {user.isActive}
-                          </p>
                         </div>
                       </div>
-                      <button className='p-1 hover:bg-gray-100 rounded'>
-                        <MoreVertical className='h-4 w-4 text-gray-400' />
-                      </button>
+                      <div className='relative'>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleDropdown(user.id)
+                          }}
+                          className='p-1 hover:bg-gray-100 rounded cursor-pointer'
+                        >
+                          <MoreVertical className='h-4 w-4 text-gray-400' />
+                        </button>
+
+                        {showDropdown === user.id && (
+                          <div className='absolute right-0 mt-2 w-38 bg-white rounded-md shadow-lg z-[10000] border border-gray-200'>
+                            <div className='py-1'>
+                              <button
+                                onClick={() => handleEditUser(user)}
+                                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left cursor-pointer'
+                              >
+                                <Edit className='h-4 w-4 mr-2' />
+                                Edit User
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation() // Prevent closing the dropdown too early
+                                  handleDeleteUser(user.id)
+                                  setShowDropdown(null)
+                                }}
+                                className='flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 w-full text-left cursor-pointer'
+                              >
+                                <Trash2 className='h-4 w-4 mr-2' />
+                                Delete User
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className='space-y-3'>
@@ -310,13 +442,13 @@ const Users = () => {
         </main>
       </div>
 
-      {/* Create User Modal */}
+      {/* Create/Edit User Modal */}
       {isModalOpen && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
-          <div className='bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto'>
+          <div className='bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto'>
             <div className='flex items-center justify-between p-6 border-b border-gray-200'>
               <h2 className='text-xl font-semibold text-gray-900'>
-                Create New User
+                {isEditing ? 'Edit User' : 'Create New User'}
               </h2>
               <button
                 onClick={closeModal}
@@ -326,7 +458,7 @@ const Users = () => {
               </button>
             </div>
 
-            <form onSubmit={handleCreateUser} className='p-6 space-y-4 '>
+            <form onSubmit={handleSubmit} className='p-6 space-y-4'>
               {/* Username */}
               <div className='grid grid-cols-2 gap-4'>
                 <div>
@@ -390,7 +522,12 @@ const Users = () => {
                     htmlFor='password'
                     className='block text-sm font-medium text-gray-700 mb-1'
                   >
-                    Password *
+                    Password {!isEditing && '*'}
+                    {isEditing && (
+                      <span className='text-xs text-gray-500'>
+                        (leave blank to keep current)
+                      </span>
+                    )}
                   </label>
                   <div className='relative'>
                     <input
@@ -399,9 +536,11 @@ const Users = () => {
                       name='password'
                       value={formData.password}
                       onChange={handleInputChange}
-                      required
+                      required={!isEditing}
                       className='w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                      placeholder='Enter password'
+                      placeholder={
+                        isEditing ? 'Enter new password' : 'Enter password'
+                      }
                     />
                     <button
                       type='button'
@@ -462,6 +601,26 @@ const Users = () => {
                 </div>
               </div>
 
+              {/* Active Status - Only show for editing */}
+              {isEditing && (
+                <div className='flex items-center space-x-2'>
+                  <input
+                    type='checkbox'
+                    id='isActive'
+                    name='isActive'
+                    checked={formData.isActive}
+                    onChange={handleInputChange}
+                    className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                  />
+                  <label
+                    htmlFor='isActive'
+                    className='text-sm font-medium text-gray-700'
+                  >
+                    Active User
+                  </label>
+                </div>
+              )}
+
               {/* Form Actions */}
               <div className='flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 w-full'>
                 <button
@@ -473,10 +632,16 @@ const Users = () => {
                 </button>
                 <button
                   type='submit'
-                  disabled={isCreating}
+                  disabled={isProcessing}
                   className='px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200 cursor-pointer'
                 >
-                  {isCreating ? 'Creating...' : 'Create User'}
+                  {isProcessing
+                    ? isEditing
+                      ? 'Updating...'
+                      : 'Creating...'
+                    : isEditing
+                    ? 'Update User'
+                    : 'Create User'}
                 </button>
               </div>
             </form>
