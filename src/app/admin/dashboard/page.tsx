@@ -1,71 +1,131 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import LogoutButton from '@/components/forms-buttons/logout-button'
+import React, { useEffect, useState, useMemo } from 'react'
+import { DollarSign, Activity, Utensils, ShoppingCart } from 'lucide-react'
 
-import React, { useState } from 'react'
-import {
-  Home,
-  BarChart3,
-  Users,
-  Settings,
-  Bell,
-  Search,
-  Menu,
-  X,
-  TrendingUp,
-  DollarSign,
-  Activity,
-  UserPlus,
-} from 'lucide-react'
+type ReservationData = {
+  id: number
+  createdAt: string
+  startTime: string
+  endTime: string
+  status: string
+  isActive: boolean
+  user: {
+    id: number
+    name: string
+    email: string
+    phone: string
+    role: string
+  }
+  room: {
+    id: number
+    name: string
+    capacity: number
+    price: string
+  }
+  payment?: {
+    id: number
+    amount: string
+    method: string
+    paidAt: string
+  }
+  food: {
+    id: number
+    name: string
+    quantity: number
+    price: number
+    total: number
+  }[]
+}
+
+type Food = {
+  id: number
+  name: string
+  price: number
+  description: string
+  available: boolean
+}
 
 export default function Dashboard() {
+  const [reservations, setReservations] = useState<ReservationData[]>([])
+  const [foods, setFoods] = useState<Food[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchReservations = async () => {
+    try {
+      const res = await fetch('/api/admin/reservations')
+      if (!res.ok) throw new Error('Failed to fetch reservations')
+      const data = await res.json()
+      setReservations(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchFoods = async () => {
+    try {
+      const res = await fetch('/api/admin/products')
+      const data = await res.json()
+      const formattedData: Food[] = data.map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        description: product.description,
+        available: product.is_active,
+      }))
+      setFoods(formattedData)
+    } catch (error) {
+      console.error('Failed to fetch products:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchReservations()
+    fetchFoods()
+  }, [])
+
+  const totalFoods = useMemo(() => foods.length, [foods])
+
+  // ✅ Total payment revenue (from payments)
+  const totalRevenue = useMemo(() => {
+    return reservations.reduce((sum, res) => {
+      const paymentAmount = res.payment ? parseFloat(res.payment.amount) : 0
+      return sum + paymentAmount
+    }, 0)
+  }, [reservations])
+
   const stats = [
     {
       title: 'Total Revenue',
-      value: '$45,231.89',
-      change: '+20.1%',
-      trend: 'up',
+      value: `₱${totalRevenue.toLocaleString('en-PH', {
+        minimumFractionDigits: 2,
+      })}`,
       icon: DollarSign,
-      color: 'bg-blue-500',
-    },
-    {
-      title: 'Active Users',
-      value: '2,350',
-      change: '+180.1%',
-      trend: 'up',
-      icon: Users,
       color: 'bg-green-500',
+      change: '+5.6%',
     },
     {
-      title: 'New Signups',
-      value: '12,234',
-      change: '+19%',
-      trend: 'up',
-      icon: UserPlus,
-      color: 'bg-purple-500',
+      title: 'Total Reservations',
+      value: reservations.length.toString(),
+      icon: Activity,
+      color: 'bg-blue-500',
+      change: '+3.2%',
     },
     {
-      title: 'Growth Rate',
-      value: '573',
-      change: '+201',
-      trend: 'up',
-      icon: TrendingUp,
-      color: 'bg-orange-500',
+      title: 'Total Foods',
+      value: totalFoods.toString(),
+      icon: Utensils,
+      color: 'bg-yellow-500',
+      change: '+0.0%',
     },
   ]
 
-  // if (status === 'loading') return <p>Loading...</p>
-
   return (
     <div className='flex h-full bg-gray-100'>
-      {/* Main Content */}
-
-      {/* Main Content Area */}
       <main className='flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6'>
-        {/* Stats Grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6'>
           {stats.map((stat, index) => (
             <div key={index} className='bg-white rounded-lg shadow p-6'>
@@ -94,53 +154,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Charts Section */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
-          <div className='bg-white rounded-lg shadow p-6'>
-            <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-              Revenue Overview
-            </h3>
-            <div className='h-64 bg-gray-50 rounded-lg flex items-center justify-center'>
-              <p className='text-gray-500'>Chart Component Here</p>
-            </div>
-          </div>
-
-          <div className='bg-white rounded-lg shadow p-6'>
-            <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-              User Activity
-            </h3>
-            <div className='h-64 bg-gray-50 rounded-lg flex items-center justify-center'>
-              <p className='text-gray-500'>Chart Component Here</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className='bg-white rounded-lg shadow'>
-          <div className='px-6 py-4 border-b border-gray-200'>
-            <h3 className='text-lg font-semibold text-gray-900'>
-              Recent Activity
-            </h3>
-          </div>
-          <div className='p-6'>
-            <div className='space-y-4'>
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div key={item} className='flex items-center space-x-4'>
-                  <div className='w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center'>
-                    <Users className='h-5 w-5 text-gray-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <p className='text-sm font-medium text-gray-900'>
-                      New user registered
-                    </p>
-                    <p className='text-sm text-gray-500'>2 minutes ago</p>
-                  </div>
-                  <div className='text-sm text-gray-400'>View</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Add more dashboard content below... */}
       </main>
     </div>
   )

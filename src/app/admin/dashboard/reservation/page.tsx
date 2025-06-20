@@ -140,8 +140,6 @@ const Reservation = () => {
     })
   }
 
-  const getActiveReservations = () =>
-    reservations.filter((res) => res.isActive).length
   const getConfirmedReservations = () =>
     reservations.filter((res) => res.status === 'confirmed').length
   const getPendingReservations = () =>
@@ -283,12 +281,6 @@ const Reservation = () => {
                   {getCancelledReservations()}
                 </div>
                 <div className='text-xs text-red-600'>Cancelled</div>
-              </div>
-              <div className='bg-orange-50 rounded-lg p-3 text-center min-w-16'>
-                <div className='text-xl font-bold text-orange-600'>
-                  {getActiveReservations()}
-                </div>
-                <div className='text-xs text-orange-600'>Active</div>
               </div>
             </div>
           </div>

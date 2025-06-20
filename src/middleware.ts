@@ -9,28 +9,32 @@ export default withAuth(
     console.log('TOKEN:', token)
     console.log('PATH:', pathname)
 
-    // Redirect admin users away from the root path
-    if (token?.role === 'admin' && pathname === '/') {
+    // 🚫 If logged in as admin or staff, block access to "/" and redirect to /admin/dashboard
+    if (
+      (token?.role === 'admin' || token?.role === 'staff') &&
+      pathname === '/'
+    ) {
       return NextResponse.redirect(new URL('/admin/dashboard', req.url))
     }
 
-    // Redirect customer users away from the admin dashboard
+    // 🚫 Customers should not access admin dashboard
     if (token?.role === 'customer' && pathname.startsWith('/admin/dashboard')) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
+    // 🚫 Staff should not access /admin/dashboard/users
     if (
       token?.role === 'staff' &&
       pathname.startsWith('/admin/dashboard/users')
     ) {
-      return NextResponse.redirect(new URL('/admin/dashboard', req.url)) // Or redirect wherever you like
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url))
     }
 
     return NextResponse.next()
   },
   {
     pages: {
-      signIn: '/auth/signin',
+      signIn: '/auth/signin', // Redirect unauthenticated users trying to access protected pages
     },
   }
 )

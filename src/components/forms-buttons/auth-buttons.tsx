@@ -1,8 +1,8 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, LayoutDashboard, LogOut } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -11,12 +11,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { Button } from '@/components/ui/button'
-import LogoutButton from './logout-button'
 
 export default function AuthSection() {
   const { data: session, status } = useSession()
 
   if (status === 'loading') return null
+
+  const userRole = session?.user?.role
+  const showDashboard = userRole === 'staff' || userRole === 'admin'
 
   return (
     <div className='hidden md:flex gap-2 items-center'>
@@ -36,9 +38,26 @@ export default function AuthSection() {
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent>
+          <DropdownMenuContent className='p-2'>
+            {showDashboard && (
+              <DropdownMenuItem asChild>
+                <Link
+                  href='/admin/dashboard'
+                  className='flex items-center gap-2 w-full cursor-pointer'
+                >
+                  <LayoutDashboard className='h-4 w-4' />
+                  Dashboard
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem asChild>
-              <LogoutButton />
+              <button
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className='flex items-center gap-2 w-full cursor-pointer'
+              >
+                <LogOut className='h-4 w-4 text-gray-500' />
+                Logout
+              </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

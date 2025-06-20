@@ -7,7 +7,6 @@ import { useState } from 'react'
 
 import { ChevronDown, Menu, X } from 'lucide-react'
 
-import LogoutCustomer from '../forms-buttons/logout-costumer'
 import AuthButtons from '../forms-buttons/auth-buttons'
 
 const Header = () => {

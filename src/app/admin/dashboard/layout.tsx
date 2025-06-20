@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -17,6 +17,7 @@ import {
   CakeSlice,
   NotebookText,
   Calendar,
+  LogOut,
 } from 'lucide-react'
 
 import DashboardLayout from '@/components/admin/dashboard/dashboard-layout'
@@ -27,9 +28,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import LogoutButton from '@/components/forms-buttons/logout-button'
-
-import { getServerSession } from 'next-auth'
 
 type SidebarItem = {
   icon: React.ElementType
@@ -130,7 +128,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className='fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden'
+          className='fixed inset-0 bg-black opacity-50 z-40 lg:hidden'
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -175,7 +173,13 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
 
                 <DropdownMenuContent>
                   <DropdownMenuItem asChild>
-                    <LogoutButton />
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/login' })}
+                      className='flex items-center gap-2 w-full cursor-pointer'
+                    >
+                      <LogOut className='h-4 w-4 text-gray-500' />
+                      Logout
+                    </button>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
