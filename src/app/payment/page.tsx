@@ -152,8 +152,8 @@ export default function PaymentPage() {
 
         <div className='bg-white rounded-2xl shadow-xl overflow-hidden'>
           {/* Reservation Summary */}
-          <div className='bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white'>
-            <h2 className='text-xl font-semibold mb-4 flex items-center'>
+          <div className='bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white '>
+            <h2 className='text-xl font-semibold mb-4 flex items-center justify-center text-center'>
               <svg
                 className='w-5 h-5 mr-2'
                 fill='none'
@@ -170,7 +170,7 @@ export default function PaymentPage() {
               Reservation Summary
             </h2>
             <div>
-              <div className='flex flex-col sm:flex-row flex-wrap gap-6 justify-between'>
+              <div className='flex flex-col sm:flex-row flex-wrap gap-6 justify-evenly my-10'>
                 <div className='space-y-3'>
                   <div>
                     <p className='text-sm opacity-80'>Guest Name</p>
@@ -190,13 +190,13 @@ export default function PaymentPage() {
                       {session?.user?.phone || 'N/A'}
                     </p>
                   </div>
-                </div>
-
-                <div className='space-y-3'>
                   <div>
                     <p className='text-sm opacity-80'>Room ID</p>
                     <p className='font-medium'>{reservation.roomId}</p>
                   </div>
+                </div>
+
+                <div className='space-y-3'>
                   <div>
                     <p className='text-sm opacity-80'>Check-in</p>
                     <p className='font-medium'>
@@ -339,7 +339,8 @@ export default function PaymentPage() {
                 </svg>
                 <p className='text-sm text-blue-700'>
                   After sending the GCash payment, click the "Confirm Payment"
-                  button below to complete your reservation.
+                  button below if you completed the payment and you will receive
+                  a text confirming your reservation
                 </p>
               </div>
             </div>

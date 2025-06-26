@@ -58,8 +58,8 @@ const Reservation = () => {
   const [reservations, setReservations] = useState<ReservationData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedMonth, setSelectedMonth] = useState<string>('all')
-  const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [selectedMonth, setSelectedMonth] = useState('all')
+  const [selectedStatus, setSelectedStatus] = useState('all')
 
   const fetchReservations = async () => {
     try {
@@ -333,7 +333,7 @@ const Reservation = () => {
             {filteredReservations.map((res) => (
               <div
                 key={res.id}
-                className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-1'
+                className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'
               >
                 {/* Header */}
                 <div className='bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white'>
@@ -408,9 +408,9 @@ const Reservation = () => {
                           Capacity: {res.room.capacity}
                         </span>
                       </div>
-                      <div className='font-bold text-green-600'>
+                      {/* <div className='font-bold text-green-600'>
                         ₱{parseFloat(res.room.price).toLocaleString()}
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 
