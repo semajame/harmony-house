@@ -9,7 +9,7 @@ export default withAuth(
     console.log('TOKEN:', token)
     console.log('PATH:', pathname)
 
-    // 🚫 If logged in as admin or staff, block access to "/" and redirect to /admin/dashboard
+    // 🚫 Admin/staff trying to access root ("/")
     if (
       (token?.role === 'admin' || token?.role === 'staff') &&
       pathname === '/'
@@ -17,15 +17,23 @@ export default withAuth(
       return NextResponse.redirect(new URL('/admin/dashboard', req.url))
     }
 
-    // 🚫 Customers should not access admin dashboard
+    // 🚫 Customer trying to access admin pages
     if (token?.role === 'customer' && pathname.startsWith('/admin/dashboard')) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
-    // 🚫 Staff should not access /admin/dashboard/users
+    // 🚫 Staff trying to access admin user management
     if (
       token?.role === 'staff' &&
       pathname.startsWith('/admin/dashboard/users')
+    ) {
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url))
+    }
+
+    // 🚫 Admin/staff trying to access user dashboard
+    if (
+      (token?.role === 'admin' || token?.role === 'staff') &&
+      pathname === '/dashboard'
     ) {
       return NextResponse.redirect(new URL('/admin/dashboard', req.url))
     }
@@ -34,11 +42,15 @@ export default withAuth(
   },
   {
     pages: {
-      signIn: '/auth/signin', // Redirect unauthenticated users trying to access protected pages
+      signIn: '/auth/signin',
     },
   }
 )
 
 export const config = {
-  matcher: ['/admin/dashboard/:path*', '/admin/users/:path*'],
+  matcher: [
+    '/admin/dashboard/:path*',
+    '/admin/users/:path*',
+    '/dashboard', // 👈 protects the user dashboard
+  ],
 }

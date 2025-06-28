@@ -19,6 +19,7 @@ export default function AuthSection() {
 
   const userRole = session?.user?.role
   const showDashboard = userRole === 'staff' || userRole === 'admin'
+  const showUserDashboard = userRole === 'customer' || userRole === 'customer'
 
   return (
     <div className='hidden md:flex gap-2 items-center'>
@@ -50,6 +51,19 @@ export default function AuthSection() {
                 </Link>
               </DropdownMenuItem>
             )}
+
+            {showUserDashboard && (
+              <DropdownMenuItem asChild>
+                <Link
+                  href='/dashboard'
+                  className='flex items-center gap-2 w-full cursor-pointer'
+                >
+                  <LayoutDashboard className='h-4 w-4' />
+                  Dashboard
+                </Link>
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuItem asChild>
               <button
                 onClick={() => signOut({ callbackUrl: '/login' })}
