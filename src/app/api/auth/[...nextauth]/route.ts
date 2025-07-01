@@ -42,6 +42,7 @@ const authOptions: AuthOptions = {
         return {
           id: user.id.toString(),
           username: user.username,
+          name: user.name,
           role: user.role,
           email: user.email,
           phone: user.phone,
@@ -60,6 +61,7 @@ const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id
         token.username = user.username // ✅ This is missing!
+        token.name = user.name
         token.role = (user as any).role
         token.email = (user as any).email // ✅ FIX: Add this
         token.phone = (user as any).phone // ✅ Add this line
@@ -69,6 +71,7 @@ const authOptions: AuthOptions = {
     async session({ session, token }) {
       session.user.id = token.id
       session.user.username = token.username
+      session.user.name = token.name
       session.user.role = token.role
       session.user.email = token.email // ✅ Now this will work
       session.user.phone = token.phone // ✅ This too

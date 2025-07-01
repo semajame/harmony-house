@@ -8,6 +8,10 @@ import {
   TrendingUp,
   Users,
   Calendar,
+  Star,
+  MessageSquare,
+  ThumbsUp,
+  Award,
 } from 'lucide-react'
 import {
   LineChart,
@@ -69,9 +73,21 @@ type Food = {
   available: boolean
 }
 
+type Review = {
+  id: number
+  name: string
+  email: string
+  room: string
+  rating: number
+  message: string
+  createdAt: string
+  user: { id: number; name: string; email: string }
+}
+
 export default function Dashboard() {
   const [reservations, setReservations] = useState<ReservationData[]>([])
   const [foods, setFoods] = useState<Food[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchReservations = async () => {
@@ -103,11 +119,22 @@ export default function Dashboard() {
     }
   }
 
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch('/api/admin/review')
+      if (!res.ok) throw new Error('Failed to fetch reviews')
+      const data = await res.json()
+      setReviews(data)
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error)
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
-        await Promise.all([fetchReservations(), fetchFoods()])
+        await Promise.all([fetchReservations(), fetchFoods(), fetchReviews()])
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -129,6 +156,64 @@ export default function Dashboard() {
       return sum
     }, 0)
   }, [reservations])
+
+  // Review analytics
+  const reviewStats = useMemo(() => {
+    const totalReviews = reviews.length
+    const averageRating =
+      totalReviews > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0
+    const excellentReviews = reviews.filter((r) => r.rating >= 4).length
+    const satisfactionRate =
+      totalReviews > 0 ? (excellentReviews / totalReviews) * 100 : 0
+
+    return {
+      totalReviews,
+      averageRating: Math.round(averageRating * 10) / 10,
+      satisfactionRate: Math.round(satisfactionRate),
+      excellentReviews,
+    }
+  }, [reviews])
+
+  // Rating distribution for charts
+  const ratingDistribution = useMemo(() => {
+    const distribution = Array.from({ length: 5 }, (_, i) => {
+      const star = i + 1
+      const count = reviews.filter((r) => r.rating === star).length
+      return { rating: `${star} Star${star > 1 ? 's' : ''}`, count, star }
+    }).reverse()
+
+    return distribution
+  }, [reviews])
+
+  // Reviews by room
+  const reviewsByRoom = useMemo(() => {
+    const roomReviews: {
+      [key: string]: { count: number; avgRating: number; ratings: number[] }
+    } = {}
+
+    reviews.forEach((review) => {
+      if (!roomReviews[review.room]) {
+        roomReviews[review.room] = { count: 0, avgRating: 0, ratings: [] }
+      }
+      roomReviews[review.room].count += 1
+      roomReviews[review.room].ratings.push(review.rating)
+    })
+
+    return Object.entries(roomReviews)
+      .map(([room, data]) => ({
+        room,
+        count: data.count,
+        avgRating:
+          Math.round(
+            (data.ratings.reduce((sum, r) => sum + r, 0) /
+              data.ratings.length) *
+              10
+          ) / 10,
+      }))
+      .sort((a, b) => b.count - a.count)
+  }, [reviews])
 
   // Chart data processing
   const revenueByDay = useMemo(() => {
@@ -215,18 +300,18 @@ export default function Dashboard() {
       change: '+3.2%',
     },
     {
-      title: 'Total Foods',
-      value: totalFoods.toString(),
-      icon: Utensils,
+      title: 'Average Rating',
+      value: `${reviewStats.averageRating}/5`,
+      icon: Star,
       color: 'bg-yellow-500',
-      change: '+0.0%',
+      change: `${reviewStats.totalReviews} reviews`,
     },
     {
-      title: 'Active Rooms',
-      value: '4',
-      icon: Calendar,
+      title: 'Satisfaction Rate',
+      value: `${reviewStats.satisfactionRate}%`,
+      icon: ThumbsUp,
       color: 'bg-purple-500',
-      change: '+2.1%',
+      change: `${reviewStats.excellentReviews} excellent`,
     },
   ]
 
@@ -241,7 +326,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className='flex h-full bg-gray-50 min-h-screen'>
+    <div className='flex overflow-y-auto bg-gray-50'>
       <main className='flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6'>
         {/* Stats Cards */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
@@ -268,7 +353,7 @@ export default function Dashboard() {
                   {stat.change}
                 </span>
                 <span className='text-gray-600 text-sm ml-2'>
-                  from last month
+                  {index < 2 ? 'from last month' : ''}
                 </span>
               </div>
             </div>
@@ -328,6 +413,43 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
+          {/* Rating Distribution Chart */}
+          <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='text-lg font-semibold text-gray-900'>
+                Rating Distribution
+              </h3>
+              <Star className='h-5 w-5 text-yellow-500' />
+            </div>
+            <ResponsiveContainer width='100%' height={300}>
+              <BarChart data={ratingDistribution} layout='horizontal'>
+                <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+                <XAxis type='number' fontSize={12} tick={{ fill: '#6B7280' }} />
+                <YAxis
+                  type='category'
+                  dataKey='rating'
+                  fontSize={12}
+                  tick={{ fill: '#6B7280' }}
+                  width={80}
+                />
+                <Tooltip
+                  formatter={(value: number) => [value, 'Reviews']}
+                  labelStyle={{ color: '#374151' }}
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  }}
+                />
+                <Bar dataKey='count' fill='#F59E0B' radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Second Row Charts */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
           {/* Reservation Status Distribution */}
           <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
             <div className='flex items-center justify-between mb-4'>
@@ -379,6 +501,99 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Reviews by Room */}
+          <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='text-lg font-semibold text-gray-900'>
+                Reviews by Room
+              </h3>
+              <MessageSquare className='h-5 w-5 text-purple-500' />
+            </div>
+            <ResponsiveContainer width='100%' height={300}>
+              <BarChart data={reviewsByRoom}>
+                <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+                <XAxis
+                  dataKey='room'
+                  fontSize={12}
+                  tick={{ fill: '#6B7280' }}
+                  angle={-45}
+                  textAnchor='end'
+                  height={80}
+                />
+                <YAxis fontSize={12} tick={{ fill: '#6B7280' }} />
+                <Tooltip
+                  formatter={(value: number, name: string) => [
+                    name === 'count'
+                      ? `${value} reviews`
+                      : `${value}/5 avg rating`,
+                    name === 'count' ? 'Reviews' : 'Rating',
+                  ]}
+                  labelStyle={{ color: '#374151' }}
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  }}
+                />
+                <Bar dataKey='count' fill='#8B5CF6' radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Recent Reviews Section */}
+        <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
+          <div className='flex items-center justify-between mb-6'>
+            <h3 className='text-lg font-semibold text-gray-900'>
+              Recent Reviews
+            </h3>
+            <Award className='h-5 w-5 text-yellow-500' />
+          </div>
+          <div className='space-y-4'>
+            {reviews.slice(0, 5).map((review) => (
+              <div
+                key={review.id}
+                className='border-l-4 border-yellow-400 pl-4 py-3 bg-gray-50 rounded-r-lg'
+              >
+                <div className='flex items-start justify-between'>
+                  <div className='flex-1'>
+                    <div className='flex items-center gap-3 mb-2'>
+                      <h4 className='font-medium text-gray-900'>
+                        {review.name}
+                      </h4>
+                      <div className='flex items-center gap-1'>
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={14}
+                            className={`${
+                              i < review.rating
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className='text-sm text-gray-500'>
+                        • {review.room}
+                      </span>
+                    </div>
+                    <p className='text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap max-w-md'>
+                      {review.message}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {reviews.length === 0 && (
+              <div className='text-center py-8 text-gray-500'>
+                <MessageSquare className='h-12 w-12 mx-auto mb-3 text-gray-300' />
+                <p>No reviews yet</p>
+              </div>
+            )}
           </div>
         </div>
       </main>

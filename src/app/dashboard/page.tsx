@@ -12,6 +12,7 @@ import {
   XCircle,
   AlertCircle,
 } from 'lucide-react'
+import Link from 'next/link'
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -105,14 +106,28 @@ export default function Dashboard() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pt-24 px-4 pb-10'>
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pt-28 px-4 pb-10'>
       <div className='max-w-6xl mx-auto'>
         {/* Header */}
         <div className='mb-8'>
-          <h1 className='text-4xl font-bold text-gray-800 mb-2'>
-            My Reservations
-          </h1>
-          <p className='text-gray-600'>Manage and track your room bookings</p>
+          <div className='flex justify-between items-center'>
+            <div>
+              <h1 className='text-4xl font-bold text-gray-800 mb-2'>
+                My Dashboard
+              </h1>
+              <p className='text-gray-600'>
+                Manage and track your room bookings
+              </p>
+            </div>
+            <div>
+              <Link
+                href='/review'
+                className='text-white bg-blue-500 text-md py-3 px-3 rounded-sm'
+              >
+                Write a Review
+              </Link>
+            </div>
+          </div>
           <div className='flex items-center gap-4 mt-4'>
             <div className='bg-white rounded-lg px-4 py-2 shadow-sm'>
               <span className='text-sm text-gray-500'>Total Reservations</span>

@@ -39,7 +39,6 @@ INSERT INTO product (name, description, price, is_active) VALUES
 ('Extra Hour', 'Room extension for 1 hour', 200.00, 1);
 
 
-
 -- Insert sample orders for KTV customers
 INSERT INTO `order` (user_id, product_id, quantity, unit_price, total_price, status, notes) VALUES
 (1, 1, 6, 85.00, 510.00, 'completed', 'Staff meeting celebration'),
@@ -47,3 +46,4 @@ INSERT INTO `order` (user_id, product_id, quantity, unit_price, total_price, sta
 (3, 3, 1, 185.00, 185.00, 'completed', 'Lunch for customer'),
 (4, 4, 2, 115.00, 230.00, 'completed', 'Shared snack'),
 (5, 5, 1, 200.00, 200.00, 'completed', 'Extended session');
+

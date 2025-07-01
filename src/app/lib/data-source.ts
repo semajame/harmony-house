@@ -7,6 +7,7 @@ import { Reservation } from './entities/reservation'
 import { Room } from './entities/rooms'
 import { Product } from './entities/product'
 import { Order } from './entities/order'
+import { Review } from './entities/review'
 
 dotenv.config()
 
@@ -17,8 +18,8 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER || 'root',
   password: process.env.DATABASE_PASSWORD || '',
   database: process.env.DATABASE_NAME || 'test',
-  entities: [User, Payment, Reservation, Room, Product, Order],
-  synchronize: false,
+  entities: [User, Payment, Reservation, Room, Product, Order, Review],
+  synchronize: true,
   logging: process.env.NODE_ENV === 'development',
 })
 

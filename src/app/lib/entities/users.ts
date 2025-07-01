@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
 import { Reservation } from './reservation'
+import { Review } from './review'
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -15,8 +16,8 @@ export class User {
   @Column('varchar', { length: 255, unique: true })
   username!: string
 
-  @Column("varchar", { length: 255 })
-  name!: string;
+  @Column('varchar', { length: 255 })
+  name!: string
 
   @Column('varchar', { length: 255, unique: true })
   email!: string
@@ -27,8 +28,8 @@ export class User {
   @Column('varchar', { length: 20, nullable: true })
   phone!: string
 
-  @OneToMany("Reservation", "customer")
-  reservations!: Reservation[];
+  @OneToMany('Reservation', 'customer')
+  reservations!: Reservation[]
 
   @Column({
     type: 'enum',
@@ -36,6 +37,12 @@ export class User {
     default: UserRole.CUSTOMER,
   })
   role!: UserRole
+
+  @OneToMany(
+    () => (require('./review') as { Review: typeof Review }).Review,
+    (review) => review.user
+  )
+  reviews!: Review[]
 
   @Column('boolean', { default: true })
   isActive!: boolean
