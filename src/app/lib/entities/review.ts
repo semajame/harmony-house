@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm'
 import { User } from './users' // still import the type here
 
 @Entity()
@@ -20,6 +26,9 @@ export class Review {
 
   @Column('text')
   message!: string
+
+  @CreateDateColumn()
+  createdAt!: Date
 
   @ManyToOne(
     () => (require('./users') as { User: typeof User }).User,

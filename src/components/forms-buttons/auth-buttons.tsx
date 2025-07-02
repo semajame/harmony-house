@@ -29,11 +29,11 @@ export default function AuthSection() {
             <button className='flex items-center space-x-2.5 focus:outline-none cursor-pointer'>
               <div className='w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center'>
                 <span className='text-white text-sm font-medium'>
-                  {session.user.username?.charAt(0).toUpperCase() ?? ''}
+                  {session.user.name?.charAt(0).toUpperCase() ?? ''}
                 </span>
               </div>
               <span className='hidden md:block text-sm font-medium text-white'>
-                {session.user.username}
+                {session.user.name}
               </span>
               <ChevronDown className='h-4 w-4 text-white' />
             </button>

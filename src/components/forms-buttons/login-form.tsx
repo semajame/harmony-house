@@ -55,7 +55,10 @@ export function LoginForm({
             onChange={onFormChange}
           />
         </div>
-        <Button type='submit' className='w-full cursor-pointer'>
+        <Button
+          type='submit'
+          className='w-full cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 '
+        >
           Login
         </Button>
       </div>

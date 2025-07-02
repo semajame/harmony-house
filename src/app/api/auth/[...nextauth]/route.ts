@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 import { getDatabaseConnection } from '../../../lib/data-source'
 import { User } from '../../../lib/entities/users'
 
-const authOptions: AuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',

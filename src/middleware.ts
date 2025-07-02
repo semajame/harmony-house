@@ -42,7 +42,7 @@ export default withAuth(
   },
   {
     pages: {
-      signIn: '/auth/signin',
+      signIn: '/login',
     },
   }
 )
@@ -51,6 +51,6 @@ export const config = {
   matcher: [
     '/admin/dashboard/:path*',
     '/admin/users/:path*',
-    '/dashboard', // 👈 protects the user dashboard
+    '/dashboard/:path*', // 👈 this protects /dashboard and all children like /dashboard/settings etc.
   ],
 }

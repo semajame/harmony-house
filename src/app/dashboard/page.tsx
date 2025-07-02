@@ -119,12 +119,12 @@ export default function Dashboard() {
                 Manage and track your room bookings
               </p>
             </div>
-            <div>
+            <div className='flex gap-2 items-center'>
               <Link
-                href='/review'
-                className='text-white bg-blue-500 text-md py-3 px-3 rounded-sm'
+                href='/dashboard/my-reviews'
+                className='bg-gradient-to-r from-indigo-500 to-purple-600 py-2 px-4 text-white rounded-md'
               >
-                Write a Review
+                My Reviews
               </Link>
             </div>
           </div>
