@@ -72,15 +72,16 @@ export async function PUT(
   return NextResponse.json(updated)
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const db = await getDatabaseConnection()
   const reservationRepo = db.getRepository(Reservation)
 
-  const { searchParams } = new URL(req.url)
-  const idString = searchParams.get('id')
-  const id = idString ? Number(idString) : NaN
+  const id = Number(params.id)
 
-  if (!idString || isNaN(id) || !/^\d+$/.test(idString)) {
+  if (!params.id || isNaN(id)) {
     return NextResponse.json(
       { error: 'Invalid reservation ID' },
       { status: 400 }

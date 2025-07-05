@@ -11,13 +11,64 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  Eye,
+  X,
 } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
+
+interface Food {
+  name: string
+  quantity: number
+  total: number
+}
+
+interface Payment {
+  method: string
+  amount: number
+  paidAt?: string
+}
+
+interface Room {
+  name: string
+  capacity: number
+}
+
+interface Reservation {
+  id: string
+  startTime: string
+  endTime: string
+  status: string
+  room: Room
+  foods?: Food[]
+  payment?: Payment
+}
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
-  const [reservations, setReservations] = useState([])
+  const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedReservation, setSelectedReservation] =
+    useState<Reservation | null>(null)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -44,24 +95,24 @@ export default function Dashboard() {
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'confirmed':
-        return <CheckCircle className='w-5 h-5 text-green-500' />
+        return <CheckCircle className='w-4 h-4 text-green-500' />
       case 'cancelled':
-        return <XCircle className='w-5 h-5 text-red-500' />
+        return <XCircle className='w-4 h-4 text-red-500' />
       case 'pending':
-        return <AlertCircle className='w-5 h-5 text-yellow-500' />
+        return <AlertCircle className='w-4 h-4 text-yellow-500' />
       default:
-        return <AlertCircle className='w-5 h-5 text-gray-500' />
+        return <AlertCircle className='w-4 h-4 text-gray-500' />
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const getStatusVariant = (status: string) => {
+    switch (status) {
       case 'confirmed':
         return 'bg-green-100 text-green-800 border-green-200'
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 border-red-200'
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -81,6 +132,16 @@ export default function Dashboard() {
         hour12: true,
       }),
     }
+  }
+
+  const handleViewDetails = (reservation: Reservation) => {
+    setSelectedReservation(reservation)
+    setShowModal(true)
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setSelectedReservation(null)
   }
 
   if (status === 'loading' || loading) {
@@ -120,141 +181,345 @@ export default function Dashboard() {
               </p>
             </div>
             <div className='flex gap-2 items-center'>
-              <Link
-                href='/dashboard/my-reviews'
-                className='bg-gradient-to-r from-indigo-500 to-purple-600 py-2 px-4 text-white rounded-md'
+              <Button
+                asChild
+                className='bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700'
               >
-                My Reviews
-              </Link>
+                <Link href='/dashboard/my-reviews'>My Reviews</Link>
+              </Button>
             </div>
           </div>
           <div className='flex items-center gap-4 mt-4'>
-            <div className='bg-white rounded-lg px-4 py-2 shadow-sm'>
-              <span className='text-sm text-gray-500'>Total Reservations</span>
-              <p className='text-2xl font-bold text-indigo-600'>
-                {reservations.length}
-              </p>
-            </div>
+            <Card className='w-fit'>
+              <CardContent>
+                <div className='text-sm text-gray-500 mb-1'>
+                  Total Reservations
+                </div>
+                <div className='text-2xl font-bold text-indigo-600'>
+                  {reservations.length}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
         {reservations.length === 0 ? (
-          <div className='bg-white rounded-xl shadow-lg p-12 text-center'>
-            <Calendar className='w-16 h-16 text-gray-300 mx-auto mb-4' />
-            <h3 className='text-xl font-semibold text-gray-700 mb-2'>
-              No reservations found
-            </h3>
-            <p className='text-gray-500'>
-              You haven't made any reservations yet. Start by booking a room!
-            </p>
-          </div>
+          <Card className='text-center'>
+            <CardContent className='p-12'>
+              <Calendar className='w-16 h-16 text-gray-300 mx-auto mb-4' />
+              <CardTitle className='text-xl text-gray-700 mb-2'>
+                No reservations found
+              </CardTitle>
+              <p className='text-gray-500'>
+                You haven't made any reservations yet. Start by booking a room!
+              </p>
+            </CardContent>
+          </Card>
         ) : (
-          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
-            {reservations.map((reservation: any) => {
-              const startDateTime = formatDateTime(reservation.startTime)
-              const endDateTime = formatDateTime(reservation.endTime)
+          <Card>
+            <CardHeader>
+              <CardTitle className='text-xl'>Your Reservations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='overflow-x-auto'>
+                <Table>
+                  <TableHeader>
+                    <TableRow className='bg-gradient-to-r from-indigo-500 to-purple-600'>
+                      <TableHead className='text-white font-semibold'>
+                        Room
+                      </TableHead>
+                      <TableHead className='text-white font-semibold'>
+                        Start Date
+                      </TableHead>
+                      <TableHead className='text-white font-semibold'>
+                        End Date
+                      </TableHead>
+                      <TableHead className='text-white font-semibold'>
+                        Status
+                      </TableHead>
+                      <TableHead className='text-white font-semibold'>
+                        Payment
+                      </TableHead>
+                      <TableHead className='text-white font-semibold'>
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reservations.map((reservation: Reservation) => {
+                      const startDateTime = formatDateTime(
+                        reservation.startTime
+                      )
+                      const endDateTime = formatDateTime(reservation.endTime)
 
-              return (
-                <div
-                  key={reservation.id}
-                  className='bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100'
-                >
-                  {/* Card Header */}
-                  <div className='bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white'>
-                    <div className='flex items-center justify-between'>
-                      <div className='flex items-center gap-2'>
-                        <MapPin className='w-5 h-5' />
-                        <h3 className='font-semibold text-lg'>
-                          {reservation.room.name}
-                        </h3>
-                      </div>
-                      <div
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                          reservation.status
-                        )}`}
-                      >
-                        <div className='flex items-center gap-1'>
-                          {getStatusIcon(reservation.status)}
-                          {reservation.status}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                      return (
+                        <TableRow
+                          key={reservation.id}
+                          className='hover:bg-gray-50'
+                        >
+                          <TableCell className='px-6 py-4'>
+                            <div className='flex items-center gap-2'>
+                              <MapPin className='w-4 h-4 text-indigo-500' />
+                              <span className='font-medium text-gray-800'>
+                                {reservation.room.name}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className='text-sm'>
+                              <div className='font-medium'>
+                                {startDateTime.date}
+                              </div>
+                              <div className='text-gray-500'>
+                                {startDateTime.time}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className='text-sm'>
+                              <div className='font-medium'>
+                                {endDateTime.date}
+                              </div>
+                              <div className='text-gray-500'>
+                                {endDateTime.time}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={`flex items-center gap-1 w-fit ${getStatusVariant(
+                                reservation.status
+                              )}`}
+                            >
+                              {getStatusIcon(reservation.status)}
+                              {reservation.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {reservation.payment ? (
+                              <div className='text-sm'>
+                                <div className='font-medium text-green-600'>
+                                  ₱{reservation.payment.amount}
+                                </div>
+                                <div className='text-gray-500'>
+                                  {reservation.payment.method}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className='text-sm text-gray-400'>
+                                No payment
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Dialog
+                              open={
+                                showModal &&
+                                selectedReservation?.id === reservation.id
+                              }
+                              onOpenChange={(open) => {
+                                if (!open) closeModal()
+                              }}
+                            >
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant='outline'
+                                  size='sm'
+                                  onClick={() => handleViewDetails(reservation)}
+                                  className='flex items-center gap-2 cursor-pointer'
+                                >
+                                  <Eye className='w-4 h-4' />
+                                  View Details
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className='max-w-[1000px] max-h-[75vh] overflow-y-auto'>
+                                <DialogHeader>
+                                  <DialogTitle className='flex items-center gap-2'>
+                                    <MapPin className='w-5 h-5' />
+                                    {reservation.room.name}
+                                  </DialogTitle>
+                                </DialogHeader>
 
-                  {/* Card Body */}
-                  <div className='p-6 space-y-4'>
-                    {/* Capacity */}
-                    <div className='flex items-center gap-3'>
-                      <Users className='w-4 h-4 text-gray-400' />
-                      <span className='text-sm text-gray-600'>Capacity:</span>
-                      <span className='font-medium text-gray-800'>
-                        {reservation.room.capacity} people
-                      </span>
-                    </div>
+                                <div className='space-y-6'>
+                                  {/* Status */}
+                                  <div>
+                                    <Badge
+                                      className={`flex items-center gap-1 w-fit ${getStatusVariant(
+                                        reservation.status
+                                      )}`}
+                                    >
+                                      {getStatusIcon(reservation.status)}
+                                      {reservation.status}
+                                    </Badge>
+                                  </div>
 
-                    {/* Date and Time */}
-                    <div className='bg-gray-50 rounded-lg p-4'>
-                      <div className='flex items-center gap-2 mb-2'>
-                        <Calendar className='w-4 h-4 text-indigo-500' />
-                        <span className='text-sm font-medium text-gray-700'>
-                          Reservation Period
-                        </span>
-                      </div>
-                      <div className='text-sm text-gray-600 space-y-1'>
-                        <div className='flex items-center gap-2'>
-                          <Clock className='w-3 h-3' />
-                          <span>
-                            Start: {startDateTime.date} at {startDateTime.time}
-                          </span>
-                        </div>
-                        <div className='flex items-center gap-2'>
-                          <Clock className='w-3 h-3' />
-                          <span>
-                            End: {endDateTime.date} at {endDateTime.time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                                  {/* Room Info */}
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle className='text-lg'>
+                                        Room Information
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className='flex items-center gap-2'>
+                                        <Users className='w-5 h-5 text-gray-400' />
+                                        <span className='text-gray-600'>
+                                          Capacity:
+                                        </span>
+                                        <span className='font-medium text-gray-800'>
+                                          {reservation.room.capacity} people
+                                        </span>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
 
-                    {/* Payment Info */}
-                    {reservation.payment && (
-                      <div className='bg-green-50 rounded-lg p-4'>
-                        <div className='flex items-center gap-2 mb-2'>
-                          <CreditCard className='w-4 h-4 text-green-600' />
-                          <span className='text-sm font-medium text-green-800'>
-                            Payment Details
-                          </span>
-                        </div>
-                        <div className='text-sm space-y-1'>
-                          <div className='flex justify-between'>
-                            <span className='text-gray-600'>Method:</span>
-                            <span className='font-medium text-gray-800'>
-                              {reservation.payment.method}
-                            </span>
-                          </div>
-                          <div className='flex justify-between'>
-                            <span className='text-gray-600'>Amount:</span>
-                            <span className='font-bold text-green-600'>
-                              ₱{reservation.payment.amount}
-                            </span>
-                          </div>
-                          <div className='flex justify-between'>
-                            <span className='text-gray-600'>Paid:</span>
-                            <span className='text-sm text-gray-500'>
-                              {reservation.payment.paidAt
-                                ? formatDateTime(reservation.payment.paidAt)
-                                    .date
-                                : 'Not Paid'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                                  {/* Date and Time */}
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle className='text-lg flex items-center gap-2'>
+                                        <Calendar className='w-5 h-5' />
+                                        Reservation Period
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                        <div>
+                                          <div className='text-sm text-gray-600 mb-1'>
+                                            Start Time
+                                          </div>
+                                          <div className='font-medium text-gray-800'>
+                                            {
+                                              formatDateTime(
+                                                reservation.startTime
+                                              ).date
+                                            }
+                                          </div>
+                                          <div className='text-sm text-gray-600'>
+                                            {
+                                              formatDateTime(
+                                                reservation.startTime
+                                              ).time
+                                            }
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <div className='text-sm text-gray-600 mb-1'>
+                                            End Time
+                                          </div>
+                                          <div className='font-medium text-gray-800'>
+                                            {
+                                              formatDateTime(
+                                                reservation.endTime
+                                              ).date
+                                            }
+                                          </div>
+                                          <div className='text-sm text-gray-600'>
+                                            {
+                                              formatDateTime(
+                                                reservation.endTime
+                                              ).time
+                                            }
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+
+                                  {/* Food Orders */}
+                                  {reservation.foods &&
+                                    reservation.foods.length > 0 && (
+                                      <Card>
+                                        <CardHeader>
+                                          <CardTitle className='text-lg flex items-center gap-2'>
+                                            <Calendar className='w-5 h-5' />
+                                            Ordered Foods
+                                          </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                          <div className='space-y-2'>
+                                            {reservation.foods.map(
+                                              (food: Food, index: number) => (
+                                                <div
+                                                  key={index}
+                                                  className='flex justify-between items-center py-2 border-b last:border-b-0'
+                                                >
+                                                  <div>
+                                                    <span className='font-medium text-gray-800'>
+                                                      {food.name}
+                                                    </span>
+                                                    <span className='text-sm text-gray-600 ml-2'>
+                                                      × {food.quantity}
+                                                    </span>
+                                                  </div>
+                                                  <Badge variant='outline'>
+                                                    ₱{food.total}
+                                                  </Badge>
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    )}
+
+                                  {/* Payment Info */}
+                                  {reservation.payment && (
+                                    <Card>
+                                      <CardHeader>
+                                        <CardTitle className='text-lg flex items-center gap-2'>
+                                          <CreditCard className='w-5 h-5' />
+                                          Payment Details
+                                        </CardTitle>
+                                      </CardHeader>
+                                      <CardContent>
+                                        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                          <div>
+                                            <div className='text-sm text-gray-600 mb-1'>
+                                              Payment Method
+                                            </div>
+                                            <div className='font-medium text-gray-800'>
+                                              {reservation.payment.method}
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <div className='text-sm text-gray-600 mb-1'>
+                                              Amount
+                                            </div>
+                                            <Badge
+                                              variant='outline'
+                                              className='text-lg font-bold text-green-600'
+                                            >
+                                              ₱{reservation.payment.amount}
+                                            </Badge>
+                                          </div>
+                                          <div className='md:col-span-2'>
+                                            <div className='text-sm text-gray-600 mb-1'>
+                                              Payment Date
+                                            </div>
+                                            <div className='font-medium text-gray-800'>
+                                              {reservation.payment.paidAt
+                                                ? formatDateTime(
+                                                    reservation.payment.paidAt
+                                                  ).date
+                                                : 'Not Paid'}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  )}
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
