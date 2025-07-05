@@ -131,7 +131,11 @@ export async function POST(req: NextRequest) {
       amount,
       paymentMethod = 'cash',
       paymentId,
+      foods, // ✅ <- Make sure this matches frontend
     } = body
+
+    console.log('📦 FULL BODY:', body)
+    console.log('🍽 FOODS:', foods)
 
     if (!startTime || !endTime || !roomId || !userId) {
       await queryRunner.rollbackTransaction()
@@ -198,10 +202,8 @@ export async function POST(req: NextRequest) {
     }
 
     let payment
-
     if (paymentId) {
       payment = await paymentRepo.findOne({ where: { id: paymentId } })
-
       if (!payment) {
         await queryRunner.rollbackTransaction()
         return NextResponse.json(
@@ -230,7 +232,6 @@ export async function POST(req: NextRequest) {
       await paymentRepo.save(payment)
     }
 
-    // 🔍 Check for exact match (same roomId, same startTime, same endTime, same date)
     const sameDate = DateTime.fromJSDate(start).toISODate()
 
     const exactMatch = await reservationRepo
@@ -263,7 +264,10 @@ export async function POST(req: NextRequest) {
       room,
       user,
       payment,
+      foods, // ✅ MAKE SURE THIS IS INCLUDED!
     })
+
+    console.log('💾 Saving reservation:', reservation)
 
     await reservationRepo.save(reservation)
     await queryRunner.commitTransaction()

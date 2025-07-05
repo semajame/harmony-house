@@ -62,22 +62,27 @@ export default function PaymentPage() {
       const parsedReservation = JSON.parse(rawReservation)
       console.log('Parsed Reservation:', parsedReservation)
 
-      const { roomId, food, totalPrice, checkIn, checkOut, ...rest } =
-        parsedReservation
+      const {
+        roomId,
+        userId,
+        totalPrice,
+        checkIn,
+        checkOut,
+        food: foods, // ✅ rename to match backend
+      } = parsedReservation
 
       const reservationPayload = {
-        ...rest,
         roomId: Number(roomId),
-        userId: Number(rest.userId),
-        food,
+        userId: Number(userId),
         startTime: checkIn,
         endTime: checkOut,
         amount: totalPrice,
+        foods, // ✅ now matches backend
       }
 
       console.log('Sending payload:', reservationPayload)
 
-      const response = await fetch('/api/customer/reservations', {
+      const response = await fetch('/api/admin/reservations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

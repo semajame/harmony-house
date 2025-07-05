@@ -12,9 +12,9 @@ import { Payment } from './payment'
 import { User } from './users'
 
 export enum Status {
-  PENDING = "pending",
-  CONFIRMED = "confirmed",
-  CANCELLED = "cancelled"
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  CANCELLED = 'cancelled',
 }
 
 @Entity()
@@ -24,7 +24,6 @@ export class Reservation {
 
   @CreateDateColumn()
   createdAt!: Date
-
 
   @Column('datetime')
   startTime!: Date
@@ -40,15 +39,24 @@ export class Reservation {
 
   @OneToOne(() => Payment, { cascade: true })
   @JoinColumn()
-  payment!: Payment;
+  payment!: Payment
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: Status,
     default: Status.PENDING,
   })
   status!: Status
 
-  @Column("boolean", { default: true })
-  isActive!: boolean;
+  @Column('boolean', { default: true })
+  isActive!: boolean
+
+  @Column('json', { nullable: true })
+  foods!: {
+    id: number
+    name: string
+    quantity: number
+    price: number
+    total: number
+  }[]
 }
