@@ -569,7 +569,7 @@ export default function RoomPage() {
                       <Users className='w-4 h-4' />
                       Number of Guests
                     </label>
-                    <div className='flex items-center border border-gray-200 rounded-lg overflow-hidden'>
+                    <div className='flex items-center border border-gray-200 rounded-lg overflow-hidden opacity-50 pointer-events-none'>
                       <button
                         type='button'
                         onClick={() => setPersons(Math.max(1, persons - 1))}

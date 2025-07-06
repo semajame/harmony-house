@@ -552,48 +552,51 @@ export default function Dashboard() {
             </h3>
             <Award className='h-5 w-5 text-yellow-500' />
           </div>
-          <div className='space-y-4'>
-            {reviews.slice(0, 5).map((review) => (
-              <div
-                key={review.id}
-                className='border-l-4 border-yellow-400 pl-4 py-3 bg-gray-50 rounded-r-lg'
-              >
-                <div className='flex items-start justify-between'>
-                  <div className='flex-1'>
-                    <div className='flex items-center gap-3 mb-2'>
-                      <h4 className='font-medium text-gray-900'>
-                        {review.name}
-                      </h4>
-                      <div className='flex items-center gap-1'>
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            size={14}
-                            className={`${
-                              i < review.rating
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
+          <div className='max-h-86 overflow-y-auto'>
+            <div className='space-y-4'>
+              {reviews.slice(0, 5).map((review) => (
+                <div
+                  key={review.id}
+                  className='border-l-4 border-yellow-400 pl-4 py-3 bg-gray-50 rounded-r-lg'
+                >
+                  <div className='flex items-start justify-between'>
+                    <div className='flex-1'>
+                      <div className='flex items-center gap-3 mb-2'>
+                        <h4 className='font-medium text-gray-900'>
+                          {review.name}
+                        </h4>
+                        <div className='flex items-center gap-1'>
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={14}
+                              className={`${
+                                i < review.rating
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className='text-sm text-gray-500'>
+                          • {review.room}
+                        </span>
                       </div>
-                      <span className='text-sm text-gray-500'>
-                        • {review.room}
-                      </span>
+                      <p className='text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap max-w-md'>
+                        {review.message}
+                      </p>
                     </div>
-                    <p className='text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap max-w-md'>
-                      {review.message}
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
-            {reviews.length === 0 && (
-              <div className='text-center py-8 text-gray-500'>
-                <MessageSquare className='h-12 w-12 mx-auto mb-3 text-gray-300' />
-                <p>No reviews yet</p>
-              </div>
-            )}
+              ))}
+
+              {reviews.length === 0 && (
+                <div className='text-center py-8 text-gray-500'>
+                  <MessageSquare className='h-12 w-12 mx-auto mb-3 text-gray-300' />
+                  <p>No reviews yet</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>

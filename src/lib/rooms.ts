@@ -1,7 +1,7 @@
 export const rooms = [
   {
     id: 1,
-    name: 'Room no.1',
+    name: 'Room 1',
     capacity: 5,
     price: '₱500',
 
@@ -11,7 +11,7 @@ export const rooms = [
   },
   {
     id: 2,
-    name: 'Room no.2',
+    name: 'Room 2',
     capacity: 5,
     price: '₱500',
     description:
@@ -20,7 +20,7 @@ export const rooms = [
   },
   {
     id: 3,
-    name: 'Room no.3',
+    name: 'Room 3',
     capacity: 5,
     price: '₱500',
     description:
@@ -29,7 +29,7 @@ export const rooms = [
   },
   {
     id: 4,
-    name: 'Room no.4',
+    name: 'Room 4',
     capacity: 5,
     price: '₱500',
     description:

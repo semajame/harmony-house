@@ -33,7 +33,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Food {
   name: string
@@ -69,6 +75,7 @@ export default function Dashboard() {
   const [selectedReservation, setSelectedReservation] =
     useState<Reservation | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -133,6 +140,12 @@ export default function Dashboard() {
       }),
     }
   }
+
+  const sortedReservations = [...reservations].sort((a, b) => {
+    const dateA = new Date(a.startTime).getTime()
+    const dateB = new Date(b.startTime).getTime()
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
+  })
 
   const handleViewDetails = (reservation: Reservation) => {
     setSelectedReservation(reservation)
@@ -217,8 +230,31 @@ export default function Dashboard() {
           </Card>
         ) : (
           <Card>
-            <CardHeader>
-              <CardTitle className='text-xl'>Your Reservations</CardTitle>
+            <CardHeader className=''>
+              <CardTitle className='text-2xl'>Your Reservations</CardTitle>
+              <div className='flex items-center gap-2 mb-4 mt-2'>
+                <label className='text-sm text-gray-600'>
+                  Sort by Start Date:
+                </label>
+                <Select
+                  value={sortOrder}
+                  onValueChange={(value) =>
+                    setSortOrder(value as 'asc' | 'desc')
+                  }
+                >
+                  <SelectTrigger className='cursor-pointer'>
+                    <SelectValue placeholder='Select order' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='asc' className='cursor-pointer'>
+                      Latest
+                    </SelectItem>
+                    <SelectItem value='desc' className='cursor-pointer'>
+                      Least
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
               <div className='overflow-x-auto'>
@@ -246,7 +282,7 @@ export default function Dashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {reservations.map((reservation: Reservation) => {
+                    {sortedReservations.map((reservation: Reservation) => {
                       const startDateTime = formatDateTime(
                         reservation.startTime
                       )
@@ -260,14 +296,14 @@ export default function Dashboard() {
                           <TableCell className='px-6 py-4'>
                             <div className='flex items-center gap-2'>
                               <MapPin className='w-4 h-4 text-indigo-500' />
-                              <span className='font-medium text-gray-800'>
+                              <span className='font-medium text-gray-800 p-2'>
                                 {reservation.room.name}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className='text-sm'>
-                              <div className='font-medium'>
+                            <div className='text-sm p-2'>
+                              <div className='font-medium '>
                                 {startDateTime.date}
                               </div>
                               <div className='text-gray-500'>
@@ -276,7 +312,7 @@ export default function Dashboard() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className='text-sm'>
+                            <div className='text- p-2'>
                               <div className='font-medium'>
                                 {endDateTime.date}
                               </div>
@@ -324,7 +360,7 @@ export default function Dashboard() {
                               <DialogTrigger asChild>
                                 <Button
                                   variant='outline'
-                                  size='sm'
+                                  size='lg'
                                   onClick={() => handleViewDetails(reservation)}
                                   className='flex items-center gap-2 cursor-pointer'
                                 >
@@ -332,7 +368,7 @@ export default function Dashboard() {
                                   View Details
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className='max-w-[1000px] max-h-[75vh] overflow-y-auto'>
+                              <DialogContent className='max-w-6xl max-h-[75vh] overflow-y-auto'>
                                 <DialogHeader>
                                   <DialogTitle className='flex items-center gap-2'>
                                     <MapPin className='w-5 h-5' />

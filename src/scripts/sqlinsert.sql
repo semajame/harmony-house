@@ -8,10 +8,10 @@ INSERT INTO user (username, name, email, password, phone, role, isActive) VALUES
 
 
 INSERT INTO room (id, name, capacity, isAvailable, isActive, price, description, image) VALUES
-(1, 'Room no.1', 5, 1, 1, 500.00, 'A stylish room with enhanced decor, amenities and mood lighting.', '/images/rooms/room_1.png'),
-(2, 'Room no.2', 5, 1, 1, 500.00, 'A stylish KTV room with basic karaoke equipment, a large screen, mood lighting. Perfect for small gatherings.', '/images/rooms/room_2.png'),
-(3, 'Room no.3', 5, 1, 1, 500.00, 'A small KTV room with basic equipment, cozy seating and enhanced amenities. Great for intimate celebrations.', '/images/rooms/room_3.png'),
-(4, 'Room no.4', 5, 1, 1, 500.00, 'A compact KTV room with a basic sound system for karaoke and intimate singing sessions.', '/images/rooms/room_4.png');
+(1, 'Room 1', 5, 1, 1, 500.00, 'A stylish room with enhanced decor, amenities and mood lighting.', '/images/rooms/room_1.png'),
+(2, 'Room 2', 5, 1, 1, 500.00, 'A stylish KTV room with basic karaoke equipment, a large screen, mood lighting. Perfect for small gatherings.', '/images/rooms/room_2.png'),
+(3, 'Room 3', 5, 1, 1, 500.00, 'A small KTV room with basic equipment, cozy seating and enhanced amenities. Great for intimate celebrations.', '/images/rooms/room_3.png'),
+(4, 'Room 4', 5, 1, 1, 500.00, 'A compact KTV room with a basic sound system for karaoke and intimate singing sessions.', '/images/rooms/room_4.png');
 
 
 INSERT INTO payment (amount, method, paidAt) VALUES

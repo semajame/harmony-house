@@ -190,7 +190,7 @@ const ReviewsPage = () => {
           {/* Stats Dashboard */}
           {!loading && filteredReviews.length > 0 && (
             <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mb-12'>
-              <Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300'>
+              <Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg '>
                 <CardContent className='p-6 text-center'>
                   <div className='flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mx-auto mb-3'>
                     <TrendingUp className='w-6 h-6 text-white' />
@@ -206,7 +206,7 @@ const ReviewsPage = () => {
                 </CardContent>
               </Card>
 
-              <Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300'>
+              <Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg '>
                 <CardContent className='p-6 text-center'>
                   <div className='flex items-center justify-center w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full mx-auto mb-3'>
                     <Star className='w-6 h-6 text-white fill-current' />
@@ -218,7 +218,7 @@ const ReviewsPage = () => {
                 </CardContent>
               </Card>
 
-              <Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 md:col-span-2'>
+              <Card className='bg-white/80 backdrop-blur-sm border-0 shadow-lg  md:col-span-2'>
                 <CardContent className='p-6'>
                   <h3 className='font-semibold text-slate-800 mb-4'>
                     Rating Distribution
@@ -309,7 +309,7 @@ const ReviewsPage = () => {
               filteredReviews.map((review, index) => (
                 <Card
                   key={review.id}
-                  className='group bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden relative'
+                  className='group bg-white/90 backdrop-blur-sm border-0 shadow-lg overflow-hidden relative'
                   style={{
                     animationDelay: `${index * 100}ms`,
                   }}

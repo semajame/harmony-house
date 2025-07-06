@@ -94,6 +94,7 @@ const Reservation = () => {
   const [selectedReservation, setSelectedReservation] =
     useState<ReservationData | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc') // 'desc' = Latest first
 
   const fetchReservations = async () => {
     try {
@@ -201,6 +202,12 @@ const Reservation = () => {
     return monthMatch && statusMatch
   })
 
+  const sortedReservations = [...filteredReservations].sort((a, b) => {
+    const dateA = new Date(a.startTime).getTime()
+    const dateB = new Date(b.startTime).getTime()
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
+  })
+
   // Get available months from reservations
   const getAvailableMonths = () => {
     const months = new Set<string>()
@@ -228,7 +235,6 @@ const Reservation = () => {
     setIsModalOpen(false)
     setSelectedReservation(null)
   }
-
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -339,6 +345,28 @@ const Reservation = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Sort Order Filter */}
+              <div className='flex items-center gap-2'>
+                <Select
+                  value={sortOrder}
+                  onValueChange={(value) =>
+                    setSortOrder(value as 'desc' | 'asc')
+                  }
+                >
+                  <SelectTrigger className='min-w-32 cursor-pointer'>
+                    <SelectValue placeholder='Sort by' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='desc' className='cursor-pointer'>
+                      Latest First
+                    </SelectItem>
+                    <SelectItem value='asc' className='cursor-pointer'>
+                      Oldest First
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Quick Stats */}
@@ -378,7 +406,7 @@ const Reservation = () => {
               <div className='flex items-center gap-2'>
                 <Filter className='w-4 h-4 text-blue-600' />
                 <span className='text-sm font-medium text-blue-800'>
-                  Showing {filteredReservations.length} of {reservations.length}{' '}
+                  Showing {sortedReservations.length} of {reservations.length}{' '}
                   reservations
                   {selectedMonth !== 'all' &&
                     ` for ${formatMonthLabel(selectedMonth)}`}
@@ -399,7 +427,7 @@ const Reservation = () => {
         )}
 
         {/* Reservations Table */}
-        {filteredReservations.length === 0 ? (
+        {sortedReservations.length === 0 ? (
           <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center'>
             <CalendarDays className='w-16 h-16 text-gray-400 mx-auto mb-4' />
             <h3 className='text-xl font-semibold text-gray-700 mb-2'>
@@ -443,7 +471,7 @@ const Reservation = () => {
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-200'>
-                  {filteredReservations.map((reservation: ReservationData) => (
+                  {sortedReservations.map((reservation: ReservationData) => (
                     <tr key={reservation.id} className='hover:bg-gray-50'>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
@@ -553,7 +581,7 @@ const Reservation = () => {
                         )}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>
-                        <div className='flex gap-2'>
+                        <div className='flex gap-2 items-center'>
                           <Dialog
                             open={
                               isModalOpen &&
@@ -566,7 +594,7 @@ const Reservation = () => {
                             <DialogTrigger asChild>
                               <Button
                                 variant='outline'
-                                size='sm'
+                                size='lg'
                                 onClick={() => handleViewDetails(reservation)}
                                 className='flex items-center gap-2 cursor-pointer'
                               >

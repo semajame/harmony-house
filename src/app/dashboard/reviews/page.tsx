@@ -137,10 +137,10 @@ export default function Review() {
                   <SelectValue placeholder='Choose a room...' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='room1'>Room 1</SelectItem>
-                  <SelectItem value='room2'>Room 2</SelectItem>
-                  <SelectItem value='room3'>Room 3</SelectItem>
-                  <SelectItem value='room4'>Room 4</SelectItem>
+                  <SelectItem value='Room 1'>Room 1</SelectItem>
+                  <SelectItem value='Room 2'>Room 2</SelectItem>
+                  <SelectItem value='Room 3'>Room 3</SelectItem>
+                  <SelectItem value='Room 4'>Room 4</SelectItem>
                 </SelectContent>
               </Select>
             </div>
