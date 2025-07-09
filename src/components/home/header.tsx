@@ -85,10 +85,14 @@ const Header = () => {
 
           <div className='flex justify-center gap-2 mt-4'>
             <Link href='/login'>
-              <Button className='w-24'>Login</Button>
+              <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 '>
+                Login
+              </Button>
             </Link>
             <Link href='/signup'>
-              <Button className='w-24'>Register</Button>
+              <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 '>
+                Register
+              </Button>
             </Link>
           </div>
         </div>

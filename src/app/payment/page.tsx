@@ -68,7 +68,7 @@ export default function PaymentPage() {
         totalPrice,
         checkIn,
         checkOut,
-        food: foods, // ✅ rename to match backend
+        food: foods,
       } = parsedReservation
 
       const reservationPayload = {
@@ -77,7 +77,7 @@ export default function PaymentPage() {
         startTime: checkIn,
         endTime: checkOut,
         amount: totalPrice,
-        foods, // ✅ now matches backend
+        foods,
       }
 
       console.log('Sending payload:', reservationPayload)
@@ -90,16 +90,25 @@ export default function PaymentPage() {
         body: JSON.stringify(reservationPayload),
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Failed to reserve: ${errorText}`)
+        if (response.status === 409) {
+          alert(
+            result.error ||
+              'Time conflict: This room is already reserved during this time.'
+          )
+        } else {
+          alert(result.error || 'Failed to confirm reservation.')
+        }
+        return
       }
 
-      alert('GCash payment confirmed! (Simulation)')
+      alert('✅ GCash payment confirmed! (Simulation)')
       router.push('/confirmation')
     } catch (error) {
       console.error('Error confirming payment:', error)
-      alert('An error occurred while confirming the payment.')
+      alert('An unexpected error occurred while confirming the payment.')
     } finally {
       setIsLoading(false)
     }
@@ -130,7 +139,7 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8 mt-[5rem]'>
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8 pt-[7rem]'>
       <div className='max-w-4xl mx-auto'>
         {/* Header */}
         <div className='text-center mb-8'>

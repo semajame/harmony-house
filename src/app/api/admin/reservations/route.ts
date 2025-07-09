@@ -234,7 +234,7 @@ export async function POST(req: NextRequest) {
 
     const sameDate = DateTime.fromJSDate(start).toISODate()
 
-    const exactMatch = await reservationRepo
+    const conflict = await reservationRepo
       .createQueryBuilder('reservation')
       .leftJoin('reservation.room', 'room')
       .where('room.id = :roomId', { roomId })
@@ -243,16 +243,21 @@ export async function POST(req: NextRequest) {
         cancelled: Status.CANCELLED,
       })
       .andWhere('DATE(reservation.startTime) = :sameDate', { sameDate })
-      .andWhere('reservation.startTime = :startTime', { startTime: start })
-      .andWhere('reservation.endTime = :endTime', { endTime: end })
+      .andWhere(
+        '(reservation.startTime < :endTime AND reservation.endTime > :startTime)',
+        {
+          startTime: start,
+          endTime: end,
+        }
+      )
       .getOne()
 
-    if (exactMatch) {
+    if (conflict) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
         {
           error:
-            'A reservation with the exact same room, date, and time already exists.',
+            'Time conflict: The selected room is already booked during the chosen time.',
         },
         { status: 409 }
       )

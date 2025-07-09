@@ -366,7 +366,7 @@ export default function RoomPage() {
         </div>
       </div>
 
-      <div className='max-w-7xl mx-auto p-6 grid lg:grid-cols-3 gap-8 py-8'>
+      <div className='max-w-7xl mx-auto sm:p-6 grid lg:grid-cols-3 gap-8 py-8 px-4 '>
         {/* Main Content */}
         <div className='lg:col-span-2 space-y-8'>
           {/* Room Header */}

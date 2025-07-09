@@ -12,9 +12,6 @@ export class Review {
   @PrimaryGeneratedColumn()
   id!: number
 
-  @Column('int')
-  roomId!: number
-
   @Column('varchar', { length: 255 })
   room!: string
 
