@@ -139,7 +139,7 @@ export default function Rooms() {
                     </h3>
 
                     {/* Rating stars */}
-                    <div className='flex justify-center gap-1 mb-3'>
+                    {/* <div className='flex justify-center gap-1 mb-3'>
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
@@ -150,7 +150,7 @@ export default function Rooms() {
 
                     <div className='text-lg font-bold text-purple-600 mb-3'>
                       {room.person}
-                    </div>
+                    </div> */}
                   </div>
 
                   <p className='text-sm text-gray-600 leading-relaxed min-h-[3rem] text-center'>

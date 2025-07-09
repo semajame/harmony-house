@@ -51,8 +51,8 @@ export default function ConfirmationPage() {
           Reservation Confirmed ✅
         </h1>
         <p className='mb-4'>
-          Thank you, <strong>{session?.user.username}</strong>! Your reservation
-          has been successfully received.
+          Thank you, <strong>{session?.user.name}</strong>! Your reservation has
+          been successfully received.
         </p>
         <button
           onClick={removeReservation}

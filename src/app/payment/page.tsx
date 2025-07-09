@@ -180,7 +180,7 @@ export default function PaymentPage() {
                   <div>
                     <p className='text-sm opacity-80'>Guest Name</p>
                     <p className='font-medium'>
-                      {session?.user?.username || 'N/A'}
+                      {session?.user?.name || 'N/A'}
                     </p>
                   </div>
                   <div>

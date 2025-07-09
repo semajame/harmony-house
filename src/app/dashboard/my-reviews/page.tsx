@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { MoreVertical, Trash2, Edit, Eye, Star } from 'lucide-react'
+import { MoreVertical, Trash2, Edit, Eye, Star, Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 import { Input } from '@/components/ui/input'
@@ -33,6 +33,12 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+
 import Link from 'next/link'
 
 interface Review {
@@ -48,11 +54,29 @@ interface Review {
   }
 }
 
+interface Filters {
+  room: string
+  rating: string
+  dateFrom: string
+  dateTo: string
+  searchText: string
+}
+
 export default function UserReviews() {
   const { data: session, status } = useSession()
   const [reviews, setReviews] = useState<Review[]>([])
+  const [filteredReviews, setFilteredReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+
+  const [filters, setFilters] = useState<Filters>({
+    room: '',
+    rating: '',
+    dateFrom: '',
+    dateTo: '',
+    searchText: '',
+  })
 
   const fetchReviews = async () => {
     if (!session?.user?.id) {
@@ -72,8 +96,10 @@ export default function UserReviews() {
       if (!res.ok) {
         setError(data.error || 'Failed to fetch reviews')
         setReviews([])
+        setFilteredReviews([])
       } else {
         setReviews(data)
+        setFilteredReviews(data)
       }
     } catch (err) {
       console.error(err)
@@ -82,6 +108,70 @@ export default function UserReviews() {
       setLoading(false)
     }
   }
+
+  // Filter function
+  const applyFilters = () => {
+    let filtered = reviews
+
+    // Filter by room
+    if (filters.room) {
+      filtered = filtered.filter((review) => review.room === filters.room)
+    }
+
+    // Filter by rating
+    if (filters.rating) {
+      filtered = filtered.filter(
+        (review) => review.rating === parseInt(filters.rating)
+      )
+    }
+
+    // Filter by date range
+    if (filters.dateFrom) {
+      const fromDate = new Date(filters.dateFrom)
+      filtered = filtered.filter(
+        (review) => new Date(review.createdAt) >= fromDate
+      )
+    }
+
+    if (filters.dateTo) {
+      const toDate = new Date(filters.dateTo)
+      toDate.setHours(23, 59, 59, 999) // Include the entire day
+      filtered = filtered.filter(
+        (review) => new Date(review.createdAt) <= toDate
+      )
+    }
+
+    // Filter by search text (in message)
+    if (filters.searchText) {
+      const searchLower = filters.searchText.toLowerCase()
+      filtered = filtered.filter(
+        (review) =>
+          review.message.toLowerCase().includes(searchLower) ||
+          review.name.toLowerCase().includes(searchLower) ||
+          review.email.toLowerCase().includes(searchLower)
+      )
+    }
+
+    setFilteredReviews(filtered)
+  }
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      room: '',
+      rating: '',
+      dateFrom: '',
+      dateTo: '',
+      searchText: '',
+    })
+    setFilteredReviews(reviews)
+  }
+
+  // Get unique rooms for filter options
+  const uniqueRooms = [...new Set(reviews.map((review) => review.room))].sort()
+
+  // Check if any filters are active
+  const hasActiveFilters = Object.values(filters).some((value) => value !== '')
 
   const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
@@ -103,8 +193,19 @@ export default function UserReviews() {
     }
   }, [session])
 
+  useEffect(() => {
+    applyFilters()
+  }, [filters, reviews])
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleFilterChange = (field: keyof Filters, value: string) => {
+    setFilters((prev) => ({
       ...prev,
       [field]: value,
     }))
@@ -129,7 +230,7 @@ export default function UserReviews() {
     }
 
     const reviewData = {
-      userId: session.user.id, // ✅ your API expects this
+      userId: session.user.id,
       room: formData.room,
       name: formData.name,
       email: formData.email,
@@ -155,13 +256,15 @@ export default function UserReviews() {
       console.log('✅ Review submitted:', await res.json())
 
       setOpen(false)
-      // Reset form (keep name/email)
       setFormData((prev) => ({
         ...prev,
         room: '',
         review: '',
       }))
       setRating(0)
+
+      // Refresh reviews after submission
+      fetchReviews()
     } catch (err: any) {
       console.error('❌ Review submission failed:', err)
       alert(err.message)
@@ -396,6 +499,154 @@ export default function UserReviews() {
         </div>
       )}
 
+      {/* Filters Section */}
+      <div className='bg-white rounded-lg border border-gray-200 mb-6'>
+        <Collapsible open={showFilters} onOpenChange={setShowFilters}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant='ghost'
+              className='w-full justify-between p-4 font-medium text-left hover:bg-gray-50'
+            >
+              <div className='flex items-center gap-2'>
+                <Filter className='w-4 h-4' />
+                Filters
+                {hasActiveFilters && (
+                  <span className='bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full'>
+                    {Object.values(filters).filter((v) => v !== '').length}{' '}
+                    active
+                  </span>
+                )}
+              </div>
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showFilters ? 'rotate-180' : ''
+                }`}
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
+              </svg>
+            </Button>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent className='px-4 pb-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              {/* Search Text */}
+              <div className='space-y-2'>
+                <Label className='text-sm font-medium'>Search in reviews</Label>
+                <Input
+                  placeholder='Search by text, name, or email...'
+                  value={filters.searchText}
+                  onChange={(e) =>
+                    handleFilterChange('searchText', e.target.value)
+                  }
+                  className='w-full'
+                />
+              </div>
+
+              {/* Room Filter */}
+              <div className='space-y-2'>
+                <Label className='text-sm font-medium'>Room</Label>
+                <Select
+                  value={filters.room || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('room', value === 'all' ? '' : value)
+                  }
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='All rooms' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>All rooms</SelectItem>
+                    {uniqueRooms.map((room) => (
+                      <SelectItem key={room} value={room}>
+                        {room}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Rating Filter */}
+              <div className='space-y-2'>
+                <Label className='text-sm font-medium'>Rating</Label>
+                <Select
+                  value={filters.rating || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('rating', value === 'all' ? '' : value)
+                  }
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='All ratings' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>All ratings</SelectItem>
+                    {[5, 4, 3, 2, 1].map((rating) => (
+                      <SelectItem key={rating} value={rating.toString()}>
+                        <div className='flex items-center gap-2'>
+                          {rating} star{rating !== 1 ? 's' : ''}
+                          <div className='flex'>
+                            {[...Array(rating)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className='w-3 h-3 fill-yellow-400 text-yellow-400'
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date From */}
+              <div className='space-y-2'>
+                <Label className='text-sm font-medium'>From Date</Label>
+                <Input
+                  type='date'
+                  value={filters.dateFrom}
+                  onChange={(e) =>
+                    handleFilterChange('dateFrom', e.target.value)
+                  }
+                  className='w-full'
+                />
+              </div>
+
+              {/* Date To */}
+              <div className='space-y-2'>
+                <Label className='text-sm font-medium'>To Date</Label>
+                <Input
+                  type='date'
+                  value={filters.dateTo}
+                  onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                  className='w-full'
+                />
+              </div>
+
+              {/* Clear Filters */}
+              <div className='flex items-end'>
+                <Button
+                  variant='outline'
+                  onClick={clearFilters}
+                  disabled={!hasActiveFilters}
+                  className='w-full'
+                >
+                  <X className='w-4 h-4 mr-2' />
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+
       {/* Error message */}
       {error && (
         <div className='bg-red-50 border border-red-200 rounded-lg p-4 mb-4'>
@@ -404,14 +655,20 @@ export default function UserReviews() {
       )}
 
       {/* Review list */}
-      {!loading && reviews.length > 0 && (
+      {!loading && filteredReviews.length > 0 && (
         <div className='space-y-4'>
-          <p className='text-sm text-gray-600 mb-4'>
-            Found {reviews.length} review{reviews.length !== 1 ? 's' : ''}
-          </p>
+          <div className='flex items-center justify-between text-sm text-gray-600 mb-4'>
+            <p>
+              Showing {filteredReviews.length} of {reviews.length} review
+              {reviews.length !== 1 ? 's' : ''}
+            </p>
+            {hasActiveFilters && (
+              <p className='text-blue-600'>Filters applied</p>
+            )}
+          </div>
 
           <ul className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            {reviews.map((review) => (
+            {filteredReviews.map((review) => (
               <li
                 key={review.id}
                 className='bg-white border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow'
@@ -507,7 +764,28 @@ export default function UserReviews() {
         </div>
       )}
 
-      {/* No reviews */}
+      {/* No reviews after filtering */}
+      {!loading &&
+        filteredReviews.length === 0 &&
+        reviews.length > 0 &&
+        !error && (
+          <div className='text-center py-8'>
+            <div className='text-gray-400 mb-2'>
+              <Filter className='mx-auto h-12 w-12' />
+            </div>
+            <p className='text-gray-500'>
+              No reviews match your current filters.
+            </p>
+            <p className='text-sm text-gray-400 mt-1'>
+              Try adjusting your filters or clearing them to see more results.
+            </p>
+            <Button variant='outline' onClick={clearFilters} className='mt-4'>
+              Clear All Filters
+            </Button>
+          </div>
+        )}
+
+      {/* No reviews at all */}
       {!loading && reviews.length === 0 && !error && (
         <div className='text-center py-8'>
           <div className='text-gray-400 mb-2'>

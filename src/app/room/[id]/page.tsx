@@ -27,6 +27,7 @@ import {
   Utensils,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import ReviewsPreview from '@/components/reviewsRoom'
 
 type Food = {
   id: number
@@ -42,7 +43,10 @@ export default function RoomPage() {
   const router = useRouter()
   const roomId = Number(params.id)
   const room = rooms.find((r) => r.id === roomId)
+
+  const [getRoom, setRoom] = useState<any>(null)
   const [selectedFoods, setSelectedFoods] = useState<number[]>([])
+  const [loading, setLoading] = useState(true)
 
   // Form state
   // const [fullName, setFullName] = useState('')
@@ -124,6 +128,29 @@ export default function RoomPage() {
     '22:00',
     '23:00',
   ]
+
+  //^ FETCH THE ROOM
+  useEffect(() => {
+    const fetchRoom = async () => {
+      if (!roomId || isNaN(roomId)) return
+
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/admin/rooms/${roomId}`)
+        if (!res.ok) throw new Error('Failed to fetch room')
+
+        const data = await res.json()
+        setRoom(data)
+        console.log('Fetched room:', data)
+      } catch (err) {
+        console.error('Error fetching room:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRoom()
+  }, [roomId])
 
   //^ FETCH FOODS
   useEffect(() => {
@@ -275,6 +302,26 @@ export default function RoomPage() {
     )
   }
 
+  if (loading) {
+    return (
+      <div className='flex flex-col justify-center items-center h-screen bg-gray-50 dark:bg-gray-900'>
+        <div className='text-center'>
+          {/* Simple spinner */}
+          <div className='w-8 h-8 border-3 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto mb-4'></div>
+
+          {/* Loading text */}
+          <h2 className='text-xl font-medium text-gray-800 dark:text-gray-200 mb-2'>
+            Loading room
+          </h2>
+
+          <p className='text-gray-500 dark:text-gray-400'>
+            Please wait a moment...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-purple-50/50 via-white to-pink-50/50'>
       {/* Header with breadcrumb */}
@@ -334,7 +381,7 @@ export default function RoomPage() {
               </div>
             </div>
 
-            <div className='flex items-center gap-4 text-sm text-gray-600'>
+            {/* <div className='flex items-center gap-4 text-sm text-gray-600'>
               <div className='flex items-center gap-1'>
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -348,7 +395,7 @@ export default function RoomPage() {
                 <Users className='w-4 h-4' />
                 <span>Up to 6 people</span>
               </div>
-            </div>
+            </div> */}
 
             <div className='text-3xl font-bold text-purple-600'>
               {room.price}
@@ -442,52 +489,7 @@ export default function RoomPage() {
 
           {/* Food  */}
 
-          {/* Reviews Preview */}
-          <div className='bg-white rounded-2xl p-6 shadow-lg border border-purple-100'>
-            <div className='flex items-center justify-between mb-6'>
-              <h3 className='text-xl font-bold text-gray-800'>
-                Recent Reviews
-              </h3>
-              <Button variant='outline' size='sm'>
-                View All Reviews
-              </Button>
-            </div>
-
-            <div className='space-y-4'>
-              {[1, 2].map((review) => (
-                <div
-                  key={review}
-                  className='border-b border-gray-100 pb-4 last:border-0'
-                >
-                  <div className='flex items-start gap-4'>
-                    <div className='w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold'>
-                      {review === 1 ? 'M' : 'S'}
-                    </div>
-                    <div className='flex-1'>
-                      <div className='flex items-center gap-2 mb-2'>
-                        <span className='font-medium text-gray-800'>
-                          {review === 1 ? 'Maria Santos' : 'Sarah Kim'}
-                        </span>
-                        <div className='flex'>
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className='w-4 h-4 text-yellow-400 fill-current'
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className='text-gray-600 text-sm'>
-                        {review === 1
-                          ? 'Amazing sound quality and comfortable seating! Perfect for our birthday celebration.'
-                          : 'Great atmosphere and clean facilities. The song selection is impressive!'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ReviewsPreview roomName={room?.name || ''} />
         </div>
 
         {/* Booking Sidebar */}

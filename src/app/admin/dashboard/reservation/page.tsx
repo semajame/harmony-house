@@ -176,20 +176,23 @@ const Reservation = () => {
       minute: '2-digit',
     })
   }
-
   const getConfirmedReservations = () =>
     reservations.filter((res) => res.status === 'confirmed').length
+
   const getPendingReservations = () =>
     reservations.filter((res) => res.status === 'pending').length
+
   const getCancelledReservations = () =>
     reservations.filter((res) => res.status === 'cancelled').length
 
   // Filter reservations by selected month and status
   const filteredReservations = reservations.filter((res) => {
+    const createdAt = new Date(res.createdAt)
+
     // Month filter
     const monthMatch =
       selectedMonth === 'all' ||
-      new Date(res.startTime).toISOString().slice(0, 7) === selectedMonth
+      createdAt.toISOString().slice(0, 7) === selectedMonth
 
     // Status filter
     let statusMatch = true
@@ -202,9 +205,10 @@ const Reservation = () => {
     return monthMatch && statusMatch
   })
 
+  // Sort by createdAt
   const sortedReservations = [...filteredReservations].sort((a, b) => {
-    const dateA = new Date(a.startTime).getTime()
-    const dateB = new Date(b.startTime).getTime()
+    const dateA = new Date(a.createdAt).getTime()
+    const dateB = new Date(b.createdAt).getTime()
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
   })
 
@@ -359,10 +363,10 @@ const Reservation = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='desc' className='cursor-pointer'>
-                      Latest First
+                      Latest
                     </SelectItem>
                     <SelectItem value='asc' className='cursor-pointer'>
-                      Oldest First
+                      Oldest
                     </SelectItem>
                   </SelectContent>
                 </Select>
