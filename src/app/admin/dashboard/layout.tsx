@@ -161,6 +161,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
           {sidebarItems.map((item, index) => (
             <Link
               key={index}
+              prefetch={true}
               href={item.link}
               className={`flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors ${
                 pathname === item.link

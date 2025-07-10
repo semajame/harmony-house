@@ -33,17 +33,7 @@ export default function Home() {
               </span>
               <Music className='w-6 h-6 text-purple-400' />
             </div>
-            <div className='flex justify-center gap-1 mb-4'>
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className='w-5 h-5 text-yellow-400 fill-current'
-                />
-              ))}
-              <span className='ml-2 text-sm text-gray-300'>
-                (4.9/5 from 500+ reviews)
-              </span>
-            </div>
+
             {/* <span className='text-2xl font-'>K.T.V</span> */}
           </div>
           <p className='text-xl max-w-[700px] m-auto text-bold'>

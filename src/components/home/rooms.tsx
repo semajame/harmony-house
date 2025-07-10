@@ -25,8 +25,13 @@ export default function Rooms() {
   console.log(session)
   const [hoveredRoom, setHoveredRoom] = useState<number | null>(null)
 
+  const handleMouseEnter = (id: number) => {
+    setHoveredRoom(id)
+    router.prefetch(`/rooms/${id}`)
+  }
+
   const handleBookNow = (id: number) => {
-    if (status === 'loading') return // or show loading UI
+    if (status === 'loading') return
 
     if (!session) {
       router.push('/login')
@@ -181,6 +186,7 @@ export default function Rooms() {
                   {/* Book button */}
                   <div className='pt-4'>
                     <button
+                      onMouseEnter={() => handleMouseEnter(room.id)}
                       onClick={() => handleBookNow(room.id)}
                       className='group/btn w-full py-3 px-6 rounded-xl font-semibold text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl relative overflow-hidden cursor-pointer'
                     >

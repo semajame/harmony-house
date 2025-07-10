@@ -32,22 +32,22 @@ const Header = () => {
         <nav className='hidden md:flex items-center gap-10'>
           <ul className='flex gap-4 items-center'>
             <li>
-              <Link href='/' className='hover:underline px-2'>
+              <Link href='/' className='hover:underline px-2' prefetch>
                 Home
               </Link>
             </li>
             <li>
-              <Link href='#rooms' className='hover:underline px-2'>
+              <Link href='/' className='hover:underline px-2' prefetch>
                 Rooms
               </Link>
             </li>
             <li>
-              <Link href='#menu' className='hover:underline px-2'>
+              <Link href='/' className='hover:underline px-2' prefetch>
                 Menu
               </Link>
             </li>
             <li>
-              <Link href='#contact' className='hover:underline px-2'>
+              <Link href='/' className='hover:underline px-2' prefetch>
                 Contact
               </Link>
             </li>
@@ -70,26 +70,26 @@ const Header = () => {
       {/* Mobile Nav */}
       {mobileMenuOpen && (
         <div className='md:hidden mt-4 space-y-4 text-center'>
-          <Link href='/' className='block'>
+          <Link href='/' className='block  ' prefetch>
             Home
           </Link>
-          <Link href='/' className='block'>
+          <Link href='/' className='block' prefetch>
             Rooms
           </Link>
-          <Link href='/' className='block'>
+          <Link href='/' className='block' prefetch>
             Menu
           </Link>
-          <Link href='/' className='block'>
+          <Link href='/' className='block' prefetch>
             Contact
           </Link>
 
           <div className='flex justify-center gap-2 mt-4'>
-            <Link href='/login'>
+            <Link href='/login' prefetch>
               <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 '>
                 Login
               </Button>
             </Link>
-            <Link href='/signup'>
+            <Link href='/signup' prefetch>
               <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 '>
                 Register
               </Button>

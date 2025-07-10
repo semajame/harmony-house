@@ -45,6 +45,7 @@ export default function AuthSection() {
                 <Link
                   href='/admin/dashboard'
                   className='flex items-center gap-2 w-full cursor-pointer'
+                  prefetch={true}
                 >
                   <LayoutDashboard className='h-4 w-4' />
                   Dashboard
@@ -57,6 +58,7 @@ export default function AuthSection() {
                 <Link
                   href='/dashboard'
                   className='flex items-center gap-2 w-full cursor-pointer'
+                  prefetch={true}
                 >
                   <LayoutDashboard className='h-4 w-4' />
                   Dashboard

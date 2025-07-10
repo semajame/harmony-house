@@ -217,7 +217,9 @@ export default function Dashboard() {
                 asChild
                 className='bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700'
               >
-                <Link href='/dashboard/my-reviews'>My Reviews</Link>
+                <Link href='/dashboard/my-reviews' prefetch>
+                  My Reviews
+                </Link>
               </Button>
             </div>
           </div>

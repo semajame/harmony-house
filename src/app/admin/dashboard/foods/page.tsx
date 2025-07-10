@@ -260,7 +260,7 @@ const foods = () => {
                     Price
                   </span>
                   <span className='font-semibold text-green-600'>
-                    ${food.price}
+                    ₱{food.price}
                   </span>
                 </div>
               </div>
