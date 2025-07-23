@@ -145,8 +145,6 @@ export default function Dashboard() {
     fetchData()
   }, [])
 
-  const totalFoods = useMemo(() => foods.length, [foods])
-
   const totalRevenue = useMemo(() => {
     return reservations.reduce((sum, res) => {
       if (res.status === 'confirmed' && res.payment?.amount) {

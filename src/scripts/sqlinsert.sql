@@ -2,8 +2,8 @@ INSERT INTO user (username, name, email, password, phone, role, isActive) VALUES
 ('admin', 'Admin Minda', 'admin@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '123-456-7890', 'admin', 1),
 ('staff1', 'John Staff', 'john.staff@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '0917-111-1111', 'staff', 1),
 ('staff2', 'Jane Worker', 'jane.staff@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '0917-222-2222', 'staff', 1),
-('customer1', 'Alice Customer', 'alice@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '0917-444-4444', 'customer', 1),
-('customer2', 'Bob Buyer', 'bob@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '0917-555-5555', 'customer', 1);
+('customer1', 'Alice', 'alice@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '0917-444-4444', 'customer', 1),
+('customer2', 'Bob', 'bob@example.com', '$2b$10$Nh03G7n3UIsuQvUEbLALiOD4Y3p0vMgFUpUyM8eEwX4F9bU6vv3zi', '0917-555-5555', 'customer', 1);
 
 
 

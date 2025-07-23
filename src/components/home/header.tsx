@@ -37,17 +37,17 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link href='/' className='hover:underline px-2' prefetch>
+              <Link href='/room' className='hover:underline px-2' prefetch>
                 Rooms
               </Link>
             </li>
             <li>
-              <Link href='/' className='hover:underline px-2' prefetch>
+              <Link href='/menu' className='hover:underline px-2' prefetch>
                 Menu
               </Link>
             </li>
             <li>
-              <Link href='/' className='hover:underline px-2' prefetch>
+              <Link href='/contact' className='hover:underline px-2' prefetch>
                 Contact
               </Link>
             </li>
@@ -73,13 +73,13 @@ const Header = () => {
           <Link href='/' className='block  ' prefetch>
             Home
           </Link>
-          <Link href='/' className='block' prefetch>
+          <Link href='/room' className='block' prefetch>
             Rooms
           </Link>
-          <Link href='/' className='block' prefetch>
+          <Link href='/menu' className='block' prefetch>
             Menu
           </Link>
-          <Link href='/' className='block' prefetch>
+          <Link href='/contact' className='block' prefetch>
             Contact
           </Link>
 

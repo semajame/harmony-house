@@ -117,7 +117,7 @@ export default function PaymentPage() {
         return
       }
 
-      alert('✅ GCash payment confirmed! (Simulation)')
+      alert('✅ GCash payment confirmed!')
       router.push('/confirmation')
     } catch (error) {
       console.error('Error confirming payment:', error)
