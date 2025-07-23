@@ -7,7 +7,6 @@ import {
   Utensils,
   TrendingUp,
   Users,
-  Calendar,
   Star,
   MessageSquare,
   ThumbsUp,
@@ -84,11 +83,26 @@ type Review = {
   user: { id: number; name: string; email: string }
 }
 
+import { Calendar } from '@/components/ui/calendar'
+import { addDays } from 'date-fns'
+import { Button } from '@/components/ui/button'
+import TotalRevenue from '@/components/total-revenue'
+
 export default function Dashboard() {
   const [reservations, setReservations] = useState<ReservationData[]>([])
   const [foods, setFoods] = useState<Food[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [date, setDate] = React.useState<Date | undefined>(new Date())
+
+  //^
+  const today = new Date()
+  const selectedDay = addDays(today, -0)
+  const [month, setMonth] = useState(selectedDay)
+  const [calendarDate, setCalendarDate] = useState<Date | undefined>(
+    selectedDay
+  )
 
   const fetchReservations = async () => {
     try {
@@ -174,17 +188,6 @@ export default function Dashboard() {
     }
   }, [reviews])
 
-  // Rating distribution for charts
-  const ratingDistribution = useMemo(() => {
-    const distribution = Array.from({ length: 5 }, (_, i) => {
-      const star = i + 1
-      const count = reviews.filter((r) => r.rating === star).length
-      return { rating: `${star} Star${star > 1 ? 's' : ''}`, count, star }
-    }).reverse()
-
-    return distribution
-  }, [reviews])
-
   // Reviews by room
   const reviewsByRoom = useMemo(() => {
     const roomReviews: {
@@ -242,42 +245,6 @@ export default function Dashboard() {
       count,
       percentage: ((count / reservations.length) * 100).toFixed(1),
     }))
-  }, [reservations])
-
-  const roomPopularity = useMemo(() => {
-    const roomCount: { [key: string]: number } = {}
-    reservations.forEach((res) => {
-      roomCount[res.room.name] = (roomCount[res.room.name] || 0) + 1
-    })
-
-    return Object.entries(roomCount)
-      .map(([room, bookings]) => ({ room, bookings }))
-      .sort((a, b) => b.bookings - a.bookings)
-      .slice(0, 5)
-  }, [reservations])
-
-  const monthlyTrend = useMemo(() => {
-    const monthlyData: {
-      [key: string]: { reservations: number; revenue: number }
-    } = {}
-
-    reservations.forEach((res) => {
-      const month = new Date(res.createdAt).toLocaleDateString('en-US', {
-        month: 'short',
-        year: 'numeric',
-      })
-      if (!monthlyData[month]) {
-        monthlyData[month] = { reservations: 0, revenue: 0 }
-      }
-      monthlyData[month].reservations += 1
-      if (res.status === 'confirmed' && res.payment?.amount) {
-        monthlyData[month].revenue += parseFloat(res.payment.amount)
-      }
-    })
-
-    return Object.entries(monthlyData)
-      .map(([month, data]) => ({ month, ...data }))
-      .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
   }, [reservations])
 
   const stats = [
@@ -357,9 +324,32 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+        {/* <TotalRevenue /> */}
 
         {/* Charts Grid */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
+          {/* Rating Distribution Chart */}
+          <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
+            <Calendar
+              mode='single'
+              selected={calendarDate}
+              onSelect={setCalendarDate}
+              month={month}
+              onMonthChange={setMonth}
+              className='w-full'
+            />
+            <Button
+              variant='outline'
+              size='sm'
+              className='mt-2 mb-1'
+              onClick={() => {
+                setDate(today)
+                setMonth(today)
+              }}
+            >
+              Today
+            </Button>
+          </div>
           {/* Revenue Trend Chart */}
           <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
             <div className='flex items-center justify-between mb-4'>
@@ -408,40 +398,6 @@ export default function Dashboard() {
                   </linearGradient>
                 </defs>
               </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Rating Distribution Chart */}
-          <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-lg font-semibold text-gray-900'>
-                Rating Distribution
-              </h3>
-              <Star className='h-5 w-5 text-yellow-500' />
-            </div>
-            <ResponsiveContainer width='100%' height={300}>
-              <BarChart data={ratingDistribution} layout='horizontal'>
-                <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
-                <XAxis type='number' fontSize={12} tick={{ fill: '#6B7280' }} />
-                <YAxis
-                  type='category'
-                  dataKey='rating'
-                  fontSize={12}
-                  tick={{ fill: '#6B7280' }}
-                  width={80}
-                />
-                <Tooltip
-                  formatter={(value: number) => [value, 'Reviews']}
-                  labelStyle={{ color: '#374151' }}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  }}
-                />
-                <Bar dataKey='count' fill='#F59E0B' radius={[0, 4, 4, 0]} />
-              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

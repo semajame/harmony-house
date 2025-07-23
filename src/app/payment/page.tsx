@@ -352,7 +352,7 @@ export default function PaymentPage() {
           {/* Payment Section */}
           <div className='lg:col-span-1'>
             <div className='bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 sticky top-8'>
-              <div className='text-center mb-8'>
+              <div className='text-center mb-4'>
                 <div className='inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full mb-4'>
                   <Receipt className='w-8 h-8 text-white' />
                 </div>
@@ -363,7 +363,7 @@ export default function PaymentPage() {
               </div>
 
               {/* Total Payment */}
-              <div className='bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-6 text-white text-center mb-8'>
+              <div className='bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-6 text-white text-center mb-4'>
                 <div className='flex items-center justify-center mb-2'>
                   <Receipt className='w-6 h-6 mr-2' />
                   <h4 className='text-lg font-semibold'>Total Payment</h4>
@@ -438,7 +438,7 @@ export default function PaymentPage() {
               <button
                 onClick={handleConfirmPayment}
                 disabled={isLoading}
-                className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold text-lg cursor-pointer flex items-center justify-center mt-5${
+                className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl font-semibold text-md mt-4 cursor-pointer flex items-center justify-center mt-5${
                   isLoading ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >

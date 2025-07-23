@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   Calendar,
   Clock,
@@ -21,14 +21,6 @@ import {
   Eye,
 } from 'lucide-react'
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   Dialog,
   DialogContent,
@@ -187,14 +179,13 @@ const Reservation = () => {
 
   // Filter reservations by selected month and status
   const filteredReservations = reservations.filter((res) => {
-    const createdAt = new Date(res.createdAt)
+    const startTime = new Date(res.startTime)
+    const year = startTime.getFullYear()
+    const month = (startTime.getMonth() + 1).toString().padStart(2, '0')
+    const yearMonth = `${year}-${month}`
 
-    // Month filter
-    const monthMatch =
-      selectedMonth === 'all' ||
-      createdAt.toISOString().slice(0, 7) === selectedMonth
+    const monthMatch = selectedMonth === 'all' || yearMonth === selectedMonth
 
-    // Status filter
     let statusMatch = true
     if (selectedStatus === 'active') {
       statusMatch = res.isActive
@@ -204,6 +195,16 @@ const Reservation = () => {
 
     return monthMatch && statusMatch
   })
+
+  const totalRevenue = useMemo(() => {
+    return filteredReservations.reduce((sum, res) => {
+      if (res.status === 'confirmed' && res.payment?.amount) {
+        const paymentAmount = parseFloat(res.payment.amount)
+        return sum + (isNaN(paymentAmount) ? 0 : paymentAmount)
+      }
+      return sum
+    }, 0)
+  }, [filteredReservations])
 
   // Sort by createdAt
   const sortedReservations = [...filteredReservations].sort((a, b) => {
@@ -222,12 +223,10 @@ const Reservation = () => {
     return Array.from(months).sort().reverse() // Most recent first
   }
 
-  const formatMonthLabel = (monthStr: string) => {
-    const date = new Date(monthStr + '-01')
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-    })
+  const formatMonthLabel = (monthString: string) => {
+    const [year, month] = monthString.split('-')
+    const date = new Date(Number(year), Number(month) - 1)
+    return date.toLocaleString('default', { month: 'long', year: 'numeric' })
   }
 
   const handleViewDetails = (reservation: ReservationData) => {
@@ -403,6 +402,16 @@ const Reservation = () => {
           </div>
         </div>
 
+        <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
+          <h2 className='text-xl font-bold text-purple-700'>
+            Total Revenue{' '}
+            {selectedMonth !== 'all'
+              ? `for ${formatMonthLabel(selectedMonth)}`
+              : '(All Months)'}
+            : ₱{totalRevenue.toLocaleString()}
+          </h2>
+        </div>
+
         {/* Filter Results Info */}
         {(selectedMonth !== 'all' || selectedStatus !== 'all') && (
           <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
@@ -422,7 +431,7 @@ const Reservation = () => {
                   setSelectedMonth('all')
                   setSelectedStatus('all')
                 }}
-                className='text-sm text-blue-600 hover:text-blue-800 font-medium'
+                className='text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer'
               >
                 Clear Filters
               </button>
@@ -783,7 +792,7 @@ const Reservation = () => {
                                               Payment Confirmed
                                             </span>
                                           </div>
-                                          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-2'>
+                                          <div className='grid grid-cols-2 gap-4 mt-2'>
                                             <div>
                                               <p className='text-sm text-muted-foreground'>
                                                 Amount
@@ -796,7 +805,7 @@ const Reservation = () => {
                                                 ).toLocaleString()}
                                               </p>
                                             </div>
-                                            <div>
+                                            {/* <div>
                                               <p className='text-sm text-muted-foreground'>
                                                 Method
                                               </p>
@@ -806,7 +815,7 @@ const Reservation = () => {
                                                     .method
                                                 }
                                               </p>
-                                            </div>
+                                            </div> */}
                                             <div className='md:col-span-2'>
                                               <p className='text-sm text-muted-foreground'>
                                                 Paid On
