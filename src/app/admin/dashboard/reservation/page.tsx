@@ -4,12 +4,10 @@ import { useEffect, useState, useMemo } from 'react'
 import {
   Calendar,
   Clock,
-  CreditCard,
   Mail,
   MapPin,
   User,
   CheckCircle,
-  XCircle,
   AlertCircle,
   Phone,
   Users,
@@ -17,7 +15,7 @@ import {
   AlertTriangle,
   CalendarDays,
   Filter,
-  X,
+  DollarSign,
   Eye,
 } from 'lucide-react'
 
@@ -41,6 +39,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Label } from 'recharts'
+import Rooms from '@/components/home/rooms'
+import Link from 'next/link'
 
 type ReservationData = {
   id: number
@@ -402,14 +402,27 @@ const Reservation = () => {
           </div>
         </div>
 
-        <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
-          <h2 className='text-xl font-bold text-purple-700'>
-            Total Revenue{' '}
-            {selectedMonth !== 'all'
-              ? `for ${formatMonthLabel(selectedMonth)}`
-              : '(All Months)'}
-            : ₱{totalRevenue.toLocaleString()}
-          </h2>
+        <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex justify-between items-center'>
+          <div className='flex items-center justify-between'>
+            <div>
+              <p className='text-sm font-medium text-gray-600'>
+                Total Revenue{' '}
+                {selectedMonth !== 'all'
+                  ? `for ${formatMonthLabel(selectedMonth)}`
+                  : '(All Months)'}
+                :
+              </p>
+              <p className='text-2xl font-bold text-gray-900 mt-1'>
+                ₱{totalRevenue.toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <Link
+            href='/room'
+            className='py-2 px-4 bg-blue-500 rounded-md text-white text-sm hover:bg-blue-600 transition ease-in'
+          >
+            Book a room
+          </Link>
         </div>
 
         {/* Filter Results Info */}
