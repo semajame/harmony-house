@@ -3,7 +3,7 @@ export const rooms = [
     id: 1,
     name: 'Room 1',
     capacity: 5,
-    price: '₱500',
+    price: 500,
 
     description:
       'A stylish room with enhanced decor, amenities and mood lighting.',
@@ -13,7 +13,7 @@ export const rooms = [
     id: 2,
     name: 'Room 2',
     capacity: 5,
-    price: '₱500',
+    price: 500,
     description:
       'A stylish KTV room with basic karaoke equipment, a large screen, mood lighting. Perfect for small gatherings.',
     image: '/images/rooms/room_2.png',
@@ -22,7 +22,7 @@ export const rooms = [
     id: 3,
     name: 'Room 3',
     capacity: 5,
-    price: '₱500',
+    price: 500,
     description:
       'A small KTV room with basic equipment, cozy seating and enhanced amenities. Great for intimate celebrations.',
     image: '/images/rooms/room_3.png',
@@ -31,7 +31,7 @@ export const rooms = [
     id: 4,
     name: 'Room 4',
     capacity: 5,
-    price: '₱500',
+    price: 500,
     description:
       'A compact KTV room with a basic sound system for karaoke and intimate singing sessions.',
     image: '/images/rooms/room_4.png',

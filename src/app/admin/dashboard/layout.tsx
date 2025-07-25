@@ -15,6 +15,7 @@ import {
   NotebookText,
   Calendar,
   LogOut,
+  BadgeDollarSign,
 } from 'lucide-react'
 
 import DashboardLayout from '@/components/admin/dashboard/dashboard-layout'
@@ -46,6 +47,7 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
   const getTitleFromPath = (path: string) => {
     if (path.includes('/admin/dashboard/users')) return 'Users'
     if (path.includes('/admin/dashboard/foods')) return 'Foods'
+    if (path.includes('/admin/dashboard/discounts')) return 'Discounts'
     if (path.includes('/admin/dashboard/reviews')) return 'Reviews'
     if (path.includes('/admin/dashboard/reservation')) return 'Reservation'
     if (path.includes('/dashboard')) return 'Overview'
@@ -67,6 +69,11 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
     },
     { icon: CakeSlice, label: 'Foods', link: '/admin/dashboard/foods' },
     { icon: NotebookText, label: 'Reviews', link: '/admin/dashboard/reviews' },
+    {
+      icon: BadgeDollarSign,
+      label: 'Discounts',
+      link: '/admin/dashboard/discounts',
+    },
   ].filter(Boolean) as SidebarItem[]
 
   // Redirect based on authentication and role

@@ -142,8 +142,6 @@ export default function Rooms() {
                     <h3 className='text-xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors duration-300'>
                       {room.name}
                     </h3>
-
-               
                   </div>
 
                   <p className='text-sm text-gray-600 leading-relaxed min-h-[3rem] text-center'>
@@ -167,7 +165,7 @@ export default function Rooms() {
 
                   <div>
                     <p className='text-center text-xl text-purple-600'>
-                      {room.price}
+                      ₱{room.price}
                     </p>
                   </div>
 

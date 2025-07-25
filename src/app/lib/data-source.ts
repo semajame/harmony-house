@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+
 import * as dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
 import { User } from './entities/users'
@@ -8,6 +9,7 @@ import { Room } from './entities/rooms'
 import { Product } from './entities/product'
 import { Order } from './entities/order'
 import { Review } from './entities/review'
+import { Discount } from './entities/discount'
 
 dotenv.config()
 
@@ -18,7 +20,16 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER || 'root',
   password: process.env.DATABASE_PASSWORD || '',
   database: process.env.DATABASE_NAME || 'test',
-  entities: [User, Payment, Reservation, Room, Product, Order, Review],
+  entities: [
+    User,
+    Payment,
+    Reservation,
+    Room,
+    Product,
+    Order,
+    Review,
+    Discount,
+  ],
   synchronize: true,
   logging: process.env.NODE_ENV === 'development',
 })

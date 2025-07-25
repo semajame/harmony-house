@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation'
 import { rooms } from '@/lib/rooms'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Calendar,
@@ -25,6 +25,7 @@ import {
   Mail,
   Phone,
   Utensils,
+  Tag,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import ReviewsPreview from '@/components/reviewsRoom'
@@ -35,6 +36,18 @@ type Food = {
   price: number
   description: string
   available: boolean
+}
+
+type Promo = {
+  isActive: boolean
+  id: number
+  code: string
+  discount: number
+  createdAt?: string
+}
+
+export const computeDiscount = (amount: number, discount: number) => {
+  return amount - (amount * discount) / 100
 }
 
 export default function RoomPage() {
@@ -48,10 +61,6 @@ export default function RoomPage() {
   const [selectedFoods, setSelectedFoods] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Form state
-  // const [fullName, setFullName] = useState('')
-  // const [email, setEmail] = useState('')
-  // const [phone, setPhone] = useState('')
   const [checkInDate, setCheckInDate] = useState('')
   const [checkInTime, setCheckInTime] = useState('')
   const [checkOutTime, setCheckOutTime] = useState('')
@@ -64,14 +73,10 @@ export default function RoomPage() {
   )
 
   const [foods, setFoods] = useState<Food[]>([])
-  const [formData, setFormData] = useState<
-    Omit<Food, 'id' | 'price'> & { price: string }
-  >({
-    name: '',
-    price: '',
-    description: '',
-    available: false,
-  })
+
+  const [promos, setPromos] = useState<Promo[]>([])
+  const [discountedTotal, setDiscountedTotal] = useState(0)
+  const [selectedPromo, setSelectedPromo] = useState<Promo | null>(null)
 
   // Mock additional images for the room
   const roomImages = [
@@ -180,6 +185,65 @@ export default function RoomPage() {
     fetchFoods()
   }, [])
 
+  //^ FETCH DISCOUNTS
+  useEffect(() => {
+    const fetchPromos = async () => {
+      try {
+        const res = await fetch('/api/admin/discount')
+        const data = await res.json()
+        const activePromos = data.filter((promo: Promo) => promo.isActive)
+        setPromos(activePromos)
+      } catch (error) {
+        console.error('Failed to fetch promos:', error)
+      }
+    }
+
+    fetchPromos()
+  }, [])
+
+  const discount = useMemo(() => {
+    if (!room || !selectedPromo) return 0
+    const numericPrice = parseFloat(
+      room.price.toString().replace(/[^\d.]/g, '')
+    )
+    return computeDiscount(numericPrice, selectedPromo.discount)
+  }, [room, selectedPromo])
+
+  useEffect(() => {
+    if (checkInTime && checkOutTime && room) {
+      const checkInHour = parseInt(checkInTime.split(':')[0])
+      const checkOutHour = parseInt(checkOutTime.split(':')[0])
+      let hours = checkOutHour - checkInHour
+      if (hours <= 0) hours = 24 - checkInHour + checkOutHour
+
+      const roomPrice = parseFloat(room.price.toString().replace(/[^\d.]/g, ''))
+      const roomTotal = hours * roomPrice
+
+      const foodTotal = selectedFoods.reduce((sum, id) => {
+        const food = foods.find((f) => f.id === id)
+        const qty = foodQuantities[id] || 1
+        return sum + (food?.price || 0) * qty
+      }, 0)
+
+      const total = roomTotal + foodTotal
+      setTotalPrice(total)
+
+      const finalWithDiscount = selectedPromo
+        ? computeDiscount(total, selectedPromo.discount)
+        : total
+
+      setDiscountedTotal(finalWithDiscount)
+    }
+  }, [
+    checkInTime,
+    checkOutTime,
+    room,
+    selectedPromo,
+    selectedFoods,
+    foodQuantities,
+    foods,
+  ])
+
   // ⏱ Calculate total price when times change
   useEffect(() => {
     if (checkInTime && checkOutTime && room) {
@@ -240,7 +304,7 @@ export default function RoomPage() {
       roomId: room?.id,
       checkIn: checkIn.toISOString(),
       checkOut: checkOut.toISOString(),
-      totalPrice: totalPrice,
+      totalPrice: discountedTotal,
       food: selectedFoodDetails, // <-- Add food array here
     }
 
@@ -398,7 +462,7 @@ export default function RoomPage() {
             </div> */}
 
             <div className='text-3xl font-bold text-purple-600'>
-              {room.price}
+              ₱{room.price}
               <span className='text-lg font-normal text-gray-500'>/hour</span>
             </div>
           </div>
@@ -648,21 +712,59 @@ export default function RoomPage() {
                     </div>
                   </div>
 
+                  {promos.length > 0 && (
+                    <div>
+                      <label className='flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3'>
+                        <Tag className='w-4 h-4' />
+                        Apply Promo Code
+                      </label>
+                      <select
+                        className='w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300'
+                        value={selectedPromo?.id || ''}
+                        onChange={(e) => {
+                          const promo = promos.find(
+                            (p) => p.id === parseInt(e.target.value)
+                          )
+                          setSelectedPromo(promo || null)
+                        }}
+                      >
+                        <option value=''>Select a promo</option>
+                        {promos.map((promo) => (
+                          <option key={promo.id} value={promo.id}>
+                            {promo.code} - {promo.discount}% off
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   {/* Pricing Breakdown */}
                   <div className='bg-gray-50 rounded-lg p-4 space-y-2'>
                     <div className='flex justify-between text-sm'>
                       <span>Hourly rate</span>
-                      <span>{room.price}</span>
+                      <span>₱{room.price}</span>
+                    </div>
+                    <div className='flex justify-between text-sm'>
+                      <span>Promo discount</span>
+                      <span className='text-green-600'>
+                        {selectedPromo
+                          ? `-₱${(totalPrice - discountedTotal).toFixed(2)}`
+                          : 'None'}
+                      </span>
                     </div>
                     <div className='flex justify-between text-sm'>
                       <span>Service fee</span>
                       <span>Free</span>
                     </div>
                     <div className='border-t border-gray-200 pt-2 flex justify-between font-semibold'>
-                      <span>Total</span>
-                      <span className='text-purple-600'>
-                        ₱{totalPrice.toLocaleString()}
-                      </span>
+                      <div className='flex flex-col gap-2'>
+                        <div>
+                          <span>Total: </span>
+                          <span className='text-purple-600'>
+                            ₱{discountedTotal.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

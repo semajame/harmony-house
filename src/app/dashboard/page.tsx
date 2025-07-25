@@ -582,14 +582,14 @@ export default function Dashboard() {
                                         </CardHeader>
                                         <CardContent>
                                           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                            <div>
+                                            {/* <div>
                                               <div className='text-sm text-gray-600 mb-1'>
                                                 Payment Method
                                               </div>
                                               <div className='font-medium text-gray-800'>
                                                 {reservation.payment.method}
                                               </div>
-                                            </div>
+                                            </div> */}
                                             <div>
                                               <div className='text-sm text-gray-600 mb-1'>
                                                 Amount
@@ -601,7 +601,7 @@ export default function Dashboard() {
                                                 ₱{reservation.payment.amount}
                                               </Badge>
                                             </div>
-                                            <div className='md:col-span-2'>
+                                            <div>
                                               <div className='text-sm text-gray-600 mb-1'>
                                                 Payment Date
                                               </div>

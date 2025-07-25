@@ -7,6 +7,7 @@ import Header from '@/components/home/header'
 import Rooms from '@/components/home/rooms'
 import { Button } from '@/components/ui/button'
 import { Music, Star } from 'lucide-react'
+import Link from 'next/link'
 
 export default function Home() {
   return (
@@ -57,9 +58,12 @@ export default function Home() {
             </div>
           </div>
 
-          <button className='bg-[#944EA8] w-[150px] m-auto py-3 rounded-md cursor-pointer'>
+          <Link
+            href='/room'
+            className='bg-[#944EA8] w-[150px] m-auto py-3 rounded-md cursor-pointer'
+          >
             Get Started
-          </button>
+          </Link>
         </div>
       </main>
 
