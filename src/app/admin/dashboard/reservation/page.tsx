@@ -41,6 +41,7 @@ import { Separator } from '@/components/ui/separator'
 import { Label } from 'recharts'
 import Rooms from '@/components/home/rooms'
 import Link from 'next/link'
+import RevenueCalendar from '@/components/revenue-calendar'
 
 type ReservationData = {
   id: number
@@ -402,27 +403,30 @@ const Reservation = () => {
           </div>
         </div>
 
-        <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex justify-between items-center'>
-          <div className='flex items-center justify-between'>
+        <div className='flex'>
+          <RevenueCalendar />
+          <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex-col flex justify-between'>
             <div>
-              <p className='text-sm font-medium text-gray-600'>
-                Total Revenue{' '}
-                {selectedMonth !== 'all'
-                  ? `for ${formatMonthLabel(selectedMonth)}`
-                  : '(All Months)'}
-                :
-              </p>
-              <p className='text-2xl font-bold text-gray-900 mt-1'>
-                ₱{totalRevenue.toLocaleString()}
-              </p>
+              <div>
+                <p className='text-sm font-medium text-gray-600'>
+                  Total Revenue{' '}
+                  {selectedMonth !== 'all'
+                    ? `for ${formatMonthLabel(selectedMonth)}`
+                    : '(All Months)'}
+                  :
+                </p>
+                <p className='text-2xl font-bold text-green-500 mt-1'>
+                  ₱{totalRevenue.toLocaleString()}
+                </p>
+              </div>
             </div>
+            <Link
+              href='/room'
+              className='py-2 px-4 bg-blue-500 rounded-md text-white text-sm hover:bg-blue-600 transition ease-in text-center'
+            >
+              Book a room
+            </Link>
           </div>
-          <Link
-            href='/room'
-            className='py-2 px-4 bg-blue-500 rounded-md text-white text-sm hover:bg-blue-600 transition ease-in'
-          >
-            Book a room
-          </Link>
         </div>
 
         {/* Filter Results Info */}
@@ -606,8 +610,8 @@ const Reservation = () => {
                           </div>
                         )}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap'>
-                        <div className='flex gap-2 items-center'>
+                      <td className='px-6 py-4 whitespace-nowrap '>
+                        <div className='flex gap-2 items-center '>
                           <Dialog
                             open={
                               isModalOpen &&
@@ -625,7 +629,7 @@ const Reservation = () => {
                                 className='flex items-center gap-2 cursor-pointer'
                               >
                                 <Eye className='w-4 h-4' />
-                                View Details
+                                View
                               </Button>
                             </DialogTrigger>
                             {selectedReservation && (
