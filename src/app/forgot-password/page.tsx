@@ -1,51 +1,52 @@
-"use client";
-import { useState } from "react";
+"use client"
+
+import { useState } from "react"
 import {
   Mail,
   ArrowLeft,
   CheckCircle,
   AlertCircle,
   Loader2,
-} from "lucide-react";
+} from "lucide-react"
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState("")
+  const [message, setMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState("")
 
-  async function handleSubmit(e: any) {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    setMessage("");
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
+    setMessage("")
 
     try {
-      const res = await fetch("/api/auth/ethereal/forgot", {
+      const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
-      });
+      })
 
-      const data = await res.json();
+      const data = await res.json()
 
       if (res.ok) {
-        setIsSuccess(true);
-        setMessage(data.message);
+        setIsSuccess(true)
+        setMessage(data.message)
       } else {
-        setError(data.message || "Something went wrong");
+        setError(data.message || "Something went wrong")
       }
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError("Network error. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 pt-[5rem]">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <div className="text-center">
@@ -61,9 +62,9 @@ export default function ForgotPassword() {
               <p className="text-sm text-gray-500 mb-6">{message}</p>
               <button
                 onClick={() => {
-                  setIsSuccess(false);
-                  setEmail("");
-                  setMessage("");
+                  setIsSuccess(false)
+                  setEmail("")
+                  setMessage("")
                 }}
                 className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
               >
@@ -74,7 +75,7 @@ export default function ForgotPassword() {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -96,7 +97,7 @@ export default function ForgotPassword() {
           </div>
 
           {/* Form */}
-          <div onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
                 htmlFor="email"
@@ -119,8 +120,7 @@ export default function ForgotPassword() {
             </div>
 
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-200 focus:outline-none disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
@@ -133,7 +133,7 @@ export default function ForgotPassword() {
                 "Send Reset Link"
               )}
             </button>
-          </div>
+          </form>
 
           {/* Messages */}
           {error && (
@@ -163,5 +163,5 @@ export default function ForgotPassword() {
         </div>
       </div>
     </div>
-  );
+  )
 }

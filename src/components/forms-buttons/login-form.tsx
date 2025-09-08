@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import { signIn } from "next-auth/react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
+import { signIn } from "next-auth/react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import Link from "next/link"
 
 interface LoginFormProps extends React.ComponentProps<"form"> {
   form: {
-    username: string;
-    password: string;
-  };
-  onFormChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    username: string
+    password: string
+  }
+  onFormChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
 export function LoginForm({
@@ -55,7 +55,9 @@ export function LoginForm({
             onChange={onFormChange}
           />
         </div>
-        <Link href="/forgot-password">Forgot Password?</Link>
+        <Link href="/forgot-password" className="text-xs underline">
+          Forgot Password?
+        </Link>
         <Button
           type="submit"
           className="w-full cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 "
@@ -71,5 +73,5 @@ export function LoginForm({
         </Link>
       </div>
     </form>
-  );
+  )
 }
