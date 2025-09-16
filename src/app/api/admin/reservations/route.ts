@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getDatabaseConnection } from '../../../lib/data-source'
-import { Reservation, Status } from '../../../lib/entities/reservation'
-import { Room } from '../../../lib/entities/rooms'
-import { Payment } from '../../../lib/entities/payment'
+import { NextRequest, NextResponse } from "next/server"
+import { getDatabaseConnection } from "../../../lib/data-source"
+import { Reservation, Status } from "../../../lib/entities/reservation"
+import { Room } from "../../../lib/entities/rooms"
+import { Payment } from "../../../lib/entities/payment"
 
-import { DateTime } from 'luxon'
-import { User } from '@/app/lib/entities/users'
+import { DateTime } from "luxon"
+import { User } from "@/app/lib/entities/users"
 
 export async function GET(req: NextRequest) {
   // const adminCheck = await requireAdmin(req)
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const db = await getDatabaseConnection()
   const reservationRepo = db.getRepository(Reservation)
   const reservations = await reservationRepo.find({
-    relations: ['room', 'user', 'payment'],
+    relations: ["room", "user", "payment"],
   })
   const sanitizedReservations = reservations.map((reservation) => {
     if (reservation.user) {
@@ -40,16 +40,16 @@ export async function PUT(req: NextRequest) {
   const paymentRepo = db.getRepository(Payment)
   const reservation = await reservationRepo.findOne({
     where: { id },
-    relations: ['room', 'user', 'payment'],
+    relations: ["room", "user", "payment"],
   })
 
   if (!reservation) {
     return NextResponse.json(
-      { error: 'Reservation not found' },
+      { error: "Reservation not found" },
       { status: 404 }
     )
   }
-  const manilaZone = 'Asia/Manila'
+  const manilaZone = "Asia/Manila"
 
   if (startTime)
     reservation.startTime = DateTime.fromISO(startTime, {
@@ -62,12 +62,12 @@ export async function PUT(req: NextRequest) {
 
   const existingPayment = await reservationRepo.findOne({
     where: { payment: { id: paymentId } },
-    relations: ['payment'],
+    relations: ["payment"],
   })
 
   if (existingPayment) {
     return NextResponse.json(
-      { error: 'Payment is already associated with a reservation' },
+      { error: "Payment is already associated with a reservation" },
       { status: 409 }
     )
   }
@@ -76,7 +76,7 @@ export async function PUT(req: NextRequest) {
     const newPayment = await paymentRepo.findOne({ where: { id: paymentId } })
     if (!newPayment)
       return NextResponse.json(
-        { error: 'New payment not found' },
+        { error: "New payment not found" },
         { status: 404 }
       )
     reservation.payment = newPayment
@@ -85,10 +85,10 @@ export async function PUT(req: NextRequest) {
   if (roomId && roomId !== reservation.room.id) {
     const newRoom = await roomRepo.findOne({ where: { id: roomId } })
     if (!newRoom)
-      return NextResponse.json({ error: 'New room not found' }, { status: 404 })
+      return NextResponse.json({ error: "New room not found" }, { status: 404 })
     else if (newRoom && !newRoom.isAvailable) {
       return NextResponse.json(
-        { error: 'room is currently not available, please try other rooms' },
+        { error: "room is currently not available, please try other rooms" },
         { status: 404 }
       )
     }
@@ -100,7 +100,7 @@ export async function PUT(req: NextRequest) {
       where: { id: userId, isActive: true },
     })
     if (!newUser)
-      return NextResponse.json({ error: 'New user not found' }, { status: 404 })
+      return NextResponse.json({ error: "New user not found" }, { status: 404 })
     reservation.user = newUser
   }
 
@@ -128,18 +128,18 @@ export async function POST(req: NextRequest) {
       roomId,
       userId,
       amount,
-      paymentMethod = 'cash',
+      paymentMethod = "Gcash",
       paymentId,
       foods, // ✅ <- Make sure this matches frontend
     } = body
 
-    console.log('📦 FULL BODY:', body)
-    console.log('🍽 FOODS:', foods)
+    console.log("📦 FULL BODY:", body)
+    console.log("🍽 FOODS:", foods)
 
     if (!startTime || !endTime || !roomId || !userId) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'startTime, endTime, roomId, and userId are required' },
+        { error: "startTime, endTime, roomId, and userId are required" },
         { status: 400 }
       )
     }
@@ -147,19 +147,19 @@ export async function POST(req: NextRequest) {
     if (!paymentId && !amount) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'Either paymentId or amount is required' },
+        { error: "Either paymentId or amount is required" },
         { status: 400 }
       )
     }
 
-    const manilaZone = 'Asia/Manila'
+    const manilaZone = "Asia/Manila"
     const start = DateTime.fromISO(startTime, { zone: manilaZone }).toJSDate()
     const end = DateTime.fromISO(endTime, { zone: manilaZone }).toJSDate()
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'Invalid date format' },
+        { error: "Invalid date format" },
         { status: 400 }
       )
     }
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
     if (end <= start) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'End time must be after start time' },
+        { error: "End time must be after start time" },
         { status: 400 }
       )
     }
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
     if (!room) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'Room not found or not available' },
+        { error: "Room not found or not available" },
         { status: 404 }
       )
     }
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       await queryRunner.rollbackTransaction()
       return NextResponse.json(
-        { error: 'User not found or not active' },
+        { error: "User not found or not active" },
         { status: 404 }
       )
     }
@@ -206,20 +206,20 @@ export async function POST(req: NextRequest) {
       if (!payment) {
         await queryRunner.rollbackTransaction()
         return NextResponse.json(
-          { error: 'Payment not found' },
+          { error: "Payment not found" },
           { status: 404 }
         )
       }
 
       const existingReservation = await reservationRepo.findOne({
         where: { payment: { id: paymentId } },
-        relations: ['payment'],
+        relations: ["payment"],
       })
 
       if (existingReservation) {
         await queryRunner.rollbackTransaction()
         return NextResponse.json(
-          { error: 'Payment is already associated with a reservation' },
+          { error: "Payment is already associated with a reservation" },
           { status: 409 }
         )
       }
@@ -234,16 +234,16 @@ export async function POST(req: NextRequest) {
     const sameDate = DateTime.fromJSDate(start).toISODate()
 
     const conflict = await reservationRepo
-      .createQueryBuilder('reservation')
-      .leftJoin('reservation.room', 'room')
-      .where('room.id = :roomId', { roomId })
-      .andWhere('reservation.isActive = true')
-      .andWhere('reservation.status != :cancelled', {
+      .createQueryBuilder("reservation")
+      .leftJoin("reservation.room", "room")
+      .where("room.id = :roomId", { roomId })
+      .andWhere("reservation.isActive = true")
+      .andWhere("reservation.status != :cancelled", {
         cancelled: Status.CANCELLED,
       })
-      .andWhere('DATE(reservation.startTime) = :sameDate', { sameDate })
+      .andWhere("DATE(reservation.startTime) = :sameDate", { sameDate })
       .andWhere(
-        '(reservation.startTime < :endTime AND reservation.endTime > :startTime)',
+        "(reservation.startTime < :endTime AND reservation.endTime > :startTime)",
         {
           startTime: start,
           endTime: end,
@@ -256,7 +256,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'Time conflict: The selected room is already booked during the chosen time.',
+            "Time conflict: The selected room is already booked during the chosen time.",
         },
         { status: 409 }
       )
@@ -271,14 +271,14 @@ export async function POST(req: NextRequest) {
       foods, // ✅ MAKE SURE THIS IS INCLUDED!
     })
 
-    console.log('💾 Saving reservation:', reservation)
+    console.log("💾 Saving reservation:", reservation)
 
     await reservationRepo.save(reservation)
     await queryRunner.commitTransaction()
 
     const savedReservation = await reservationRepo.findOne({
       where: { id: reservation.id },
-      relations: ['room', 'user', 'payment'],
+      relations: ["room", "user", "payment"],
     })
 
     if (savedReservation?.user) {
@@ -288,16 +288,16 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Reservation created successfully',
+        message: "Reservation created successfully",
         reservation: savedReservation,
       },
       { status: 201 }
     )
   } catch (err) {
     await queryRunner.rollbackTransaction()
-    console.error('[RESERVATION_POST_ERROR]', err)
+    console.error("[RESERVATION_POST_ERROR]", err)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     )
   } finally {
@@ -314,7 +314,7 @@ export async function PATCH(req: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: 'Reservation ID required' },
+        { error: "Reservation ID required" },
         { status: 400 }
       )
     }
@@ -324,22 +324,22 @@ export async function PATCH(req: NextRequest) {
 
     const reservation = await reservationRepo.findOne({
       where: { id },
-      relations: ['room', 'user'],
+      relations: ["room", "user"],
     })
 
     if (!reservation) {
       return NextResponse.json(
-        { error: 'Reservation not found' },
+        { error: "Reservation not found" },
         { status: 404 }
       )
     }
 
-    if (action === 'set-status') {
+    if (action === "set-status") {
       if (!status || !Object.values(Status).includes(status)) {
         return NextResponse.json(
           {
             error:
-              'Invalid status. Must be one of: pending, confirmed, cancelled',
+              "Invalid status. Must be one of: pending, confirmed, cancelled",
           },
           { status: 400 }
         )
@@ -362,7 +362,7 @@ export async function PATCH(req: NextRequest) {
       }
       return NextResponse.json({
         message: `Reservation ${
-          reservation.isActive ? 'activated' : 'deactivated'
+          reservation.isActive ? "activated" : "deactivated"
         }`,
         reservation,
       })
@@ -370,7 +370,7 @@ export async function PATCH(req: NextRequest) {
   } catch (err) {
     console.error(err)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }

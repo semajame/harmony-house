@@ -86,6 +86,7 @@ type Review = {
 import { Calendar } from "@/components/ui/calendar"
 import { addDays } from "date-fns"
 import { Button } from "@/components/ui/button"
+// import TotalRevenue from '@/components/total-revenue'
 
 export default function Dashboard() {
   const [reservations, setReservations] = useState<ReservationData[]>([])

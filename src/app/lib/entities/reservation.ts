@@ -6,15 +6,15 @@ import {
   OneToOne,
   JoinColumn,
   CreateDateColumn,
-} from 'typeorm'
-import { Room } from './rooms'
-import { Payment } from './payment'
-import { User } from './users'
+} from "typeorm"
+import { Room } from "./rooms"
+import { Payment } from "./payment"
+import { User } from "./users"
 
 export enum Status {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  CONFIRMED = "confirmed",
+  CANCELLED = "cancelled",
 }
 
 @Entity()
@@ -25,16 +25,16 @@ export class Reservation {
   @CreateDateColumn()
   createdAt!: Date
 
-  @Column('datetime')
+  @Column("datetime")
   startTime!: Date
 
-  @Column('datetime')
+  @Column("datetime")
   endTime!: Date
 
   @ManyToOne(() => Room, (room) => room.reservations)
   room!: Room
 
-  @ManyToOne('User', 'reservations')
+  @ManyToOne("User", "reservations")
   user!: User
 
   @OneToOne(() => Payment, { cascade: true })
@@ -42,16 +42,16 @@ export class Reservation {
   payment!: Payment
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: Status,
-    default: Status.PENDING,
+    default: Status.CONFIRMED,
   })
   status!: Status
 
-  @Column('boolean', { default: true })
+  @Column("boolean", { default: true })
   isActive!: boolean
 
-  @Column('json', { nullable: true })
+  @Column("json", { nullable: true })
   foods!: {
     id: number
     name: string
