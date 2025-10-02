@@ -1,5 +1,5 @@
-'use client'
-import { useState, useEffect } from 'react'
+"use client"
+import { useState, useEffect } from "react"
 import {
   Plus,
   Search,
@@ -14,7 +14,7 @@ import {
   Star,
   Eye,
   EyeOff,
-} from 'lucide-react'
+} from "lucide-react"
 
 type Food = {
   id: number
@@ -27,17 +27,17 @@ type Food = {
 const foods = () => {
   const [foods, setFoods] = useState<Food[]>([])
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterCategory, setFilterCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterCategory, setFilterCategory] = useState("all")
   const [showModal, setShowModal] = useState(false)
 
   const [editingFood, setEditingFood] = useState<Food | null>(null)
   const [formData, setFormData] = useState<
-    Omit<Food, 'id' | 'price'> & { price: string }
+    Omit<Food, "id" | "price"> & { price: string }
   >({
-    name: '',
-    price: '',
-    description: '',
+    name: "",
+    price: "",
+    description: "",
     available: false,
   })
 
@@ -45,7 +45,7 @@ const foods = () => {
   useEffect(() => {
     const fetchFoods = async () => {
       try {
-        const res = await fetch('/api/admin/products') // adjust if the route is different
+        const res = await fetch("/api/admin/products") // adjust if the route is different
         const data = await res.json()
 
         const formattedData: Food[] = data.map((product: any) => ({
@@ -60,7 +60,7 @@ const foods = () => {
 
         setFoods(formattedData)
       } catch (error) {
-        console.error('Failed to fetch products:', error)
+        console.error("Failed to fetch products:", error)
       }
     }
 
@@ -72,10 +72,10 @@ const foods = () => {
     e.preventDefault()
 
     try {
-      const method = editingFood ? 'PUT' : 'POST'
+      const method = editingFood ? "PUT" : "POST"
       const url = editingFood
         ? `/api/admin/products/${editingFood.id}` // assuming RESTful for PUT
-        : '/api/admin/products'
+        : "/api/admin/products"
 
       const payload = {
         ...formData,
@@ -86,7 +86,7 @@ const foods = () => {
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       })
@@ -112,15 +112,15 @@ const foods = () => {
       resetForm()
       closeModal()
     } catch (err) {
-      console.error('Submission error:', err)
-      alert('There was an error submitting the food. Please try again.')
+      console.error("Submission error:", err)
+      alert("There was an error submitting the food. Please try again.")
     }
   }
 
   const handleDelete = async (id: number) => {
     try {
       const response = await fetch(`/api/admin/products/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       })
 
       if (!response.ok) {
@@ -130,10 +130,10 @@ const foods = () => {
 
       // Update local state
       setFoods((prev) => prev.filter((item) => item.id !== id))
-      alert('Food item deleted successfully.')
+      alert("Food item deleted successfully.")
     } catch (err) {
-      console.error('Deletion error:', err)
-      alert('There was an error deleting the food. Please try again.')
+      console.error("Deletion error:", err)
+      alert("There was an error deleting the food. Please try again.")
     }
   }
 
@@ -147,9 +147,9 @@ const foods = () => {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      price: '',
-      description: '',
+      name: "",
+      price: "",
+      description: "",
       available: true,
     })
     setEditingFood(null)
@@ -171,110 +171,107 @@ const foods = () => {
   }
 
   return (
-    <div className='h-full bg-gray-100 p-6 overflow-y-auto'>
+    <div className="h-full bg-gray-100 p-6 overflow-y-auto">
       {/* Filters */}
-      <div className='bg-white rounded-lg shadow p-6 mb-6'>
-        <div className='flex flex-col md:flex-row gap-4 items-start md:items-center justify-between'>
-          <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center'>
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             {/* Search */}
-            <div className='relative'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
-                type='text'
-                placeholder='Search foods...'
+                type="text"
+                placeholder="Search foods..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent w-full sm:w-64'
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent w-full sm:w-64"
               />
             </div>
 
-            <div className='relative'>
+            <div className="relative">
               <button
                 onClick={() => openModal()}
-                className='bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors cursor-pointer'
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors cursor-pointer"
               >
-                <Plus className='h-5 w-5' />
+                <Plus className="h-5 w-5" />
                 <span>Add Food</span>
               </button>
             </div>
           </div>
 
-          <div className='text-sm text-gray-600'>
+          <div className="text-sm text-gray-600">
             {filteredFoods.length} of {foods.length} items
           </div>
         </div>
       </div>
 
       {/* Food Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredFoods.map((food) => (
           <div
             key={food.id}
-            className='bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200'
+            className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
           >
-            <div className='p-6'>
+            <div className="p-6">
               {/* Food Header */}
-              <div className='flex items-start justify-between mb-4'>
-                <div className='flex items-center space-x-3'>
-                  <div className='flex-1'>
-                    <h3 className='text-md font-semibold text-gray-900'>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-1">
+                    <h3 className="text-md font-semibold text-gray-900">
                       {food.name}
                     </h3>
                   </div>
                 </div>
-                <div className='flex space-x-1'>
+                <div className="flex space-x-1">
                   <button
                     onClick={() => openModal(food)}
-                    className='p-1 hover:bg-gray-100 rounded text-blue-600 cursor-pointer'
-                    title='Edit'
+                    className="p-1 hover:bg-gray-100 rounded text-blue-600 cursor-pointer"
+                    title="Edit"
                   >
-                    <Edit className='h-4 w-4' />
+                    <Edit className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => {
                       const confirmed = window.confirm(
-                        'Are you sure you want to delete this item?'
+                        "Are you sure you want to delete this item?"
                       )
                       if (confirmed) {
                         handleDelete(food.id)
                       }
                     }}
-                    className='p-1 hover:bg-gray-100 rounded text-red-600 cursor-pointer'
-                    title='Delete'
+                    className="p-1 hover:bg-gray-100 rounded text-red-600 cursor-pointer"
+                    title="Delete"
                   >
-                    <Trash2 className='h-4 w-4' />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
               {/* Description */}
-              <p className='text-gray-600 text-sm mb-4 line-clamp-2'>
+              <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                 {food.description}
               </p>
 
               {/* Details */}
-              <div className='space-y-2 mb-4'>
-                <div className='flex items-center justify-between text-sm'>
-                  <span className='flex items-center text-gray-600'>
-                    <DollarSign className='h-4 w-4 mr-1' />
-                    Price
-                  </span>
-                  <span className='font-semibold text-green-600'>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center text-gray-600">Price</span>
+                  <span className="font-semibold text-green-600">
                     ₱{food.price}
                   </span>
                 </div>
               </div>
 
               {/* Status */}
-              <div className='mt-3 pt-3 border-t'>
+              <div className="mt-3 pt-3 border-t">
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                     food.available
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
                   }`}
                 >
-                  {food.available ? 'Available' : 'Unavailable'}
+                  {food.available ? "Available" : "Unavailable"}
                 </span>
               </div>
             </div>
@@ -284,12 +281,12 @@ const foods = () => {
 
       {/* Empty State */}
       {filteredFoods.length === 0 && (
-        <div className='text-center py-12'>
-          <ChefHat className='h-12 w-12 text-gray-400 mx-auto mb-4' />
-          <h3 className='text-lg font-medium text-gray-900 mb-2'>
+        <div className="text-center py-12">
+          <ChefHat className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
             No food items found
           </h3>
-          <p className='text-gray-500'>
+          <p className="text-gray-500">
             Try adjusting your search or add a new food item.
           </p>
         </div>
@@ -297,66 +294,66 @@ const foods = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className='fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50'>
-          <div className='bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto'>
-            <div className='p-6'>
-              <div className='flex items-center justify-between mb-6'>
-                <h2 className='text-2xl font-bold text-gray-900'>
-                  {editingFood ? 'Edit Food Item' : 'Add New Food Item'}
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {editingFood ? "Edit Food Item" : "Add New Food Item"}
                 </h2>
                 <button
                   onClick={closeModal}
-                  className='p-2 hover:bg-gray-100 rounded-lg'
+                  className="p-2 hover:bg-gray-100 rounded-lg"
                 >
-                  <X className='h-5 w-5' />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className='space-y-4'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Food Name *
                     </label>
                     <input
-                      type='text'
+                      type="text"
                       required
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent'
-                      placeholder='Enter food name'
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Enter food name"
                     />
                   </div>
 
                   <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>
-                      Price ($) *
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price (₱) *
                     </label>
                     <input
-                      type='number'
-                      step='0.01'
+                      type="number"
+                      step="0.01"
                       required
                       value={formData.price}
                       onChange={(e) =>
                         setFormData({ ...formData, price: e.target.value })
                       }
-                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent'
-                      placeholder='0.00'
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="0.00"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label
-                    htmlFor='description'
-                    className='block text-sm font-medium text-gray-700 mb-1'
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Description *
                   </label>
                   <textarea
-                    id='description'
+                    id="description"
                     required
                     rows={3}
                     value={formData.description}
@@ -366,15 +363,15 @@ const foods = () => {
                         description: e.target.value,
                       })
                     }
-                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent'
-                    placeholder='Describe the food item'
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Describe the food item"
                   />
                 </div>
 
-                <div className='flex items-center'>
+                <div className="flex items-center">
                   <input
-                    type='checkbox'
-                    id='available'
+                    type="checkbox"
+                    id="available"
                     checked={formData.available}
                     onChange={(e) =>
                       setFormData({
@@ -382,31 +379,31 @@ const foods = () => {
                         available: e.target.checked,
                       })
                     }
-                    className='h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded'
+                    className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                   />
                   <label
-                    htmlFor='available'
-                    className='ml-2 block text-sm text-gray-900'
+                    htmlFor="available"
+                    className="ml-2 block text-sm text-gray-900"
                   >
                     Available for order
                   </label>
                 </div>
 
-                <div className='flex justify-end space-x-3 pt-4'>
+                <div className="flex justify-end space-x-3 pt-4">
                   <button
-                    type='submit'
-                    className='px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg flex items-center space-x-2 cursor-pointer'
+                    type="submit"
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg flex items-center space-x-2 cursor-pointer"
                   >
-                    <Save className='h-4 w-4' />
-                    <span>{editingFood ? 'Update' : 'Add'} Food</span>
+                    <Save className="h-4 w-4" />
+                    <span>{editingFood ? "Update" : "Add"} Food</span>
                   </button>
                   <button
-                    type='button'
+                    type="button"
                     onClick={() => {
                       resetForm()
                       closeModal()
                     }}
-                    className='px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer'
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer"
                   >
                     Cancel
                   </button>

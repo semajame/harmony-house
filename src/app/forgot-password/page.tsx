@@ -8,6 +8,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react"
+import Link from "next/link"
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("")
@@ -145,10 +146,13 @@ export default function ForgotPassword() {
 
           {/* Back to Login */}
           <div className="mt-8 text-center">
-            <button className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
+            >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
-            </button>
+            </Link>
           </div>
         </div>
 
