@@ -67,11 +67,13 @@ export default function RoomPage() {
   const { data: session } = useSession()
   const params = useParams()
   const router = useRouter()
-  const roomId = Number(params.id)
-  const room = rooms.find((r) => r.id === roomId)
+  const { id } = useParams() // <-- comes from /room/[id]
+  const roomId = Number(id)
+
   const [isChecked, setIsChecked] = useState(false)
 
-  const [getRoom, setRoom] = useState<any>(null)
+  const [room, setRoom] = useState<any>(null) // already defined
+
   const [selectedFoods, setSelectedFoods] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
   const [reservation, setReservation] = useState<Reservation | null>(null)
@@ -85,7 +87,6 @@ export default function RoomPage() {
   const [foodQuantities, setFoodQuantities] = useState<Record<number, number>>(
     {}
   )
-
   const [foods, setFoods] = useState<Food[]>([])
 
   const [promos, setPromos] = useState<Promo[]>([])
@@ -148,27 +149,22 @@ export default function RoomPage() {
     "23:00",
   ]
 
-  //^ FETCH THE ROOM
   useEffect(() => {
     const fetchRoom = async () => {
-      if (!roomId || isNaN(roomId)) return
-
-      setLoading(true)
       try {
         const res = await fetch(`/api/admin/rooms/${roomId}`)
         if (!res.ok) throw new Error("Failed to fetch room")
 
         const data = await res.json()
-        setRoom(data)
-        console.log("Fetched room:", data)
+        console.log("Fetched room:", data) // ✅ You saw this already
+        setRoom(data) // ✅ Make sure this is called
+        setLoading(false)
       } catch (err) {
         console.error("Error fetching room:", err)
-      } finally {
-        setLoading(false)
       }
     }
 
-    fetchRoom()
+    if (roomId) fetchRoom()
   }, [roomId])
 
   //^ FETCH FOODS
@@ -323,7 +319,7 @@ export default function RoomPage() {
       endTime: end.toISOString(),
       totalPrice: discountedTotal,
       amount: discountedTotal,
-      food: selectedFoodDetails,
+      foods: selectedFoodDetails,
     }
 
     try {
@@ -369,9 +365,19 @@ export default function RoomPage() {
       }
 
       // 3. Store reservation data in localStorage
-      localStorage.setItem("reservation", JSON.stringify(reservationData))
+      localStorage.setItem(
+        "reservation",
+        JSON.stringify({
+          userId: session?.user?.id,
+          roomId: room?.id,
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+          totalPrice: discountedTotal,
+          amount: discountedTotal,
+          foods: selectedFoodDetails, // now only valid food objects
+        })
+      )
 
-      // 4. Redirect to PayMongo checkout
       window.location.href = data.data.attributes.checkout_url
     } catch (error: any) {
       console.error("Error during reservation:", error)
@@ -387,7 +393,7 @@ export default function RoomPage() {
         return rest
       })
     } else {
-      setSelectedFoods((prev) => [...prev, foodId])
+      setSelectedFoods((prev) => [...prev, Number(foodId)]) // <-- ensure number
       setFoodQuantities((prev) => ({ ...prev, [foodId]: 1 }))
     }
   }
@@ -402,6 +408,26 @@ export default function RoomPage() {
 
   const handleBackToRooms = () => {
     router.push("/rooms") // Adjust this path according to your routing structure
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          {/* Simple spinner */}
+          <div className="w-8 h-8 border-3 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto mb-4"></div>
+
+          {/* Loading text */}
+          <h2 className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">
+            Loading room
+          </h2>
+
+          <p className="text-gray-500 dark:text-gray-400">
+            Please wait a moment...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   if (!room) {
@@ -422,26 +448,6 @@ export default function RoomPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Rooms
           </Button>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="flex flex-col justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          {/* Simple spinner */}
-          <div className="w-8 h-8 border-3 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto mb-4"></div>
-
-          {/* Loading text */}
-          <h2 className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">
-            Loading room
-          </h2>
-
-          <p className="text-gray-500 dark:text-gray-400">
-            Please wait a moment...
-          </p>
         </div>
       </div>
     )
@@ -871,15 +877,21 @@ export default function RoomPage() {
                               </label>
                               <input
                                 id={`qty-${food.id}`}
-                                type="number"
-                                min={1}
-                                value={foodQuantities[food.id] || 1}
-                                onChange={(e) =>
+                                type="text"
+                                value={foodQuantities[food.id] || 0}
+                                onChange={(e) => {
+                                  // Remove non-digit characters
+                                  const val = e.target.value.replace(/\D/g, "")
                                   setFoodQuantities((prev) => ({
                                     ...prev,
-                                    [food.id]: parseInt(e.target.value) || 1,
+                                    [food.id]:
+                                      val === "" ? 0 : parseInt(val, 10), // always a number
                                   }))
-                                }
+                                }}
+                                onKeyDown={(e) => {
+                                  if (["e", "E", "+", "-"].includes(e.key))
+                                    e.preventDefault()
+                                }}
                                 className="w-16 px-1 py-0.5 border border-purple-300 rounded text-center"
                               />
                             </div>

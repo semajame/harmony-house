@@ -9,36 +9,36 @@ export default withAuth(
     console.log("TOKEN:", token)
     console.log("PATH:", pathname)
 
-    // 🚫 Admin/staff trying to access root ("/")
+    // 🚫 Block /admin root for everyone
+    if (pathname === "/admin") {
+      return NextResponse.redirect(new URL("/admin/dashboard", req.url))
+    }
+
+    // 🚫 Customer trying to access any admin pages
+    if (token?.role === "customer" && pathname.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/", req.url))
+    }
+
+    // 🚫 Staff trying to access restricted admin pages
+    if (
+      token?.role === "staff" &&
+      (pathname.startsWith("/admin/users") || pathname === "/admin/dashboard")
+    ) {
+      return NextResponse.redirect(
+        new URL("/admin/dashboard/reservation", req.url)
+      )
+    }
+
+    // 🚫 Admin trying to access customer dashboard
+    if (token?.role === "admin" && pathname.startsWith("/dashboard")) {
+      return NextResponse.redirect(new URL("/admin/dashboard", req.url))
+    }
+
+    // 🚫 Admin/staff trying to access root "/"
     if (
       (token?.role === "admin" || token?.role === "staff") &&
       pathname === "/"
     ) {
-      return NextResponse.redirect(new URL("/admin/dashboard", req.url))
-    }
-
-    // 🚫 Customer trying to access admin pages
-    if (token?.role === "customer" && pathname.startsWith("/admin/dashboard")) {
-      return NextResponse.redirect(new URL("/", req.url))
-    }
-
-    // 🚫 Staff trying to access admin user management (staff can't access `/admin/users`)
-    if (
-      token?.role === "staff" &&
-      pathname.startsWith("/admin/dashboard/users")
-    ) {
-      return NextResponse.redirect(new URL("/admin/dashboard", req.url))
-    }
-
-    // 🚫 Staff trying to access the admin dashboard itself (staff can't access `/admin/dashboard`)
-    if (token?.role === "staff" && pathname === "/admin/dashboard") {
-      return NextResponse.redirect(
-        new URL("/admin/dashboard/reservation", req.url)
-      ) // Redirect staff to a non-admin page (you can change "/home" as needed)
-    }
-
-    // 🚫 Admin trying to access the user dashboard
-    if (token?.role === "admin" && pathname === "/dashboard") {
       return NextResponse.redirect(new URL("/admin/dashboard", req.url))
     }
 
@@ -53,8 +53,8 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/admin/dashboard/:path*",
-    "/admin/users/:path*",
-    "/dashboard/:path*", // 👈 this protects /dashboard and all children like /dashboard/settings etc.
+    "/admin/:path*", // match all admin subpaths
+    "/dashboard/:path*", // customer dashboard
+    "/", // root
   ],
 }

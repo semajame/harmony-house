@@ -282,7 +282,7 @@ const Reservation = () => {
 
   return (
     <div className="p-6 bg-gray-50 overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         {/* Header with Stats */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

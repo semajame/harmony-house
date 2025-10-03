@@ -1,28 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getDatabaseConnection } from '../../../lib/data-source'
-import { Room } from '../../../lib/entities/rooms'
-import { requireAdmin } from '@/app/lib/auth-utils'
+import { NextRequest, NextResponse } from "next/server"
+import { getDatabaseConnection } from "../../../lib/data-source"
+import { Room } from "../../../lib/entities/rooms"
 
+// GET all rooms
 export async function GET(req: NextRequest) {
-  // const adminCheck = await requireAdmin(req)
-  // if (adminCheck) return adminCheck  
-  const db = await getDatabaseConnection()
-  const roomRepo = db.getRepository(Room)
+  try {
+    const db = await getDatabaseConnection()
+    const roomRepo = db.getRepository(Room)
 
-  const rooms = await roomRepo.find()
-  return NextResponse.json(rooms)
+    const rooms = await roomRepo.find()
+
+    return NextResponse.json(rooms, { status: 200 })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json(
+      { error: "Failed to fetch rooms" },
+      { status: 500 }
+    )
+  }
 }
 
+// POST create a new room
 export async function POST(req: NextRequest) {
-  // const adminCheck = await requireAdmin(req)
-  // if (adminCheck) return adminCheck  
   try {
     const body = await req.json()
-    const { name, capacity, price, isAvailable } = body
+    const { name, capacity, price, description, image, isAvailable } = body
 
-    if (!name || !price || !capacity || name == null || capacity == null || price == null) {
+    if (!name || !price || !capacity) {
       return NextResponse.json(
-        { error: 'Name, capacity, and price are required' },
+        { error: "Name, capacity, and price are required" },
         { status: 400 }
       )
     }
@@ -34,6 +40,8 @@ export async function POST(req: NextRequest) {
       name,
       capacity,
       price,
+      description: description ?? null,
+      image: image ?? null,
       isAvailable: isAvailable ?? true,
     })
 
@@ -42,79 +50,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(newRoom, { status: 201 })
   } catch (err) {
     console.error(err)
-    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
-  }
-}
-
-export async function PUT(req: NextRequest) {
-  // const adminCheck = await requireAdmin(req)
-  // if (adminCheck) return adminCheck  
-  try {
-    const body = await req.json()
-    const { id, name, capacity, price, isAvailable } = body
-
-    if (!id) {
-      return NextResponse.json({ error: 'Room ID is required' }, { status: 400 })
-    }
-
-    const db = await getDatabaseConnection()
-    const roomRepo = db.getRepository(Room)
-
-    const room = await roomRepo.findOne({ where: { id } })
-    if (!room) {
-      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
-    }
-
-    room.name = name ?? room.name
-    room.capacity = capacity ?? room.capacity
-    room.price = price ?? room.price
-    room.isAvailable = isAvailable ?? room.isAvailable
-
-    await roomRepo.save(room)
-    return NextResponse.json(room)
-  } catch (err) {
-    console.error(err)
-    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
-  }
-}
-
-export async function PATCH(req: NextRequest) {
-  // const adminCheck = await requireAdmin(req)
-  // if (adminCheck) return adminCheck
-
-
-  try {
-    const body = await req.json()
-    const { id, action } = body
-
-    if (!id) {
-      return NextResponse.json({ error: 'Room ID is required' }, { status: 400 })
-    }
-
-    const db = await getDatabaseConnection()
-    const roomRepo = db.getRepository(Room)
-
-    const room = await roomRepo.findOne({ where: { id } })
-    if (!room) {
-      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
-    }
-
-    if (action === 'toggle-availability') {
-      room.isAvailable = !room.isAvailable
-      await roomRepo.save(room)
-      return NextResponse.json({ message: 'Room availability toggled', isAvailable: room.isAvailable })
-    }
-
-
-    room.isActive = !room.isActive
-    await roomRepo.save(room)
-
-    return NextResponse.json({ 
-      message: `Room is now ${room.isActive ? 'active' : 'inactive'}`, 
-      isActive: room.isActive
-    })
-  } catch (err) {
-    console.error(err)
-    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }

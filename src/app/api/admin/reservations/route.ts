@@ -134,7 +134,6 @@ export async function POST(req: NextRequest) {
     } = body
 
     console.log("📦 FULL BODY:", body)
-    console.log("🍽 FOODS:", foods)
 
     if (!startTime || !endTime || !roomId || !userId) {
       await queryRunner.rollbackTransaction()
@@ -278,9 +277,8 @@ export async function POST(req: NextRequest) {
 
     const savedReservation = await reservationRepo.findOne({
       where: { id: reservation.id },
-      relations: ["room", "user", "payment"],
+      relations: ["room", "user", "payment"], // ✅ include foods here
     })
-
     if (savedReservation?.user) {
       const { password, ...safeUser } = savedReservation.user
       savedReservation.user = safeUser as any

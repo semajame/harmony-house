@@ -93,6 +93,8 @@ export default function Dashboard() {
         if (!res.ok) throw new Error("Failed to fetch reservations")
 
         const data = await res.json()
+
+        console.log(data)
         setReservations(data)
       } catch (err) {
         console.error("Error fetching reservations:", err)
@@ -446,7 +448,7 @@ export default function Dashboard() {
                                     className="flex items-center gap-2 cursor-pointer"
                                   >
                                     <Eye className="w-4 h-4" />
-                                    View Details
+                                    View
                                   </Button>
                                 </DialogTrigger>
                                 <DialogContent className="max-w-6xl max-h-[75vh] overflow-y-auto">

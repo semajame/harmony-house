@@ -16,6 +16,8 @@ import {
   Calendar,
   LogOut,
   BadgeDollarSign,
+  House,
+  HousePlus,
 } from "lucide-react"
 
 import DashboardLayout from "@/components/admin/dashboard/dashboard-layout"
@@ -50,11 +52,42 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
     if (path.includes("/admin/dashboard/discounts")) return "Discounts"
     if (path.includes("/admin/dashboard/reviews")) return "Reviews"
     if (path.includes("/admin/dashboard/reservation")) return "Reservation"
+    if (path.includes("/admin/dashboard/rooms")) return "Reservation"
     if (path.includes("/dashboard")) return "Overview"
     return "Dashboard"
   }
 
-  // Sidebar items
+  // // Sidebar items
+  // const sidebarItems: SidebarItem[] = [
+  //   session?.user.role !== "staff" && {
+  //     icon: Home,
+  //     label: "Dashboard",
+  //     link: "/admin/dashboard",
+  //   },
+  //   session?.user.role === "admin" && {
+  //     icon: Users,
+  //     label: "Users",
+  //     link: "/admin/dashboard/users",
+  //   },
+  //   {
+  //     icon: Calendar,
+  //     label: "Reservation",
+  //     link: "/admin/dashboard/reservation",
+  //   },
+  //   {
+  //     icon: HousePlus,
+  //     label: "Rooms",
+  //     link: "/admin/dashboard/rooms",
+  //   },
+  //   { icon: CakeSlice, label: "Foods", link: "/admin/dashboard/foods" },
+  //   { icon: NotebookText, label: "Reviews", link: "/admin/dashboard/reviews" },
+  //   {
+  //     icon: BadgeDollarSign,
+  //     label: "Discounts",
+  //     link: "/admin/dashboard/discounts",
+  //   },
+  // ].filter(Boolean) as SidebarItem[]
+
   const sidebarItems: SidebarItem[] = [
     session?.user.role !== "staff" && {
       icon: Home,
@@ -70,6 +103,12 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
       icon: Calendar,
       label: "Reservation",
       link: "/admin/dashboard/reservation",
+    },
+    session?.user.role === "admin" && {
+      // ✅ Only admin can see Rooms
+      icon: HousePlus,
+      label: "Rooms",
+      link: "/admin/dashboard/rooms",
     },
     { icon: CakeSlice, label: "Foods", link: "/admin/dashboard/foods" },
     { icon: NotebookText, label: "Reviews", link: "/admin/dashboard/reviews" },

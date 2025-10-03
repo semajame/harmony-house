@@ -422,12 +422,17 @@ export default function Dashboard() {
                   paddingAngle={5}
                   dataKey="count"
                 >
-                  {statusDistribution.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
+                  {statusDistribution.map((entry, index) => {
+                    let fillColor = COLORS[index % COLORS.length] // fallback
+                    const status = (entry.status || "").toLowerCase() // normalize
+
+                    if (status === "cancelled") fillColor = "#EF4444" // red
+                    else if (status === "confirmed")
+                      fillColor = "#10B981" // green
+                    else if (status === "pnding") fillColor = "#F59E0B"
+
+                    return <Cell key={`cell-${index}`} fill={fillColor} />
+                  })}
                 </Pie>
                 <Tooltip
                   formatter={(value: number, name, props) => [
@@ -443,16 +448,29 @@ export default function Dashboard() {
                 />
               </PieChart>
             </ResponsiveContainer>
+
+            {/* Legend */}
             <div className="flex flex-wrap justify-center gap-4 mt-4">
-              {statusDistribution.map((entry, index) => (
-                <div key={entry.status} className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                  ></div>
-                  <span className="text-sm text-gray-600">{entry.status}</span>
-                </div>
-              ))}
+              {statusDistribution.map((entry, index) => {
+                const status = (entry.status || "").toLowerCase()
+                let dotColor = COLORS[index % COLORS.length] // fallback
+
+                if (status === "cancelled") dotColor = "#EF4444" // red
+                else if (status === "confirmed") dotColor = "#10B981" // green
+                else if (status === "pending") dotColor = "#F59E0B"
+
+                return (
+                  <div key={entry.status} className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: dotColor }}
+                    ></div>
+                    <span className="text-sm text-gray-600">
+                      {entry.status}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           </div>
 
