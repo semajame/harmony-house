@@ -38,7 +38,8 @@ export async function PUT(
     }
 
     const body = await req.json()
-    const { name, capacity, price, description, image, isAvailable } = body
+    const { name, capacity, price, description, image, isAvailable, isActive } =
+      body
 
     const db = await getDatabaseConnection()
     const roomRepo = db.getRepository(Room)
@@ -54,6 +55,7 @@ export async function PUT(
     room.description = description ?? room.description
     room.image = image ?? room.image
     room.isAvailable = isAvailable ?? room.isAvailable
+    room.isActive = isActive ?? room.isActive
 
     await roomRepo.save(room)
 

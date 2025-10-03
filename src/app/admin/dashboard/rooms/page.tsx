@@ -12,6 +12,16 @@ import {
 } from "@/components/ui/dialog"
 import { Pencil, Trash, Plus } from "lucide-react"
 
+interface Room {
+  id?: number
+  name: string
+  description: string
+  capacity: number | ""
+  price: number | ""
+  image: string
+  isActive: boolean
+}
+
 export default function ManageRooms() {
   const [rooms, setRooms] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -23,6 +33,7 @@ export default function ManageRooms() {
     capacity: "",
     price: "",
     image: "/images/rooms/room_1.png", // default image
+    isActive: true,
   })
 
   // Fetch rooms
@@ -50,11 +61,11 @@ export default function ManageRooms() {
         ...form,
         price: Number(form.price),
         capacity: Number(form.capacity),
-        image: form.image || "/images/rooms/room_1.png", // fallback
+        image: form.image || "/images/rooms/room_1.png",
       }
 
       let res
-      if (editingRoom) {
+      if (editingRoom && editingRoom.id) {
         res = await fetch(`/api/admin/rooms/${editingRoom.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -76,7 +87,14 @@ export default function ManageRooms() {
 
       await fetchRooms()
       setDialogOpen(false)
-      setForm({ name: "", description: "", price: "", image: "", capacity: "" })
+      setForm({
+        name: "",
+        description: "",
+        capacity: "",
+        price: "",
+        image: "/images/rooms/room_1.png",
+        isActive: true,
+      })
       setEditingRoom(null)
     } catch (err) {
       console.error("Failed to save room", err)
@@ -124,7 +142,8 @@ export default function ManageRooms() {
               description: "",
               capacity: "",
               price: "",
-              image: "",
+              image: "/images/rooms/room_1.png",
+              isActive: true,
             })
             setDialogOpen(true)
           }}
@@ -143,6 +162,8 @@ export default function ManageRooms() {
               <th className="px-4 py-2 text-left">Capacity</th>
               <th className="px-4 py-2 text-left">Price</th>
               {/* <th className="px-4 py-2 text-left">Image</th> */}
+              <th className="px-4 py-2 text-left">Status</th>
+
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
@@ -153,13 +174,16 @@ export default function ManageRooms() {
                 <td className="px-4 py-2">{room.description}</td>
                 <td className="px-4 py-2">{room.capacity}</td>
                 <td className="px-4 py-2">₱{room.price}</td>
-                {/* <td className="px-4 py-2">
-                  <img
-                    src={room.image}
-                    alt={room.name}
-                    className="w-16 h-12 object-cover rounded"
-                  />
-                </td> */}
+                <td className="px-4 py-2">
+                  {room.isActive ? (
+                    <span className="text-green-600 font-semibold">Active</span>
+                  ) : (
+                    <span className="text-gray-500 font-semibold">
+                      Inactive
+                    </span>
+                  )}
+                </td>
+
                 <td className="px-4 py-2 text-center space-x-2">
                   <Button
                     variant="outline"
@@ -214,11 +238,26 @@ export default function ManageRooms() {
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
             />
-            {/* <Input
-              placeholder="Image URL"
-              value={form.image}
-              onChange={(e) => setForm({ ...form, image: e.target.value })}
-            /> */}
+
+            {/* Active/Inactive Toggle */}
+            <div className="flex items-center gap-3">
+              <input
+                id="isActive"
+                type="checkbox"
+                checked={form.isActive || false}
+                onChange={() => setForm({ ...form, isActive: !form.isActive })}
+                className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              />
+              <label
+                htmlFor="isActive"
+                className="text-sm text-gray-700 font-medium"
+              >
+                Mark room as{" "}
+                <span className="font-semibold">
+                  {form.isActive ? "Active" : "Inactive"}
+                </span>
+              </label>
+            </div>
           </div>
 
           <DialogFooter>
@@ -233,6 +272,7 @@ export default function ManageRooms() {
                   capacity: "",
                   price: "",
                   image: "",
+                  isActive: true, // default active
                 })
               }}
             >

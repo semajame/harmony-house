@@ -21,7 +21,10 @@ export default function Rooms() {
         const res = await fetch("/api/admin/rooms")
         if (!res.ok) throw new Error("Failed to fetch rooms")
         const data = await res.json()
-        setRooms(data) // expects an array of rooms
+
+        // Filter only active rooms
+        const activeRooms = data.filter((room: any) => room.isActive)
+        setRooms(activeRooms)
       } catch (err) {
         console.error(err)
       } finally {
