@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Gift,
   Search,
+  Filter,
 } from "lucide-react"
 import {
   DialogHeader,
@@ -22,6 +23,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog"
+
 import {
   TableHeader,
   TableRow,
@@ -30,6 +32,7 @@ import {
   TableCell,
   Table,
 } from "@/components/ui/table"
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -38,35 +41,31 @@ type Promo = {
   id: number
   code: string
   discount: number
-  usageLimit: number
-  expiresAt?: string
   createdAt?: string
+  expiresAt?: string
 }
 
 export default function Discount() {
   const [code, setCode] = useState("")
   const [discount, setDiscount] = useState<number | "">("")
-  const [usageLimit, setUsageLimit] = useState<number | "">(1)
-  const [expiresAt, setExpiresAt] = useState<string>("")
   const [message, setMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [open, setOpen] = useState(false)
-
   const [editOpen, setEditOpen] = useState(false)
+  const [promos, setPromos] = useState<Promo[]>([])
   const [editPromo, setEditPromo] = useState<Promo | null>(null)
   const [editCode, setEditCode] = useState("")
   const [editDiscount, setEditDiscount] = useState<number | "">("")
-  const [editUsageLimit, setEditUsageLimit] = useState<number | "">(1)
-  const [editExpiresAt, setEditExpiresAt] = useState<string>("")
   const [editMessage, setEditMessage] = useState<string | null>(null)
   const [isEditLoading, setIsEditLoading] = useState(false)
   const [isEditSuccess, setIsEditSuccess] = useState(false)
-
-  const [isActive, setIsActive] = useState(true)
-  const [promos, setPromos] = useState<Promo[]>([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [isActive, setIsActive] = useState(true)
   const [isLoadingPromos, setIsLoadingPromos] = useState(true)
+
+  const [expiresAt, setExpiresAt] = useState<string>("") // for create
+  const [editExpiresAt, setEditExpiresAt] = useState<string>("") // for edit
 
   // Fetch all promo codes
   const fetchPromos = async () => {
@@ -101,8 +100,7 @@ export default function Discount() {
           code,
           discount: Number(discount),
           isActive,
-          usageLimit: Number(usageLimit),
-          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
         }),
       })
 
@@ -116,8 +114,6 @@ export default function Discount() {
         setIsSuccess(true)
         setCode("")
         setDiscount("")
-        setUsageLimit(1)
-        setExpiresAt("")
         fetchPromos()
         setTimeout(() => setOpen(false), 1500)
       }
@@ -126,6 +122,7 @@ export default function Discount() {
       setIsSuccess(false)
     } finally {
       setIsLoading(false)
+      setOpen(false)
     }
   }
 
@@ -134,10 +131,8 @@ export default function Discount() {
     setEditPromo(promo)
     setEditCode(promo.code)
     setEditDiscount(promo.discount)
-    setEditUsageLimit(promo.usageLimit)
-    setEditExpiresAt(promo.expiresAt ? promo.expiresAt.slice(0, 16) : "")
-    setIsActive(promo.isActive)
     setEditMessage(null)
+    setIsActive(promo.isActive) // ✅ SET THIS
     setIsEditSuccess(false)
     setEditOpen(true)
   }
@@ -145,6 +140,7 @@ export default function Discount() {
   // UPDATE DISCOUNT
   const handleUpdateSubmit = async () => {
     if (!editPromo) return
+
     setEditMessage(null)
     setIsEditLoading(true)
     setIsEditSuccess(false)
@@ -157,10 +153,9 @@ export default function Discount() {
           code: editCode,
           discount: Number(editDiscount),
           isActive,
-          usageLimit: Number(editUsageLimit),
           expiresAt: editExpiresAt
             ? new Date(editExpiresAt).toISOString()
-            : null,
+            : undefined,
         }),
       })
 
@@ -183,15 +178,13 @@ export default function Discount() {
       setIsEditSuccess(false)
     } finally {
       setIsEditLoading(false)
+      setEditOpen(false)
     }
   }
 
   const handleEditCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditCode(e.target.value.toUpperCase().replace(/\s/g, ""))
-  }
-
-  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCode(e.target.value.toUpperCase().replace(/\s/g, ""))
+    const value = e.target.value.toUpperCase().replace(/\s/g, "")
+    setEditCode(value)
   }
 
   // DELETE DISCOUNT
@@ -216,11 +209,20 @@ export default function Discount() {
     }
   }
 
+  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase().replace(/\s/g, "")
+    setCode(value)
+  }
+
+  // Filter promos based on search
   const filteredPromos = promos.filter((promo) =>
     promo.code.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const totalPromos = promos.filter((promo) => promo.isActive).length
+  // Calculate stats
+  const totalPromos = promos.length
+  const activePromos = promos.filter((promo) => promo.isActive).length
+
   const avgDiscount =
     promos.length > 0
       ? Math.round(
@@ -231,7 +233,7 @@ export default function Discount() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header & Create Dialog */}
+        {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -246,19 +248,19 @@ export default function Discount() {
               </p>
             </div>
 
-            {/* Create Promo Dialog */}
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <button className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg">
-                  <PlusCircle size={20} /> Create New Promo
+                <button className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                  <PlusCircle size={20} />
+                  Create New Promo
                 </button>
               </DialogTrigger>
 
               <DialogContent className="max-w-lg">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Tag className="text-green-600" size={24} /> Create Promo
-                    Code
+                    <Tag className="text-green-600" size={24} />
+                    Create Promo Code
                   </DialogTitle>
                 </DialogHeader>
 
@@ -271,16 +273,25 @@ export default function Discount() {
                     >
                       Promo Code
                     </label>
-                    <input
-                      id="code"
-                      type="text"
-                      value={code}
-                      onChange={handleCodeChange}
-                      placeholder="Enter code (e.g., SAVE20)"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
-                      required
-                      maxLength={20}
-                    />
+                    <div className="relative">
+                      <input
+                        id="code"
+                        type="text"
+                        value={code}
+                        onChange={handleCodeChange}
+                        placeholder="Enter code (e.g., SAVE20)"
+                        className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 placeholder-gray-400"
+                        required
+                        maxLength={20}
+                      />
+                      <Tag
+                        className="absolute left-4 top-3.5 text-gray-400"
+                        size={18}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Auto-converted to uppercase, spaces removed
+                    </p>
                   </div>
 
                   {/* Discount Input */}
@@ -291,67 +302,44 @@ export default function Discount() {
                     >
                       Discount Percentage
                     </label>
-                    <input
-                      id="discount"
-                      type="number"
-                      value={discount}
-                      onChange={(e) =>
-                        setDiscount(
-                          e.target.value === "" ? "" : Number(e.target.value)
-                        )
-                      }
-                      placeholder="Enter discount percentage"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
-                      required
-                      min={1}
-                      max={100}
-                    />
+                    <div className="relative">
+                      <input
+                        id="discount"
+                        type="number"
+                        value={discount}
+                        onChange={(e) =>
+                          setDiscount(
+                            e.target.value === "" ? "" : Number(e.target.value)
+                          )
+                        }
+                        placeholder="Enter discount percentage"
+                        className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 placeholder-gray-400"
+                        required
+                        min={1}
+                        max={100}
+                      />
+                      <Percent
+                        className="absolute left-4 top-3.5 text-gray-400"
+                        size={18}
+                      />
+                      <span className="absolute right-4 top-3.5 text-gray-400 text-sm">
+                        %
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>Min: 1%</span>
+                      <span>Max: 100%</span>
+                    </div>
                   </div>
 
-                  {/* Usage Limit */}
-                  <div>
-                    <label
-                      htmlFor="usageLimit"
-                      className="block text-sm font-semibold text-gray-700 mb-2"
-                    >
-                      Usage Limit
-                    </label>
-                    <input
-                      id="usageLimit"
-                      type="number"
-                      value={usageLimit}
-                      onChange={(e) => setUsageLimit(Number(e.target.value))}
-                      placeholder="How many times this code can be used"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
-                      min={1}
-                    />
-                  </div>
-
-                  {/* Expiration Date */}
-                  <div>
-                    <label
-                      htmlFor="expiresAt"
-                      className="block text-sm font-semibold text-gray-700 mb-2"
-                    >
-                      Expiration Date
-                    </label>
-                    <input
-                      id="expiresAt"
-                      type="datetime-local"
-                      value={expiresAt}
-                      onChange={(e) => setExpiresAt(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
-                    />
-                  </div>
-
-                  {/* Active Toggle */}
+                  {/* Active Status Toggle */}
                   <div className="flex items-center gap-3">
                     <input
                       id="isActive"
                       type="checkbox"
                       checked={isActive}
                       onChange={() => setIsActive(!isActive)}
-                      className="w-5 h-5 text-green-600 border-gray-300 rounded"
+                      className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     />
                     <label
                       htmlFor="isActive"
@@ -364,20 +352,59 @@ export default function Discount() {
                     </label>
                   </div>
 
+                  {/* Expiration Date & Time */}
+                  <div>
+                    <label
+                      htmlFor="expiresAt"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Expiration Date & Time
+                    </label>
+                    <input
+                      id="expiresAt"
+                      type="datetime-local"
+                      value={expiresAt}
+                      onChange={(e) => setExpiresAt(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave blank if the code never expires
+                    </p>
+                  </div>
+
+                  {/* Preview */}
+                  {code && discount && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
+                      <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+                        <CheckCircle size={16} />
+                        Preview
+                      </h4>
+                      <div className="bg-white rounded-lg p-4 border border-green-200">
+                        <p className="font-mono text-xl font-bold text-green-700">
+                          {code}
+                        </p>
+                        <p className="text-green-600 text-sm mt-1">
+                          {discount}% discount applied
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Submit Button */}
                   <button
                     onClick={handleSubmit}
                     disabled={isLoading || !code || !discount}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-4 px-6 rounded-xl disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                   >
                     {isLoading ? (
                       <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="animate-spin" size={18} /> Creating
-                        Promo...
+                        <Loader2 className="animate-spin" size={18} />
+                        Creating Promo...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-2">
-                        <Tag size={18} /> Create Promo Code
+                        <Tag size={18} />
+                        Create Promo Code
                       </span>
                     )}
                   </button>
@@ -393,11 +420,209 @@ export default function Discount() {
                     >
                       <div className="flex items-center gap-2">
                         {isSuccess ? (
-                          <CheckCircle className="text-green-600" size={20} />
+                          <CheckCircle
+                            className="text-green-600 flex-shrink-0"
+                            size={20}
+                          />
                         ) : (
-                          <AlertCircle className="text-red-600" size={20} />
+                          <AlertCircle
+                            className="text-red-600 flex-shrink-0"
+                            size={20}
+                          />
                         )}
                         <p className="text-sm font-medium">{message}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                    <Edit3 className="text-blue-600" size={24} />
+                    Edit Promo Code
+                  </DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-6">
+                  {/* Edit Code Input */}
+                  <div>
+                    <label
+                      htmlFor="editCode"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Promo Code
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="editCode"
+                        type="text"
+                        value={editCode}
+                        onChange={handleEditCodeChange}
+                        placeholder="Enter code (e.g., SAVE20)"
+                        className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-400"
+                        required
+                        maxLength={20}
+                      />
+                      <Tag
+                        className="absolute left-4 top-3.5 text-gray-400"
+                        size={18}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Auto-converted to uppercase, spaces removed
+                    </p>
+                  </div>
+
+                  {/* Edit Discount Input */}
+                  <div>
+                    <label
+                      htmlFor="editDiscount"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Discount Percentage
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="editDiscount"
+                        type="number"
+                        value={editDiscount}
+                        onChange={(e) =>
+                          setEditDiscount(
+                            e.target.value === "" ? "" : Number(e.target.value)
+                          )
+                        }
+                        placeholder="Enter discount percentage"
+                        className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-400"
+                        required
+                        min={1}
+                        max={100}
+                      />
+                      <Percent
+                        className="absolute left-4 top-3.5 text-gray-400"
+                        size={18}
+                      />
+                      <span className="absolute right-4 top-3.5 text-gray-400 text-sm">
+                        %
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>Min: 1%</span>
+                      <span>Max: 100%</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="isActive"
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={() => setIsActive(!isActive)}
+                      className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <label
+                      htmlFor="isActive"
+                      className="text-sm text-gray-700 font-medium"
+                    >
+                      Mark promo as{" "}
+                      <span className="font-semibold">
+                        {isActive ? "Active" : "Inactive"}
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Edit Expiration Date */}
+                  {/* Edit Expiration Date & Time */}
+                  <div>
+                    <label
+                      htmlFor="editExpiresAt"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Expiration Date & Time
+                    </label>
+                    <input
+                      id="editExpiresAt"
+                      type="datetime-local"
+                      value={editExpiresAt}
+                      onChange={(e) => setEditExpiresAt(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave blank if the code never expires
+                    </p>
+                  </div>
+
+                  {/* Edit Preview */}
+                  {editCode && editDiscount && (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
+                      <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                        <CheckCircle size={16} />
+                        Updated Preview
+                      </h4>
+                      <div className="bg-white rounded-lg p-4 border border-blue-200">
+                        <p className="font-mono text-xl font-bold text-blue-700">
+                          {editCode}
+                        </p>
+                        <p className="text-blue-600 text-sm mt-1">
+                          {editDiscount}% discount applied
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Update Button */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setEditOpen(false)}
+                      className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleUpdateSubmit}
+                      disabled={isEditLoading || !editCode || !editDiscount}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                    >
+                      {isEditLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="animate-spin" size={18} />
+                          Updating...
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <CheckCircle size={18} />
+                          Update Promo
+                        </span>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Edit Message Feedback */}
+                  {editMessage && (
+                    <div
+                      className={`p-4 rounded-xl border-2 ${
+                        isEditSuccess
+                          ? "bg-green-50 border-green-200 text-green-800"
+                          : "bg-red-50 border-red-200 text-red-800"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {isEditSuccess ? (
+                          <CheckCircle
+                            className="text-green-600 flex-shrink-0"
+                            size={20}
+                          />
+                        ) : (
+                          <AlertCircle
+                            className="text-red-600 flex-shrink-0"
+                            size={20}
+                          />
+                        )}
+                        <p className="text-sm font-medium">{editMessage}</p>
                       </div>
                     </div>
                   )}
@@ -409,44 +634,77 @@ export default function Discount() {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 border border-blue-200">
-              <p className="text-blue-600 text-sm font-medium">Total Promos</p>
-              <p className="text-2xl font-bold text-blue-800">{totalPromos}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-600 text-sm font-medium">
+                    Total Promos
+                  </p>
+                  <p className="text-2xl font-bold text-blue-800">
+                    {totalPromos}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-500 rounded-lg">
+                  <Tag className="text-white" size={20} />
+                </div>
+              </div>
             </div>
+
             <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-6 border border-green-200">
-              <p className="text-green-600 text-sm font-medium">Avg Discount</p>
-              <p className="text-2xl font-bold text-green-800">
-                {avgDiscount}%
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-600 text-sm font-medium">
+                    Avg Discount
+                  </p>
+                  <p className="text-2xl font-bold text-green-800">
+                    {avgDiscount}%
+                  </p>
+                </div>
+                <div className="p-3 bg-green-500 rounded-lg">
+                  <TrendingUp className="text-white" size={20} />
+                </div>
+              </div>
             </div>
+
             <div className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-xl p-6 border border-purple-200">
-              <p className="text-purple-600 text-sm font-medium">
-                Active Codes
-              </p>
-              <p className="text-2xl font-bold text-purple-800">
-                {totalPromos}
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-600 text-sm font-medium">
+                    Active Codes
+                  </p>
+                  <p className="text-2xl font-bold text-purple-800">
+                    {activePromos}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-500 rounded-lg">
+                  <Gift className="text-white" size={20} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Promo Table */}
+        {/* Promo Table Section */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">
-              Existing Promo Codes
-            </h2>
-            <div className="relative">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={16}
-              />
-              <input
-                type="text"
-                placeholder="Search promo codes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
-              />
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">
+                Existing Promo Codes
+              </h2>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={16}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search promo codes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -456,38 +714,126 @@ export default function Discount() {
               <span className="ml-3 text-gray-600">Loading promo codes...</span>
             </div>
           ) : filteredPromos.length === 0 ? (
-            <div className="text-center py-12">No promo codes found.</div>
+            <div className="text-center py-12">
+              {promos.length === 0 ? (
+                <div>
+                  <Gift className="mx-auto text-gray-300 mb-4" size={48} />
+                  <p className="text-gray-500 text-lg">
+                    No promo codes created yet
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    Create your first promo code to get started
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <Search className="mx-auto text-gray-300 mb-4" size={48} />
+                  <p className="text-gray-500 text-lg">
+                    No promos match your search
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    Try adjusting your search terms
+                  </p>
+                </div>
+              )}
+            </div>
           ) : (
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Discount</TableHead>
-                  <TableHead>Usage Limit</TableHead>
-                  <TableHead>Expires At</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+              <TableHeader className="bg-gray-50">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="font-semibold text-gray-700">
+                    Code
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-700">
+                    Discount
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-700">
+                    Created
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-700">
+                    Expires
+                  </TableHead>
+
+                  <TableHead className="font-semibold text-gray-700">
+                    Status
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-700">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPromos.map((promo) => (
-                  <TableRow key={promo.id}>
-                    <TableCell>{promo.code}</TableCell>
-                    <TableCell>{promo.discount}%</TableCell>
-                    <TableCell>{promo.usageLimit}</TableCell>
+                {filteredPromos.map((promo, index) => (
+                  <TableRow
+                    key={promo.id}
+                    className="hover:bg-gray-50 transition-colors"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <TableCell>
-                      {promo.expiresAt
-                        ? new Date(promo.expiresAt).toLocaleString()
-                        : "—"}
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg">
+                          <Tag className="text-blue-600" size={16} />
+                        </div>
+                        <span className="font-mono font-bold text-gray-800">
+                          {promo.code}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        className={
-                          promo.isActive ? "bg-green-600" : "bg-gray-400"
-                        }
-                      >
-                        {promo.isActive ? "Active" : "Inactive"}
-                      </Badge>
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        {promo.discount}
+                        <Percent size={12} />
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar size={14} />
+                        <span className="text-sm">
+                          {promo.createdAt
+                            ? new Date(promo.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )
+                            : "—"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {promo.expiresAt ? (
+                        <>
+                          {new Date(promo.expiresAt).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
+                          {(!promo.isActive ||
+                            new Date(promo.expiresAt) < new Date()) && (
+                            <span className="ml-2 text-red-600 font-semibold">
+                              (Expired)
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        "Never"
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      <div>
+                        <Badge
+                          className={
+                            promo.isActive ? "bg-green-600" : "bg-gray-400"
+                          }
+                        >
+                          {promo.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
@@ -495,14 +841,18 @@ export default function Discount() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(promo)}
+                          className="hover:bg-blue-50 hover:text-blue-600 transition-colors"
                         >
+                          <Edit3 size={14} />
                           Edit
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(promo.id)}
+                          className="hover:bg-red-50 hover:text-red-600 transition-colors"
                         >
+                          <Trash2 size={14} />
                           Delete
                         </Button>
                       </div>

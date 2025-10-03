@@ -24,34 +24,41 @@ export async function GET(
 
   return NextResponse.json(discount)
 }
-
-// PUT /api/discounts/[id]
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = Number(params.id)
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid discount ID" }, { status: 400 })
+  try {
+    const id = Number(params.id)
+    if (isNaN(id))
+      return NextResponse.json(
+        { error: "Invalid discount ID" },
+        { status: 400 }
+      )
+
+    const body = await req.json()
+    const { code, discount, isActive, expiresAt, usageLimit } = body
+
+    const db = await getDatabaseConnection()
+    const discountRepo = db.getRepository(Discount)
+    const existing = await discountRepo.findOneBy({ id })
+    if (!existing)
+      return NextResponse.json({ error: "Discount not found" }, { status: 404 })
+
+    Object.assign(existing, {
+      code: code?.trim().toUpperCase() ?? existing.code,
+      discount: discount ?? existing.discount,
+      isActive: isActive ?? existing.isActive,
+      expiresAt: expiresAt ? new Date(expiresAt) : existing.expiresAt,
+      usageLimit: usageLimit ?? existing.usageLimit,
+    })
+
+    const updated = await discountRepo.save(existing)
+    return NextResponse.json(updated)
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
-
-  const db = await getDatabaseConnection()
-  const discountRepo = db.getRepository(Discount)
-  const existing = await discountRepo.findOne({ where: { id } })
-  if (!existing) {
-    return NextResponse.json({ error: "Discount not found" }, { status: 404 })
-  }
-
-  const { code, discount, isActive, usageLimit, expiresAt } = await req.json()
-
-  if (code) existing.code = code.trim().toUpperCase()
-  if (typeof discount === "number") existing.discount = discount
-  if (typeof isActive === "boolean") existing.isActive = isActive
-  if (typeof usageLimit === "number") existing.usageLimit = usageLimit
-  existing.expiresAt = expiresAt ? new Date(expiresAt) : null
-
-  const updated = await discountRepo.save(existing)
-  return NextResponse.json(updated)
 }
 
 // DELETE /api/discounts/[id]

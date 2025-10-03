@@ -1,10 +1,9 @@
-// entities/Discount.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Unique,
+  UpdateDateColumn,
 } from "typeorm"
 
 @Entity("discounts")
@@ -18,15 +17,21 @@ export class Discount {
   @Column("int")
   discount!: number // percentage
 
-  @Column("boolean", { default: true })
+  @Column("boolean", { default: true }) // explicitly specify type
   isActive!: boolean
+
+  @Column({ type: "timestamp", nullable: true })
+  expiresAt?: Date
+
+  @Column({ type: "int", default: 0 })
+  usageCount!: number // explicitly type as int
+
+  @Column({ type: "int", nullable: true })
+  usageLimit?: number
 
   @CreateDateColumn()
   createdAt!: Date
 
-  @Column({ type: "int", default: 1 })
-  usageLimit!: number // New: max uses allowed
-
-  @Column({ type: "timestamp", nullable: true })
-  expiresAt!: Date | null // New: expiration date
+  @UpdateDateColumn()
+  updatedAt!: Date
 }
