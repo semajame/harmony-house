@@ -60,7 +60,7 @@ export default function ManageRooms() {
       const payload = {
         ...form,
         price: Number(form.price),
-        capacity: Number(form.capacity),
+        capacity: Number(5),
         image: form.image || "/images/rooms/room_1.png",
       }
 
@@ -229,7 +229,8 @@ export default function ManageRooms() {
             <Input
               type="number"
               placeholder="Capacity"
-              value={form.capacity}
+              value={5}
+              disabled
               onChange={(e) => setForm({ ...form, capacity: e.target.value })}
             />
             <Input
