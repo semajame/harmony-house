@@ -122,19 +122,27 @@ export default function Discount() {
       setIsSuccess(false)
     } finally {
       setIsLoading(false)
-      setOpen(false)
+      setEditOpen(false)
     }
-  }
 
+    setEditOpen(false)
+  }
   // EDIT DISCOUNT
   const handleEdit = (promo: Promo) => {
     setEditPromo(promo)
     setEditCode(promo.code)
     setEditDiscount(promo.discount)
     setEditMessage(null)
-    setIsActive(promo.isActive) // ✅ SET THIS
     setIsEditSuccess(false)
     setEditOpen(true)
+
+    // ✅ Handle active/expired logic correctly
+    const isActuallyExpired =
+      promo.expiresAt && new Date(promo.expiresAt) < new Date()
+
+    // ✅ If it's expired, default the active state to false
+    // Otherwise, use the stored active state
+    setIsActive(!isActuallyExpired && promo.isActive)
   }
 
   // UPDATE DISCOUNT
@@ -146,16 +154,22 @@ export default function Discount() {
     setIsEditSuccess(false)
 
     try {
+      // ✅ If you removed the expiration or set it to a future date, activate it
+      const newExpiresAt = editExpiresAt
+        ? new Date(editExpiresAt).toISOString()
+        : null
+
+      const isNowActive =
+        !editExpiresAt || new Date(editExpiresAt) > new Date() ? true : isActive
+
       const res = await fetch(`/api/admin/discount/${editPromo.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: editCode,
           discount: Number(editDiscount),
-          isActive,
-          expiresAt: editExpiresAt
-            ? new Date(editExpiresAt).toISOString()
-            : undefined,
+          isActive: isNowActive, // ✅ use calculated active state
+          expiresAt: newExpiresAt, // ✅ send null if none
         }),
       })
 
@@ -168,17 +182,13 @@ export default function Discount() {
         setEditMessage(`Promo "${data.code}" updated successfully!`)
         setIsEditSuccess(true)
         fetchPromos()
-        setTimeout(() => {
-          setEditOpen(false)
-          setEditPromo(null)
-        }, 1500)
+        setTimeout(() => setOpen(false), 1500)
       }
     } catch (error) {
       setEditMessage("Network error. Please try again.")
       setIsEditSuccess(false)
     } finally {
       setIsEditLoading(false)
-      setEditOpen(false)
     }
   }
 
@@ -367,9 +377,6 @@ export default function Discount() {
                       onChange={(e) => setExpiresAt(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Leave blank if the code never expires
-                    </p>
                   </div>
 
                   {/* Preview */}
@@ -551,9 +558,6 @@ export default function Discount() {
                       onChange={(e) => setEditExpiresAt(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Leave blank if the code never expires
-                    </p>
                   </div>
 
                   {/* Edit Preview */}
@@ -600,32 +604,6 @@ export default function Discount() {
                       )}
                     </button>
                   </div>
-
-                  {/* Edit Message Feedback */}
-                  {editMessage && (
-                    <div
-                      className={`p-4 rounded-xl border-2 ${
-                        isEditSuccess
-                          ? "bg-green-50 border-green-200 text-green-800"
-                          : "bg-red-50 border-red-200 text-red-800"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {isEditSuccess ? (
-                          <CheckCircle
-                            className="text-green-600 flex-shrink-0"
-                            size={20}
-                          />
-                        ) : (
-                          <AlertCircle
-                            className="text-red-600 flex-shrink-0"
-                            size={20}
-                          />
-                        )}
-                        <p className="text-sm font-medium">{editMessage}</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </DialogContent>
             </Dialog>

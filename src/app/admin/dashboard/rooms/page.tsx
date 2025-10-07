@@ -32,7 +32,7 @@ export default function ManageRooms() {
     description: "",
     capacity: "",
     price: "",
-    image: "/images/rooms/room_1.png", // default image
+    image: "", // default image
     isActive: true,
   })
 
@@ -60,8 +60,8 @@ export default function ManageRooms() {
       const payload = {
         ...form,
         price: Number(form.price),
-        capacity: Number(5),
-        image: form.image || "/images/rooms/room_1.png",
+        capacity: 5,
+        image: form.image || "",
       }
 
       let res
@@ -92,7 +92,7 @@ export default function ManageRooms() {
         description: "",
         capacity: "",
         price: "",
-        image: "/images/rooms/room_1.png",
+        image: "",
         isActive: true,
       })
       setEditingRoom(null)
@@ -142,7 +142,7 @@ export default function ManageRooms() {
               description: "",
               capacity: "",
               price: "",
-              image: "/images/rooms/room_1.png",
+              image: "/images/rooms/room-2.jpg",
               isActive: true,
             })
             setDialogOpen(true)

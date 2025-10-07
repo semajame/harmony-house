@@ -211,14 +211,6 @@ export default function RoomPage() {
     fetchPromos()
   }, [])
 
-  const discount = useMemo(() => {
-    if (!room || !selectedPromo) return 0
-    const numericPrice = parseFloat(
-      room.price.toString().replace(/[^\d.]/g, "")
-    )
-    return computeDiscount(numericPrice, selectedPromo.discount)
-  }, [room, selectedPromo])
-
   useEffect(() => {
     if (startTime && endTime && room) {
       const startTimeHour = parseInt(startTime.split(":")[0])
@@ -406,6 +398,33 @@ export default function RoomPage() {
     return `${hour12}:${minute.toString().padStart(2, "0")} ${period}`
   }
 
+  function isPastTime(time24: string, selectedDate: string): boolean {
+    if (!selectedDate) return false // if no date selected yet
+
+    const [hour, minute] = time24.split(":").map(Number)
+    const now = new Date()
+
+    const date = new Date(selectedDate)
+    date.setHours(hour, minute, 0, 0)
+
+    // If selected date is today, disable times that already passed
+    if (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    ) {
+      return date < now
+    }
+
+    // If selected date is in the past, always disable
+    if (date < now) {
+      return true
+    }
+
+    // Otherwise (tomorrow or later), always enable
+    return false
+  }
+
   const handleBackToRooms = () => {
     router.push("/rooms") // Adjust this path according to your routing structure
   }
@@ -512,22 +531,6 @@ export default function RoomPage() {
               </div>
             </div>
 
-            {/* <div className='flex items-center gap-4 text-sm text-gray-600'>
-              <div className='flex items-center gap-1'>
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className='w-4 h-4 text-yellow-400 fill-current'
-                  />
-                ))}
-                <span className='ml-1 font-medium'>4.9 (127 reviews)</span>
-              </div>
-              <div className='flex items-center gap-1'>
-                <Users className='w-4 h-4' />
-                <span>Up to 6 people</span>
-              </div>
-            </div> */}
-
             <div className="text-3xl font-bold text-purple-600">
               ₱{room.price}
               <span className="text-lg font-normal text-gray-500">/hour</span>
@@ -545,42 +548,6 @@ export default function RoomPage() {
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-
-              {/* Image navigation */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                {roomImages.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      selectedImageIndex === index
-                        ? "bg-white scale-125"
-                        : "bg-white/50 hover:bg-white/80"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-4 gap-2">
-              {roomImages.map((img, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`relative h-20 rounded-lg overflow-hidden transition-all duration-300 ${
-                    selectedImageIndex === index
-                      ? "ring-2 ring-purple-500 scale-105"
-                      : "hover:scale-105"
-                  }`}
-                >
-                  <Image
-                    src={img || "/placeholder-room.jpg"}
-                    alt={`${room.name} view ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
             </div>
           </div>
 
@@ -657,6 +624,7 @@ export default function RoomPage() {
 
                   {/* Time Selection */}
                   <div className="grid grid-cols-2 gap-4">
+                    {/* Check-in */}
                     <div>
                       <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                         <Clock className="w-4 h-4" />
@@ -666,16 +634,22 @@ export default function RoomPage() {
                         className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
+                        required
                       >
                         <option value="">Select time</option>
                         {timeSlots.map((time) => (
-                          <option key={time} value={time}>
+                          <option
+                            key={time}
+                            value={time}
+                            disabled={isPastTime(time, startTimeDate)} // ✅ pass selected date
+                          >
                             {formatToAMPM(time)}
                           </option>
                         ))}
                       </select>
                     </div>
 
+                    {/* Check-out */}
                     <div>
                       <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                         <Clock className="w-4 h-4" />
@@ -683,12 +657,17 @@ export default function RoomPage() {
                       </label>
                       <select
                         className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
+                        value={endTime} // ✅ fixed here
+                        onChange={(e) => setEndTime(e.target.value)} // ✅ fixed here
+                        required
                       >
                         <option value="">Select time</option>
                         {timeSlots.map((time) => (
-                          <option key={time} value={time}>
+                          <option
+                            key={time}
+                            value={time}
+                            disabled={isPastTime(time, startTimeDate)} // ✅ pass selected date
+                          >
                             {formatToAMPM(time)}
                           </option>
                         ))}
@@ -703,23 +682,9 @@ export default function RoomPage() {
                       Number of Guests
                     </label>
                     <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden opacity-50 pointer-events-none">
-                      <button
-                        type="button"
-                        onClick={() => setPersons(Math.max(1, persons - 1))}
-                        className="p-3 hover:bg-gray-50 transition-colors"
-                      >
-                        -
-                      </button>
                       <span className="flex-1 text-center py-3 border-x border-gray-200">
                         {persons} {persons === 1 ? "guest" : "guests"}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => setPersons(Math.min(6, persons + 1))}
-                        className="p-3 hover:bg-gray-50 transition-colors"
-                      >
-                        +
-                      </button>
                     </div>
                   </div>
 

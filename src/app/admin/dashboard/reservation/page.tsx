@@ -128,9 +128,23 @@ const Reservation = () => {
 
   //^ Edit the status
   const handleStatusUpdate = async (id: number, newStatus: string) => {
+    // 🧠 Step 1: Handle confirmation first
+    if (newStatus === "pending" || newStatus === "cancelled") {
+      const confirmMessage =
+        newStatus === "cancelled"
+          ? "Are you sure you want to cancel this reservation?"
+          : "Are you sure you want to move this reservation back to pending?"
+
+      const confirmed = window.confirm(confirmMessage)
+      if (!confirmed) {
+        // ❌ If user clicks Cancel → stop the function here
+        return
+      }
+    }
+
+    // ✅ Step 2: Run the API request only if confirmed or not needing confirmation
     try {
       const url = `/api/admin/reservations/${id}`
-
       const requestBody = { status: newStatus }
 
       const res = await fetch(url, {
@@ -141,18 +155,18 @@ const Reservation = () => {
 
       if (!res.ok) {
         const errorText = await res.text()
-
         throw new Error(
           `Failed to update reservation status: ${res.status} ${errorText}`
         )
       }
 
-      // Refresh the reservations list to show updated status
+      // ✅ Refresh the reservations list
       await fetchReservations()
     } catch (err) {
       console.error("Error updating status:", err)
     }
   }
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

@@ -403,15 +403,33 @@ export default function Dashboard() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge
-                                className={`flex items-center gap-1 w-fit ${getStatusVariant(
-                                  reservation.status
-                                )}`}
-                              >
-                                {getStatusIcon(reservation.status)}
-                                {reservation.status}
-                              </Badge>
+                              {(() => {
+                                const now = new Date()
+                                const endTime = new Date(reservation.endTime)
+                                const isCompleted = endTime < now
+
+                                return (
+                                  <div>
+                                    <Badge
+                                      className={`flex items-center gap-1 w-fit ${getStatusVariant(
+                                        reservation.status
+                                      )}`}
+                                    >
+                                      {getStatusIcon(reservation.status)}
+                                      {reservation.status}
+                                    </Badge>
+                                    <p>
+                                      {isCompleted && (
+                                        <span className="ml-2 text-blue-600 font-medium text-xs">
+                                          (Completed)
+                                        </span>
+                                      )}
+                                    </p>
+                                  </div>
+                                )
+                              })()}
                             </TableCell>
+
                             <TableCell>
                               {reservation.payment ? (
                                 <div className="text-sm">
