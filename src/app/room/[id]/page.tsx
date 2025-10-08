@@ -637,15 +637,21 @@ export default function RoomPage() {
                         required
                       >
                         <option value="">Select time</option>
-                        {timeSlots.map((time) => (
-                          <option
-                            key={time}
-                            value={time}
-                            disabled={isPastTime(time, startTimeDate)} // ✅ pass selected date
-                          >
-                            {formatToAMPM(time)}
-                          </option>
-                        ))}
+                        {timeSlots.map((time) => {
+                          const isDisabled = !!(
+                            isPastTime(time, startTimeDate) ||
+                            (endTime && time >= endTime)
+                          ) // ✅ Always returns boolean
+                          return (
+                            <option
+                              key={time}
+                              value={time}
+                              disabled={isDisabled}
+                            >
+                              {formatToAMPM(time)}
+                            </option>
+                          )
+                        })}
                       </select>
                     </div>
 
@@ -657,20 +663,26 @@ export default function RoomPage() {
                       </label>
                       <select
                         className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
-                        value={endTime} // ✅ fixed here
-                        onChange={(e) => setEndTime(e.target.value)} // ✅ fixed here
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
                         required
                       >
                         <option value="">Select time</option>
-                        {timeSlots.map((time) => (
-                          <option
-                            key={time}
-                            value={time}
-                            disabled={isPastTime(time, startTimeDate)} // ✅ pass selected date
-                          >
-                            {formatToAMPM(time)}
-                          </option>
-                        ))}
+                        {timeSlots.map((time) => {
+                          const isDisabled = !!(
+                            isPastTime(time, startTimeDate) ||
+                            (startTime && time <= startTime)
+                          ) // ✅ Always returns boolean
+                          return (
+                            <option
+                              key={time}
+                              value={time}
+                              disabled={isDisabled}
+                            >
+                              {formatToAMPM(time)}
+                            </option>
+                          )
+                        })}
                       </select>
                     </div>
                   </div>
@@ -763,6 +775,11 @@ export default function RoomPage() {
                                   be settled separately on the day of the
                                   reservation.
                                 </li>
+                                <li>
+                                  Customers may only order up to a maximum of
+                                  ten (10) food or beverage items per
+                                  reservation.
+                                </li>
                               </ul>
                             </div>
                             <div>
@@ -840,25 +857,48 @@ export default function RoomPage() {
                               >
                                 Qty:
                               </label>
-                              <input
-                                id={`qty-${food.id}`}
-                                type="text"
-                                value={foodQuantities[food.id] || 0}
-                                onChange={(e) => {
-                                  // Remove non-digit characters
-                                  const val = e.target.value.replace(/\D/g, "")
-                                  setFoodQuantities((prev) => ({
-                                    ...prev,
-                                    [food.id]:
-                                      val === "" ? 0 : parseInt(val, 10), // always a number
-                                  }))
-                                }}
-                                onKeyDown={(e) => {
-                                  if (["e", "E", "+", "-"].includes(e.key))
-                                    e.preventDefault()
-                                }}
-                                className="w-16 px-1 py-0.5 border border-purple-300 rounded text-center"
-                              />
+
+                              <div className="flex items-center border border-purple-300 rounded">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setFoodQuantities((prev) => ({
+                                      ...prev,
+                                      [food.id]: Math.max(
+                                        (prev[food.id] || 0) - 1,
+                                        0
+                                      ),
+                                    }))
+                                  }
+                                  className="px-2 py-1 text-purple-600 hover:bg-purple-100"
+                                >
+                                  -
+                                </button>
+
+                                <input
+                                  id={`qty-${food.id}`}
+                                  type="number"
+                                  readOnly
+                                  value={foodQuantities[food.id] || 0}
+                                  className="w-12 text-center border-x border-purple-300 bg-gray-50"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setFoodQuantities((prev) => ({
+                                      ...prev,
+                                      [food.id]: Math.min(
+                                        (prev[food.id] || 0) + 1,
+                                        10
+                                      ),
+                                    }))
+                                  }
+                                  className="px-2 py-1 text-purple-600 hover:bg-purple-100"
+                                >
+                                  +
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
