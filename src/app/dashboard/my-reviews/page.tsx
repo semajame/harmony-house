@@ -70,6 +70,10 @@ export default function UserReviews() {
   const [error, setError] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
+const [reservations, setReservations] = useState<{ roomId: number; userId: number }[]>([])
+
+
+
   const [filters, setFilters] = useState<Filters>({
     room: '',
     rating: '',
@@ -77,6 +81,27 @@ export default function UserReviews() {
     dateTo: '',
     searchText: '',
   })
+
+const fetchReservations = async () => {
+  try {
+    const res = await fetch('/api/admin/reservations');
+    if (!res.ok) throw new Error('Failed to fetch reservations');
+
+    const data = await res.json();
+
+    // Extract both roomId and userId
+    const reservationsData = data.map((r: any) => ({
+      roomId: r.room?.id,
+      userId: r.user?.id,
+    }));
+
+    setReservations(reservationsData);
+
+    console.log('Fetched reservations:', reservationsData);
+  } catch (err) {
+    console.error('Error fetching reservations:', err);
+  }
+};
 
   const fetchReviews = async () => {
     if (!session?.user?.id) {
@@ -194,8 +219,11 @@ export default function UserReviews() {
   }, [session])
 
   useEffect(() => {
-    applyFilters()
-  }, [filters, reviews])
+    applyFilters();
+      if (session?.user?.id) {
+    fetchReservations()
+  }
+  }, [filters, reviews, session])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -383,20 +411,27 @@ export default function UserReviews() {
                       <SelectTrigger className='w-full cursor-pointer'>
                         <SelectValue placeholder='Choose a room...' />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='Room 1' className='cursor-pointer'>
-                          Room 1
-                        </SelectItem>
-                        <SelectItem value='Room 2' className='cursor-pointer'>
-                          Room 2
-                        </SelectItem>
-                        <SelectItem value='Room 3' className='cursor-pointer'>
-                          Room 3
-                        </SelectItem>
-                        <SelectItem value='Room 4' className='cursor-pointer'>
-                          Room 4
-                        </SelectItem>
-                      </SelectContent>
+    <SelectContent>
+ {[1, 2, 3, 4].map((num) => {
+  const userId = Number(session?.user?.id); // Convert to number
+  const isAvailable = reservations.some(
+    (r) => r.roomId === num && r.userId === userId
+  );
+
+  return (
+    <SelectItem
+      key={num}
+      value={`Room ${num}`}
+      disabled={!isAvailable}
+      className={isAvailable ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+    >
+      Room {num} {!isAvailable && '(Unavailable)'}
+    </SelectItem>
+  );
+})}
+
+</SelectContent>
+
                     </Select>
                   </div>
 
