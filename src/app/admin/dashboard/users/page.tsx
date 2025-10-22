@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 
 import {
   Filter,
@@ -19,42 +19,44 @@ import {
   EyeOff,
   Edit,
   Trash2,
-} from "lucide-react"
+} from "lucide-react";
 
 interface UserType {
-  id: number
-  username: string
-  email: string
-  phone: string
-  role: string
-  status: string
-  isActive: boolean
+  id: number;
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  status: string;
+  isActive: boolean;
 }
 
 interface UserFormData {
-  username: string
-  name: string
-  email: string
-  password?: string // ✅ optional
-  phone: string
-  role: string
-  isActive?: boolean
+  username: string;
+  name: string;
+  email: string;
+  password?: string; // ✅ optional
+  phone: string;
+  role: string;
+  isActive?: boolean;
 }
 
 const Users = () => {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterRole, setFilterRole] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState("all");
   const [filterActive, setFilterActive] = useState<
     "all" | "active" | "inactive"
-  >("all")
+  >("all");
 
-  const [users, setUsers] = useState<UserType[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [editingUser, setEditingUser] = useState<UserType | null>(null)
-  const [showDropdown, setShowDropdown] = useState<number | string | null>(null)
+  const [users, setUsers] = useState<UserType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  const [showDropdown, setShowDropdown] = useState<number | string | null>(
+    null
+  );
 
   const [formData, setFormData] = useState<UserFormData>({
     username: "",
@@ -64,103 +66,103 @@ const Users = () => {
     phone: "",
     role: "customer",
     isActive: true,
-  })
+  });
 
-  const router = useRouter()
+  const router = useRouter();
 
-  const isEditing = editingUser !== null
+  const isEditing = editingUser !== null;
 
   useEffect(() => {
     //^ fetch users
     const fetchUsers = async () => {
       try {
-        const res = await fetch("/api/admin/users")
-        if (!res.ok) throw new Error("Failed to fetch")
-        const data = await res.json()
+        const res = await fetch("/api/admin/users");
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
 
-        console.log(data)
-        setUsers(data)
+        console.log(data);
+        setUsers(data);
       } catch (err) {
-        console.error("Error fetching users:", err)
+        console.error("Error fetching users:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchUsers()
-  }, [])
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter((user) => {
-    const name = user?.username || ""
-    const email = user?.email || ""
-    const role = user?.role || ""
-    const isActive = user?.isActive
+    const name = user?.username || "";
+    const email = user?.email || "";
+    const role = user?.role || "";
+    const isActive = user?.isActive;
 
     const matchesSearch =
       name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      email.toLowerCase().includes(searchTerm.toLowerCase())
+      email.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesRole =
-      filterRole === "all" || role.toLowerCase() === filterRole.toLowerCase()
+      filterRole === "all" || role.toLowerCase() === filterRole.toLowerCase();
 
     const matchesActive =
       filterActive === "all" ||
       (filterActive === "active" && isActive === true) ||
-      (filterActive === "inactive" && isActive === false)
+      (filterActive === "inactive" && isActive === false);
 
-    return matchesSearch && matchesRole && matchesActive
-  })
+    return matchesSearch && matchesRole && matchesActive;
+  });
 
   const getStatusColor = (isActive: boolean) => {
     return isActive === true
       ? "bg-green-100 text-green-800"
-      : "bg-red-100 text-red-800"
-  }
+      : "bg-red-100 text-red-800";
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "text-purple-600 bg-purple-100"
+        return "text-purple-600 bg-purple-100";
       case "customer":
-        return "text-blue-600 bg-blue-100"
+        return "text-blue-600 bg-blue-100";
       case "staff":
-        return "text-pink-600 bg-pink-100"
+        return "text-pink-600 bg-pink-100";
       default:
-        return "text-gray-600 bg-gray-100"
+        return "text-gray-600 bg-gray-100";
     }
-  }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value, type } = e.target
+    const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }))
-  }
+    }));
+  };
 
   //^ submit form data
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsProcessing(true)
+    e.preventDefault();
+    setIsProcessing(true);
 
     try {
-      let response
-      let url = "/api/admin/users"
-      let method = "POST"
+      let response;
+      let url = "/api/admin/users";
+      let method = "POST";
 
       if (isEditing) {
-        url = `/api/admin/users/${editingUser.id}`
-        method = "PUT"
+        url = `/api/admin/users/${editingUser.id}`;
+        method = "PUT";
       }
 
       // Prepare the data - don't send empty password for updates
 
-      const submitData = { ...formData }
+      const submitData = { ...formData };
       if (isEditing && !submitData.password) {
-        delete submitData.password
+        delete submitData.password;
       }
 
       response = await fetch(url, {
@@ -169,13 +171,13 @@ const Users = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(submitData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`Failed to ${isEditing ? "update" : "create"} user`)
+        throw new Error(`Failed to ${isEditing ? "update" : "create"} user`);
       }
 
-      const userData = await response.json()
+      const userData = await response.json();
 
       if (isEditing) {
         // Update the user in the list
@@ -183,24 +185,27 @@ const Users = () => {
           prev.map((user) =>
             user.id === editingUser.id ? { ...user, ...userData } : user
           )
-        )
+        );
       } else {
         // Add the new user to the list
-        setUsers((prev) => [...prev, userData])
+        setUsers((prev) => [...prev, userData]);
       }
 
-      closeModal()
+      closeModal();
     } catch (error) {
-      console.error(`Error ${isEditing ? "updating" : "creating"} user:`, error)
+      console.error(
+        `Error ${isEditing ? "updating" : "creating"} user:`,
+        error
+      );
       // You might want to show an error message to the user here
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   //^ edit from
   const handleEditUser = (user: UserType) => {
-    setEditingUser(user)
+    setEditingUser(user);
     setFormData({
       username: user.username,
       name: user.username, // Assuming name is same as username, adjust as needed
@@ -209,20 +214,20 @@ const Users = () => {
       phone: user.phone,
       role: user.role,
       isActive: user.isActive,
-    })
-    setIsModalOpen(true)
-    setShowDropdown(null)
-  }
+    });
+    setIsModalOpen(true);
+    setShowDropdown(null);
+  };
 
   //^ delete user data by id
   const handleDeleteUser = async (id: number) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this user? This action cannot be undone."
-    )
+    );
 
-    if (!confirmed) return
+    if (!confirmed) return;
 
-    setIsProcessing(true)
+    setIsProcessing(true);
 
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
@@ -230,28 +235,28 @@ const Users = () => {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      });
 
       if (!res.ok) {
-        const errorData = await res.json()
-        console.error("Failed to delete user:", errorData.error)
+        const errorData = await res.json();
+        console.error("Failed to delete user:", errorData.error);
       } else {
-        const contentType = res.headers.get("content-type")
+        const contentType = res.headers.get("content-type");
         const data = contentType?.includes("application/json")
           ? await res.json()
-          : null
+          : null;
 
-        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id))
+        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
       }
     } catch (error) {
-      console.error("Error deleting user:", error)
+      console.error("Error deleting user:", error);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const handleCreateUser = () => {
-    setEditingUser(null)
+    setEditingUser(null);
     setFormData({
       username: "",
       name: "",
@@ -260,13 +265,13 @@ const Users = () => {
       phone: "",
       role: "customer",
       isActive: true,
-    })
-    setIsModalOpen(true)
-  }
+    });
+    setIsModalOpen(true);
+  };
 
   const closeModal = () => {
-    setIsModalOpen(false)
-    setEditingUser(null)
+    setIsModalOpen(false);
+    setEditingUser(null);
     setFormData({
       username: "",
       name: "",
@@ -275,13 +280,13 @@ const Users = () => {
       phone: "",
       role: "customer",
       isActive: true,
-    })
-    setShowPassword(false)
-  }
+    });
+    setShowPassword(false);
+  };
 
   const toggleDropdown = (id: number) => {
-    setShowDropdown(showDropdown === id ? null : id)
-  }
+    setShowDropdown(showDropdown === id ? null : id);
+  };
 
   return (
     <div className="flex h-full bg-gray-100">
@@ -370,8 +375,8 @@ const Users = () => {
                       <div className="relative">
                         <button
                           onClick={(e) => {
-                            e.stopPropagation()
-                            toggleDropdown(user.id)
+                            e.stopPropagation();
+                            toggleDropdown(user.id);
                           }}
                           className="p-1 hover:bg-gray-100 rounded cursor-pointer"
                         >
@@ -390,9 +395,9 @@ const Users = () => {
                               </button>
                               <button
                                 onClick={(e) => {
-                                  e.stopPropagation() // Prevent closing the dropdown too early
-                                  handleDeleteUser(user.id)
-                                  setShowDropdown(null)
+                                  e.stopPropagation(); // Prevent closing the dropdown too early
+                                  handleDeleteUser(user.id);
+                                  setShowDropdown(null);
                                 }}
                                 className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 w-full text-left cursor-pointer"
                               >
@@ -499,6 +504,7 @@ const Users = () => {
                   />
                 </div>
                 {/* Email */}
+                {/* Email */}
                 <div>
                   <label
                     htmlFor="email"
@@ -516,6 +522,39 @@ const Users = () => {
                     placeholder="Enter email address"
                   />
                 </div>
+
+                {/* Password (only required when creating a user) */}
+                {!isEditing && (
+                  <div className="relative">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Password *
+                    </label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required={!isEditing}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                      placeholder="Enter password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 cursor-pointer"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                )}
 
                 {/* Phone */}
                 <div>
@@ -611,7 +650,7 @@ const Users = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Users
+export default Users;
