@@ -1,53 +1,53 @@
-'use client'
+"use client";
 
-import { signOut, useSession } from 'next-auth/react'
-import Link from 'next/link'
-import { ChevronDown, LayoutDashboard, LogOut } from 'lucide-react'
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { ChevronDown, LayoutDashboard, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 
 export default function AuthSection() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
-  if (status === 'loading') return null
+  if (status === "loading") return null;
 
-  const userRole = session?.user?.role
-  const showDashboard = userRole === 'staff' || userRole === 'admin'
-  const showUserDashboard = userRole === 'customer' || userRole === 'customer'
+  const userRole = session?.user?.role;
+  const showDashboard = userRole === "staff" || userRole === "admin";
+  const showUserDashboard = userRole === "customer" || userRole === "customer";
 
   return (
-    <div className='hidden md:flex gap-2 items-center'>
+    <div className="flex items-center justify-center  gap-2 items-center">
       {session?.user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className='flex items-center space-x-2.5 focus:outline-none cursor-pointer'>
-              <div className='w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center'>
-                <span className='text-white text-sm font-medium'>
-                  {session.user.name?.charAt(0).toUpperCase() ?? ''}
+            <button className="flex items-center space-x-2.5 focus:outline-none cursor-pointer">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {session.user.name?.charAt(0).toUpperCase() ?? ""}
                 </span>
               </div>
-              <span className='hidden md:block text-sm font-medium text-white'>
+              <span className="flex items-center md:block text-sm font-medium text-white">
                 {session.user.name}
               </span>
-              <ChevronDown className='h-4 w-4 text-white' />
+              <ChevronDown className="h-4 w-4 text-white" />
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className='p-2'>
+          <DropdownMenuContent className="p-2">
             {showDashboard && (
               <DropdownMenuItem asChild>
                 <Link
-                  href='/admin/dashboard'
-                  className='flex items-center gap-2 w-full cursor-pointer'
+                  href="/admin/dashboard"
+                  className="flex items-center gap-2 w-full cursor-pointer"
                   prefetch={true}
                 >
-                  <LayoutDashboard className='h-4 w-4' />
+                  <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Link>
               </DropdownMenuItem>
@@ -56,11 +56,11 @@ export default function AuthSection() {
             {showUserDashboard && (
               <DropdownMenuItem asChild>
                 <Link
-                  href='/dashboard'
-                  className='flex items-center gap-2 w-full cursor-pointer'
+                  href="/dashboard"
+                  className="flex items-center gap-2 w-full cursor-pointer"
                   prefetch={true}
                 >
-                  <LayoutDashboard className='h-4 w-4' />
+                  <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Link>
               </DropdownMenuItem>
@@ -68,10 +68,10 @@ export default function AuthSection() {
 
             <DropdownMenuItem asChild>
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
-                className='flex items-center gap-2 w-full cursor-pointer'
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="flex items-center gap-2 w-full cursor-pointer"
               >
-                <LogOut className='h-4 w-4 text-gray-500' />
+                <LogOut className="h-4 w-4 text-gray-500" />
                 Logout
               </button>
             </DropdownMenuItem>
@@ -79,18 +79,18 @@ export default function AuthSection() {
         </DropdownMenu>
       ) : (
         <>
-          <Link href='/login'>
-            <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 cursor-pointer'>
+          <Link href="/login">
+            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 cursor-pointer">
               Login
             </Button>
           </Link>
-          <Link href='/signup'>
-            <Button className='bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 cursor-pointer'>
+          <Link href="/signup">
+            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 cursor-pointer">
               Register
             </Button>
           </Link>
         </>
       )}
     </div>
-  )
+  );
 }
