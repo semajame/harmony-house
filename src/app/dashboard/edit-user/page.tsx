@@ -1,17 +1,15 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
-import { useRouter } from "next/navigation"
-
-// inside your component
+import { useRouter } from "next/navigation";
 
 export default function EditUser() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession();
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -21,11 +19,10 @@ export default function EditUser() {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  });
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  // Load session data into form
   useEffect(() => {
     if (session) {
       setFormData((prev) => ({
@@ -35,27 +32,27 @@ export default function EditUser() {
         email: session.user.email || "",
         phone: session.user.phone || "",
         role: session.user.role || "",
-      }))
+      }));
     }
-  }, [session])
+  }, [session]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!session?.user.id) return
+    e.preventDefault();
+    if (!session?.user.id) return;
 
     if (
       formData.newPassword &&
       formData.newPassword !== formData.confirmPassword
     ) {
-      alert("Passwords do not match")
-      return
+      alert("Passwords do not match");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       const res = await fetch(`/api/admin/users/${session.user.id}`, {
         method: "PUT",
@@ -63,22 +60,24 @@ export default function EditUser() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
-      if (!res.ok) throw new Error("Failed to update user")
+      if (!res.ok) throw new Error("Failed to update user");
 
-      alert("Profile updated successfully!")
-      router.push("/dashboard") // 👈 reroute to dashboard
+      await update();
+
+      alert("Profile updated successfully!");
+      window.location.reload();
     } catch (err) {
-      console.error(err)
-      alert("Something went wrong")
+      console.error(err);
+      alert("Something went wrong");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if (status === "loading") return <p>Loading...</p>
-  if (!session) return <p>You must be logged in to edit your profile.</p>
+  if (status === "loading") return <p>Loading...</p>;
+  if (!session) return <p>You must be logged in to edit your profile.</p>;
 
   return (
     <div className="py-[10rem]">
@@ -170,5 +169,5 @@ export default function EditUser() {
         </Button>
       </form>
     </div>
-  )
+  );
 }
