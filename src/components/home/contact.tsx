@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Phone,
   Mail,
@@ -9,7 +9,7 @@ import {
   Send,
   User,
   MessageSquare,
-} from "lucide-react"
+} from "lucide-react";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -18,41 +18,41 @@ export default function Contact() {
     phone: "",
     subject: "",
     message: "",
-  })
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleInputChange = (e: any) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: any) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    setIsSubmitting(false)
-    setSubmitted(true)
+    setIsSubmitting(false);
+    setSubmitted(true);
 
     // Reset form after 3 seconds
     setTimeout(() => {
-      setSubmitted(false)
+      setSubmitted(false);
       setFormData({
         name: "",
         email: "",
         phone: "",
         subject: "",
         message: "",
-      })
-    }, 3000)
-  }
+      });
+    }, 3000);
+  };
 
   const contactInfo = [
     {
@@ -79,7 +79,7 @@ export default function Contact() {
       details: ["Mon-Fri: 9:00 AM - 6:00 PM", "Sat-Sun: 10:00 AM - 4:00 PM"],
       color: "bg-purple-100 text-purple-600",
     },
-  ]
+  ];
 
   if (submitted) {
     return (
@@ -96,7 +96,7 @@ export default function Contact() {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -105,17 +105,6 @@ export default function Contact() {
       id="contact"
     >
       {/* Header */}
-      <div className="bg-[#944EA8] shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">Contact Us</h1>
-            <p className="text-lg text-gray-100 max-w-2xl mx-auto">
-              We'd love to hear from you. Get in touch with us for any
-              questions, reservations, or feedback about your stay.
-            </p>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -237,5 +226,5 @@ export default function Contact() {
         </div>
       </div>
     </div>
-  )
+  );
 }

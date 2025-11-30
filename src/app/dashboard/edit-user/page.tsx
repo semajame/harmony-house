@@ -76,9 +76,6 @@ export default function EditUser() {
     }
   };
 
-  if (status === "loading") return <p>Loading...</p>;
-  if (!session) return <p>You must be logged in to edit your profile.</p>;
-
   return (
     <div className="py-[10rem]">
       <form

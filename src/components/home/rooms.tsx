@@ -1,54 +1,54 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
-import { Music, Users, Clock, Wifi, Volume2, Sparkles } from "lucide-react"
-import { useSession } from "next-auth/react"
-import Link from "next/link"
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Music, Users, Clock, Wifi, Volume2, Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export default function Rooms() {
-  const router = useRouter()
-  const { data: session, status } = useSession()
+  const router = useRouter();
+  const { data: session, status } = useSession();
 
-  const [hoveredRoom, setHoveredRoom] = useState<number | null>(null)
-  const [rooms, setRooms] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [hoveredRoom, setHoveredRoom] = useState<number | null>(null);
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const res = await fetch("/api/admin/rooms")
-        if (!res.ok) throw new Error("Failed to fetch rooms")
-        const data = await res.json()
+        const res = await fetch("/api/admin/rooms");
+        if (!res.ok) throw new Error("Failed to fetch rooms");
+        const data = await res.json();
 
         // Filter only active rooms
-        const activeRooms = data.filter((room: any) => room.isActive)
-        setRooms(activeRooms)
+        const activeRooms = data.filter((room: any) => room.isActive);
+        setRooms(activeRooms);
       } catch (err) {
-        console.error(err)
+        console.error(err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchRooms()
-  }, [])
+    fetchRooms();
+  }, []);
 
   const handleMouseEnter = (id: number) => {
-    setHoveredRoom(id)
-    router.prefetch(`/rooms/${id}`)
-  }
+    setHoveredRoom(id);
+    router.prefetch(`/rooms/${id}`);
+  };
 
   const handleBookNow = (id: number) => {
-    if (status === "loading") return
+    if (status === "loading") return;
 
     if (!session) {
-      router.push("/login")
+      router.push("/login");
     } else {
-      router.push(`/room/${id}`)
+      router.push(`/room/${id}`);
     }
-  }
+  };
 
   return (
     <div
@@ -218,7 +218,7 @@ export default function Rooms() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="#contact"
+                href="/contact"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 cursor-pointer"
               >
                 Contact Us
@@ -241,5 +241,5 @@ export default function Rooms() {
         }
       `}</style>
     </div>
-  )
+  );
 }
