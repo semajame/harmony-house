@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎤 KTV Room Reservation & Management System
 
-## Getting Started
+A full-stack web application designed to streamline KTV room reservations, food ordering, and online payments. The system provides a seamless booking experience for customers while offering administrators full control over rooms, food items, and promotional discounts.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📌 Project Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The **KTV Room Reservation & Management System** allows users to reserve KTV rooms, order food and beverages, and complete payments online using **PayMongo**. Bookings are automatically confirmed upon successful payment, eliminating the need for manual approval.  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+An admin dashboard enables efficient management of rooms, menu items, and discounts through complete CRUD functionality.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## ✨ Key Features
 
-To learn more about Next.js, take a look at the following resources:
+### Customer Features
+- **Room Reservation**
+  - View available KTV rooms
+  - Select preferred date and time slots
+  - Automatic booking confirmation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Food & Beverage Ordering**
+  - Browse available menu items
+  - Add orders during the reservation process
+  - Real-time price calculation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Online Payment**
+  - Secure payment processing via **PayMongo**
+  - Supports cards and e-wallets (GCash, Maya)
+  - Payment status is synced with booking records
 
-## Deploy on Vercel
+- **Booking Summary**
+  - View reservation details, orders, discounts, and payment status
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Admin Features
+- **Room Management**
+  - Create, update, and delete KTV rooms
+  - Manage room pricing and availability
+
+- **Food & Menu Management**
+  - Full CRUD operations for food and beverage items
+  - Update prices and availability in real time
+
+- **Discount Management**
+  - Create and manage promotional discounts
+  - Apply discounts dynamically during checkout
+
+- **Reservation Monitoring**
+  - View all bookings and order details
+  - Track payment status and transaction history
+
+---
+
+## ⚙️ System Behavior
+- Bookings are **automatically accepted** once payment is confirmed
+- No manual admin approval required
+- Total cost is calculated dynamically:
