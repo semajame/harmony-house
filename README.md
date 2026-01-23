@@ -58,3 +58,38 @@ An admin dashboard enables efficient management of rooms, menu items, and discou
 - Bookings are **automatically accepted** once payment is confirmed
 - No manual admin approval required
 - Total cost is calculated dynamically:
+
+
+---
+
+## 💳 Payment Integration
+- Integrated with **PayMongo** for secure online payments
+- Supports:
+- Credit & Debit Cards
+- GCash
+- Maya
+- Ensures reliable transaction handling and payment validation
+
+---
+
+## 🧱 Tech Stack
+
+- **Frontend:** Next.js
+- **Styling:** Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Database:** MySQL
+- **Payment Gateway:** PayMongo
+
+---
+
+## 🔧 Installation & Setup
+
+```
+# Clone the repository
+git clone https://github.com/your-username/ktv-reservation-system.git
+
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
