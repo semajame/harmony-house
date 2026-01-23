@@ -86,7 +86,7 @@ An admin dashboard enables efficient management of rooms, menu items, and discou
 
 ```
 # Clone the repository
-git clone https://github.com/your-username/ktv-reservation-system.git
+git clone https://github.com/semajame/ktv-reservation-system.git
 
 # Install dependencies
 npm install
